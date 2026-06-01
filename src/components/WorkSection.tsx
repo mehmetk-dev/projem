@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -52,10 +53,11 @@ export default function WorkSection({ projects }: WorkSectionProps) {
               >
                 <div className="aspect-[4/5] overflow-hidden relative">
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-700 z-10" />
-                  <img
+                  <Image
                     src={project.image}
                     alt={project.title}
-                    className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110"
+                    fill
+                    className="object-cover transition-transform duration-[1.5s] group-hover:scale-110"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).style.display = 'none';
                     }}

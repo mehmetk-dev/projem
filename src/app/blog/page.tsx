@@ -1,4 +1,5 @@
 import { getPublishedBlogs } from '@/app/actions/blogs';
+import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
@@ -52,8 +53,8 @@ export default async function BlogListPage() {
                   className="group p-8 md:p-10 rounded-[2rem] bg-neutral-900/30 border border-white/5 hover:bg-neutral-900/80 transition-all duration-500 overflow-hidden"
                 >
                   {post.coverImage && (
-                    <div className="mb-6 -mx-8 -mt-8 md:-mx-10 md:-mt-10">
-                      <img src={post.coverImage} alt={post.title} className="w-full h-56 object-cover" />
+                    <div className="mb-6 -mx-8 -mt-8 md:-mx-10 md:-mt-10 relative h-56">
+                      <Image src={post.coverImage} alt={post.title} fill className="object-cover" />
                     </div>
                   )}
                   <Link href={`/blog/${post.slug}`} className="block">

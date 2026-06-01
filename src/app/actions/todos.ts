@@ -76,7 +76,8 @@ export async function toggleTodoAction(formData: FormData): Promise<TodoActionSt
 
     revalidatePath('/dashboard');
     return { success: existing.completed ? 'Görev aktifleştirildi.' : 'Görev tamamlandı.' };
-  } catch {
+  } catch (error) {
+    console.error('Toggle Todo Error:', error);
     return { error: 'İşlem sırasında hata oluştu.' };
   }
 }
@@ -90,7 +91,8 @@ export async function deleteTodoAction(formData: FormData): Promise<TodoActionSt
     await db.delete(todos).where(and(eq(todos.id, todoId), eq(todos.userId, userId)));
     revalidatePath('/dashboard');
     return { success: 'Görev silindi.' };
-  } catch {
+  } catch (error) {
+    console.error('Delete Todo Error:', error);
     return { error: 'Silinirken hata oluştu.' };
   }
 }

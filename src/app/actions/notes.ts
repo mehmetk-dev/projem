@@ -58,7 +58,7 @@ export async function createNoteAction(
 
   if (imageFile instanceof File && imageFile.size > 0) {
     try {
-      imagePath = await saveUploadedImage(imageFile, 'notes');
+      imagePath = await saveUploadedImage(imageFile, 'not');
     } catch (error) {
       return { error: error instanceof Error ? error.message : 'Görsel yüklenemedi.' };
     }
@@ -100,7 +100,7 @@ export async function updateNoteAction(
 
   if (imageFile instanceof File && imageFile.size > 0) {
     try {
-      imagePath = await saveUploadedImage(imageFile, 'notes');
+      imagePath = await saveUploadedImage(imageFile, 'not');
     } catch (error) {
       return { error: error instanceof Error ? error.message : 'Görsel yüklenemedi.' };
     }

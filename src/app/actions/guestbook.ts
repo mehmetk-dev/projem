@@ -20,12 +20,17 @@ const guestbookSchema = z.object({
 });
 
 export async function getApprovedGuestbookEntries() {
-  return db
-    .select()
-    .from(guestbookEntries)
-    .where(eq(guestbookEntries.approved, true))
-    .orderBy(desc(guestbookEntries.createdAt))
-    .all();
+  try {
+    return db
+      .select()
+      .from(guestbookEntries)
+      .where(eq(guestbookEntries.approved, true))
+      .orderBy(desc(guestbookEntries.createdAt))
+      .all();
+  } catch (error) {
+    console.error('getApprovedGuestbookEntries error:', error);
+    return [];
+  }
 }
 
 export async function getAllGuestbookEntries() {

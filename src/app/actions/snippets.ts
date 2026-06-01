@@ -67,7 +67,8 @@ export async function deleteSnippetAction(formData: FormData): Promise<SnippetAc
     await db.delete(codeSnippets).where(and(eq(codeSnippets.id, snippetId), eq(codeSnippets.userId, userId)));
     revalidatePath('/dashboard');
     return { success: 'Silindi.' };
-  } catch {
+  } catch (error) {
+    console.error('Delete Snippet Error:', error);
     return { error: 'Silinirken hata oluştu.' };
   }
 }

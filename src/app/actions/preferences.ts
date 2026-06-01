@@ -25,6 +25,8 @@ const CONFIGURABLE_TABS = [
 
 export interface UserPreferencesData {
   hiddenTabs: string[];
+  pomodoroWork: number;
+  pomodoroBreak: number;
 }
 
 export interface PreferencesActionState {
@@ -36,7 +38,35 @@ export interface PreferencesActionState {
 export async function getMyPreferences(): Promise<UserPreferencesData> {
   const { userId } = await requireAuth();
   const row = await db.select().from(userPreferences).where(eq(userPreferences.userId, userId)).get();
-  return { hiddenTabs: normalizeHiddenTabs(parseHiddenTabs(row?.hiddenTabs), CONFIGURABLE_TABS) };
+  return {
+    hiddenTabs: normalizeHiddenTabs(parseHiddenTabs(row?.hiddenTabs), CONFIGURABLE_TABS),
+    pomodoroWork: row?.pomodoroWork ?? 25,
+    pomodoroBreak: row?.pomodoroBreak ?? 5,
+  };
+}
+
+export async function savePomodoroSettingsAction(formData: FormData): Promise<PreferencesActionState> {
+  const { userId } = await requireAuth();
+  const pomodoroWork = Math.max(1, Math.min(120, Number(formData.get('pomodoroWork') ?? 25)));
+  const pomodoroBreak = Math.max(1, Math.min(60, Number(formData.get('pomodoroBreak') ?? 5)));
+
+  try {
+    const existing = await db.select().from(userPreferences).where(eq(userPreferences.userId, userId)).get();
+    if (existing) {
+      await db
+        .update(userPreferences)
+        .set({ pomodoroWork, pomodoroBreak, updatedAt: new Date().toISOString() })
+        .where(eq(userPreferences.userId, userId));
+    } else {
+      await db.insert(userPreferences).values({ userId, pomodoroWork, pomodoroBreak });
+    }
+
+    revalidatePath('/dashboard');
+    return { success: 'Pomodoro ayarları kaydedildi.', data: { hiddenTabs: [], pomodoroWork, pomodoroBreak } };
+  } catch (error) {
+    console.error('Save Pomodoro Error:', error);
+    return { error: 'Pomodoro ayarları kaydedilirken hata oluştu.' };
+  }
 }
 
 export async function saveHiddenTabsAction(formData: FormData): Promise<PreferencesActionState> {
@@ -56,7 +86,7 @@ export async function saveHiddenTabsAction(formData: FormData): Promise<Preferen
     }
 
     revalidatePath('/dashboard');
-    return { success: 'Menü tercihleri kaydedildi.', data: { hiddenTabs } };
+    return { success: 'Menü tercihleri kaydedildi.', data: { hiddenTabs, pomodoroWork: existing?.pomodoroWork ?? 25, pomodoroBreak: existing?.pomodoroBreak ?? 5 } };
   } catch (error) {
     console.error('Save Preferences Error:', error);
     return { error: 'Menü tercihleri kaydedilirken hata oluştu.' };

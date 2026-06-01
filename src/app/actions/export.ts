@@ -8,20 +8,25 @@ import { requireAuth } from '@/lib/auth';
 export async function exportUserData() {
   const { userId } = await requireAuth();
 
-  const [userNotes, userTodos, userBookmarks, userSnippets] = await Promise.all([
-    db.select().from(notes).where(eq(notes.userId, userId)).orderBy(desc(notes.createdAt)).all(),
-    db.select().from(todos).where(eq(todos.userId, userId)).orderBy(desc(todos.createdAt)).all(),
-    db.select().from(bookmarks).where(eq(bookmarks.userId, userId)).orderBy(desc(bookmarks.createdAt)).all(),
-    db.select().from(codeSnippets).where(eq(codeSnippets.userId, userId)).orderBy(desc(codeSnippets.createdAt)).all(),
-  ]);
+  try {
+    const [userNotes, userTodos, userBookmarks, userSnippets] = await Promise.all([
+      db.select().from(notes).where(eq(notes.userId, userId)).orderBy(desc(notes.createdAt)).all(),
+      db.select().from(todos).where(eq(todos.userId, userId)).orderBy(desc(todos.createdAt)).all(),
+      db.select().from(bookmarks).where(eq(bookmarks.userId, userId)).orderBy(desc(bookmarks.createdAt)).all(),
+      db.select().from(codeSnippets).where(eq(codeSnippets.userId, userId)).orderBy(desc(codeSnippets.createdAt)).all(),
+    ]);
 
-  return {
-    notes: userNotes,
-    todos: userTodos,
-    bookmarks: userBookmarks,
-    snippets: userSnippets,
-    exportedAt: new Date().toISOString(),
-  };
+    return {
+      notes: userNotes,
+      todos: userTodos,
+      bookmarks: userBookmarks,
+      snippets: userSnippets,
+      exportedAt: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error('Export Error:', error);
+    return { error: 'Veriler dışa aktarılırken hata oluştu.' };
+  }
 }
 
 export async function importUserData(formData: FormData) {

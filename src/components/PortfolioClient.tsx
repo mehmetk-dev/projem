@@ -9,6 +9,7 @@ import BlogSection from './BlogSection';
 import NewsletterSection from './NewsletterSection';
 import ContactSection from './ContactSection';
 import Footer from './Footer';
+import FeaturesSection from './FeaturesSection';
 
 interface PortfolioClientProps {
   user: { email: string } | null;
@@ -21,6 +22,8 @@ export default function PortfolioClient({ user, logoutAction, projects, blogs }:
   const displayName = user ? user.email.split('@')[0] : 'Mehmet Kerem';
 
   useEffect(() => {
+    document.documentElement.classList.add('js-animations');
+
     const observerOptions = {
       threshold: 0.1,
       rootMargin: '0px 0px -100px 0px',
@@ -44,8 +47,9 @@ export default function PortfolioClient({ user, logoutAction, projects, blogs }:
     <div className="bg-black text-white selection:bg-white selection:text-black font-sans overflow-x-hidden">
       <Header user={user} logoutAction={logoutAction} />
       <main>
-        <HeroSection displayName={displayName} user={user} />
+        <HeroSection displayName={displayName} />
         <MarqueeBanner />
+        <FeaturesSection />
         <WorkSection projects={projects} />
         <BlogSection blogs={blogs} />
         <NewsletterSection />

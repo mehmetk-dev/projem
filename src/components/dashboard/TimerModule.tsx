@@ -1,20 +1,27 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
+import { savePomodoroSettingsAction } from '@/app/actions/preferences';
+import type { UserPreferences } from './types';
 
 type Mode = 'pomodoro' | 'timer' | 'stopwatch';
 type WindowWithWebkitAudio = Window & typeof globalThis & {
   webkitAudioContext?: typeof AudioContext;
 };
 
-export default function TimerModule() {
+export default function TimerModule({ preferences }: { preferences: UserPreferences }) {
   const [mode, setMode] = useState<Mode>('pomodoro');
 
   // Pomodoro
-  const [pomoTime, setPomoTime] = useState(25 * 60);
+  const [workMinutes, setWorkMinutes] = useState(preferences.pomodoroWork ?? 25);
+  const [breakMinutes, setBreakMinutes] = useState(preferences.pomodoroBreak ?? 5);
+  const [pomoTime, setPomoTime] = useState((preferences.pomodoroWork ?? 25) * 60);
   const [pomoActive, setPomoActive] = useState(false);
   const [pomoBreak, setPomoBreak] = useState(false);
   const [pomoCycle, setPomoCycle] = useState(0);
+  const [pomoSettingsOpen, setPomoSettingsOpen] = useState(false);
+  const [savingPomoSettings, setSavingPomoSettings] = useState(false);
 
   // Countdown
   const [cdInput, setCdInput] = useState(5);
@@ -54,17 +61,16 @@ export default function TimerModule() {
         setPomoTime((t) => {
           if (t <= 1) {
             playBeep();
-            // switch phase
             setPomoBreak((b) => !b);
             if (pomoBreak) setPomoCycle((c) => c + 1);
-            return pomoBreak ? 25 * 60 : 5 * 60;
+            return pomoBreak ? workMinutes * 60 : breakMinutes * 60;
           }
           return t - 1;
         });
       }, 1000);
     } else { clear(); }
     return () => clear();
-  }, [pomoActive, pomoBreak]);
+  }, [pomoActive, pomoBreak, workMinutes, breakMinutes]);
 
   useEffect(() => {
     if (cdActive) {
@@ -91,7 +97,26 @@ export default function TimerModule() {
     return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
   };
 
-  const resetPomo = () => { setPomoActive(false); setPomoBreak(false); setPomoTime(25 * 60); setPomoCycle(0); };
+  const resetPomo = () => { setPomoActive(false); setPomoBreak(false); setPomoTime(workMinutes * 60); setPomoCycle(0); };
+
+  const applyPomoSettings = async () => {
+    setSavingPomoSettings(true);
+    const fd = new FormData();
+    fd.append('pomodoroWork', String(workMinutes));
+    fd.append('pomodoroBreak', String(breakMinutes));
+    const res = await savePomodoroSettingsAction(fd);
+    if (res.error) {
+      toast.error(res.error);
+    } else {
+      toast.success('Pomodoro ayarları kaydedildi.');
+    }
+    setPomoActive(false);
+    setPomoBreak(false);
+    setPomoTime(workMinutes * 60);
+    setPomoCycle(0);
+    setPomoSettingsOpen(false);
+    setSavingPomoSettings(false);
+  };
   const resetCd = () => { setCdActive(false); setCdTime(cdInput * 60); };
   const resetSw = () => { setSwActive(false); setSwTime(0); };
 
@@ -115,6 +140,28 @@ export default function TimerModule() {
 
       {mode === 'pomodoro' && (
         <div className="bg-neutral-100 dark:bg-neutral-900/40 border border-neutral-200 dark:border-white/10 rounded-2xl p-8 text-center space-y-4">
+          {!pomoActive && (
+            <button onClick={() => setPomoSettingsOpen((o) => !o)} className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white underline underline-offset-2">
+              {pomoSettingsOpen ? 'Ayarları Gizle' : 'Süre Ayarları'}
+            </button>
+          )}
+          {pomoSettingsOpen && !pomoActive && (
+            <div className="flex justify-center items-center gap-3 text-sm">
+              <div className="flex items-center gap-1.5">
+                <label className="text-neutral-500 dark:text-neutral-400">Çalışma:</label>
+                <input type="number" min={1} max={120} value={workMinutes} disabled={savingPomoSettings} onChange={(e) => { const v = Math.max(1, Math.min(120, Number(e.target.value))); setWorkMinutes(v); if (!pomoBreak) setPomoTime(v * 60); }} className="w-14 bg-neutral-200 dark:bg-transparent border border-neutral-300 dark:border-white/10 rounded-lg py-1.5 text-center text-neutral-900 dark:text-white text-sm disabled:opacity-50" />
+                <span className="text-neutral-400 text-xs">dk</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <label className="text-neutral-500 dark:text-neutral-400">Mola:</label>
+                <input type="number" min={1} max={60} value={breakMinutes} disabled={savingPomoSettings} onChange={(e) => { const v = Math.max(1, Math.min(60, Number(e.target.value))); setBreakMinutes(v); if (pomoBreak) setPomoTime(v * 60); }} className="w-14 bg-neutral-200 dark:bg-transparent border border-neutral-300 dark:border-white/10 rounded-lg py-1.5 text-center text-neutral-900 dark:text-white text-sm disabled:opacity-50" />
+                <span className="text-neutral-400 text-xs">dk</span>
+              </div>
+              <button onClick={applyPomoSettings} disabled={savingPomoSettings} className="text-xs bg-neutral-900 text-white dark:bg-white dark:text-black px-3 py-1.5 rounded-full font-bold hover:bg-neutral-700 dark:hover:bg-neutral-200 disabled:opacity-50">
+                {savingPomoSettings ? 'Kaydediliyor...' : 'Uygula'}
+              </button>
+            </div>
+          )}
           <div className="text-[10px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400">{pomoBreak ? 'Mola' : 'Çalışma'}</div>
           <div className="text-6xl font-mono font-bold tracking-tighter text-neutral-900 dark:text-white">{fmt(pomoTime)}</div>
           <div className="flex justify-center gap-3">

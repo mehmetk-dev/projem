@@ -65,7 +65,8 @@ export async function deleteBookmarkAction(formData: FormData): Promise<Bookmark
     await db.delete(bookmarks).where(and(eq(bookmarks.id, bookmarkId), eq(bookmarks.userId, userId)));
     revalidatePath('/dashboard');
     return { success: 'Silindi.' };
-  } catch {
+  } catch (error) {
+    console.error('Delete Bookmark Error:', error);
     return { error: 'Silinirken hata oluştu.' };
   }
 }

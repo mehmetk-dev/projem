@@ -7,7 +7,7 @@ import { randomBytes } from 'crypto';
 import { cache } from 'react';
 
 // --- Configuration ---
-const SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const COOKIE_NAME = 'session';
 
 let _key: Uint8Array | null = null;
@@ -33,7 +33,7 @@ export async function encrypt(payload: SessionPayload): Promise<string> {
   return await new SignJWT({ ...payload })
     .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
     .setIssuedAt()
-    .setExpirationTime('24h')
+    .setExpirationTime('30d')
     .sign(getKey());
 }
 
@@ -141,13 +141,18 @@ export const getSession = cache(async (): Promise<{ userId: number } | null> => 
 
   if (!dbSession || dbSession.expiresAt < Date.now()) {
     // Session expired or revoked, clear cookie
-    cookieStore.set(COOKIE_NAME, '', {
-      expires: new Date(0),
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-    });
+    try {
+      cookieStore.set(COOKIE_NAME, '', {
+        expires: new Date(0),
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+      });
+    } catch (error) {
+      // Prevent crash if cookies are read during dynamic layout rendering
+      console.warn('Failed to clear expired session cookie in render phase:', error);
+    }
     return null;
   }
 

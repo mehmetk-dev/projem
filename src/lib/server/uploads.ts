@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { uploadImageBufferToR2 } from './r2-storage';
+import { createStorageFileName } from './storage-paths';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MIME_TO_EXT: Record<string, string> = {
@@ -33,13 +34,13 @@ export async function saveUploadedImage(file: File, folder: string): Promise<str
     throw new Error('Sadece JPG, PNG, WEBP veya GIF yükleyebilirsiniz.');
   }
 
-  const uploadDir = path.join(process.cwd(), 'public', 'uploads', folder);
-  await mkdir(uploadDir, { recursive: true });
-
-  const fileName = `${Date.now()}-${randomUUID()}${ext}`;
-  const absolutePath = path.join(uploadDir, fileName);
+  const fileName = createStorageFileName(ext, randomUUID);
   const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(absolutePath, buffer);
 
-  return `/uploads/${folder}/${fileName}`;
+  return uploadImageBufferToR2({
+    buffer,
+    folder,
+    fileName,
+    contentType: file.type || 'application/octet-stream',
+  });
 }

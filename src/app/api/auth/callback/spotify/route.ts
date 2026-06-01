@@ -38,7 +38,26 @@ export async function GET(request: NextRequest) {
   }
 
   // Code ile token al
-  const tokens = await getTokensFromCode(code);
+  let tokens;
+  try {
+    tokens = await getTokensFromCode(code);
+  } catch (error) {
+    console.error('Spotify token exchange error:', error);
+    return NextResponse.json(
+      {
+        error: 'Token exchange failed',
+        message: 'Spotify token alınamadı. Client ID/Secret veya Redirect URI hatalı olabilir. Lütfen .env dosyanızı kontrol edin.',
+        detail: error instanceof Error ? error.message : String(error),
+        troubleshooting: [
+          'SPOTIFY_CLIENT_ID doğru mu?',
+          'SPOTIFY_CLIENT_SECRET doğru mu?',
+          'SPOTIFY_REDIRECT_URI, Spotify Dashboard\'daki Redirect URI ile birebir aynı mı?',
+          'Redirect URI: ' + (process.env.SPOTIFY_REDIRECT_URI || 'AYARLANMAMIŞ'),
+        ],
+      },
+      { status: 500 }
+    );
+  }
 
   if (!tokens) {
     return NextResponse.json(

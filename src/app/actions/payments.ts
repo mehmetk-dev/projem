@@ -135,7 +135,8 @@ export async function togglePaymentPaidAction(formData: FormData): Promise<Payme
 
     revalidatePath('/dashboard');
     return { success: existing.paid ? 'Ödenecek olarak işaretlendi.' : 'Ödendi olarak işaretlendi.' };
-  } catch {
+  } catch (error) {
+    console.error('Toggle Payment Paid Error:', error);
     return { error: 'İşlem sırasında hata oluştu.' };
   }
 }
@@ -149,7 +150,8 @@ export async function deletePaymentAction(formData: FormData): Promise<PaymentAc
     await db.delete(payments).where(and(eq(payments.id, paymentId), eq(payments.userId, userId)));
     revalidatePath('/dashboard');
     return { success: 'Ödeme kaydı silindi.' };
-  } catch {
+  } catch (error) {
+    console.error('Delete Payment Error:', error);
     return { error: 'Silinirken hata oluştu.' };
   }
 }

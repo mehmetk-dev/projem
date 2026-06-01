@@ -11,7 +11,7 @@
 
 const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token';
 const SPOTIFY_NOW_PLAYING_URL = 'https://api.spotify.com/v1/me/player/currently-playing';
-const SPOTIFY_RECENTLY_PLAYED_URL = 'https://api.spotify.com/v1/me/player/recently-played?limit=1';
+const SPOTIFY_RECENTLY_PLAYED_URL = 'https://api.spotify.com/v1/me/player/recently-played';
 
 const client_id = process.env.SPOTIFY_CLIENT_ID || '';
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET || '';
@@ -26,6 +26,17 @@ export interface SpotifyTrack {
   album: string;
   albumImageUrl: string;
   songUrl: string;
+  previewUrl: string | null;
+}
+
+export interface SpotifyRecentTrack {
+  spotifyTrackId: string;
+  track: string;
+  artist: string;
+  album: string;
+  albumImageUrl: string;
+  trackUrl: string;
+  playedAt: string;
 }
 
 /**
@@ -102,6 +113,7 @@ export async function getNowPlaying(): Promise<SpotifyTrack | null> {
       album: data.item.album.name,
       albumImageUrl: data.item.album.images?.[0]?.url || '',
       songUrl: data.item.external_urls.spotify,
+      previewUrl: data.item.preview_url || null,
     };
   } catch (error) {
     console.error('[Spotify] getNowPlaying error:', error);
@@ -114,7 +126,7 @@ export async function getNowPlaying(): Promise<SpotifyTrack | null> {
  */
 async function getRecentlyPlayed(accessToken: string): Promise<SpotifyTrack | null> {
   try {
-    const res = await fetch(SPOTIFY_RECENTLY_PLAYED_URL, {
+    const res = await fetch(`${SPOTIFY_RECENTLY_PLAYED_URL}?limit=1`, {
       headers: { Authorization: `Bearer ${accessToken}` },
       next: { revalidate: 60 },
     });
@@ -135,10 +147,40 @@ async function getRecentlyPlayed(accessToken: string): Promise<SpotifyTrack | nu
       album: track.album.name,
       albumImageUrl: track.album.images?.[0]?.url || '',
       songUrl: track.external_urls.spotify,
+      previewUrl: track.preview_url || null,
     };
   } catch (error) {
     console.error('[Spotify] getRecentlyPlayed error:', error);
     return null;
+  }
+}
+
+/**
+ * Spotify'dan son dinlenen parcalari getirir.
+ */
+export async function getRecentlyPlayedTracks(limit = 20): Promise<SpotifyRecentTrack[]> {
+  const accessToken = await getAccessToken();
+  if (!accessToken) return [];
+
+  const safeLimit = Math.max(1, Math.min(50, Math.floor(limit)));
+
+  try {
+    const res = await fetch(`${SPOTIFY_RECENTLY_PLAYED_URL}?limit=${safeLimit}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      console.error(`[Spotify] Recently played list failed (${res.status})`);
+      return [];
+    }
+
+    const data = await res.json();
+    const { mapSpotifyRecentItems } = await import('@/lib/spotify-history/history');
+    return mapSpotifyRecentItems(data);
+  } catch (error) {
+    console.error('[Spotify] getRecentlyPlayedTracks error:', error);
+    return [];
   }
 }
 
@@ -150,6 +192,8 @@ export function getSpotifyAuthUrl(): string {
     'user-read-currently-playing',
     'user-read-recently-played',
     'user-read-playback-state',
+    'user-modify-playback-state',
+    'streaming',
   ].join(' ');
 
   const redirectUri = process.env.SPOTIFY_REDIRECT_URI || '';

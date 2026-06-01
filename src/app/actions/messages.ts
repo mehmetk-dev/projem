@@ -71,7 +71,8 @@ export async function markMessageReadAction(formData: FormData): Promise<Message
     await db.update(messages).set({ read: true }).where(eq(messages.id, messageId));
     revalidatePath('/dashboard/messages');
     return { success: 'Okundu olarak işaretlendi.' };
-  } catch {
+  } catch (error) {
+    console.error('Mark Message Read Error:', error);
     return { error: 'İşlem sırasında hata oluştu.' };
   }
 }
@@ -85,7 +86,8 @@ export async function deleteMessageAction(formData: FormData): Promise<MessageAc
     await db.delete(messages).where(eq(messages.id, messageId));
     revalidatePath('/dashboard/messages');
     return { success: 'Mesaj silindi.' };
-  } catch {
+  } catch (error) {
+    console.error('Delete Message Error:', error);
     return { error: 'Silinirken hata oluştu.' };
   }
 }

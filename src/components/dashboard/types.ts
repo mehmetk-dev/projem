@@ -6,7 +6,7 @@ export interface Todo { id: number; userId: number; title: string; description: 
 export interface Payment { id: number; userId: number; title: string; amountCents: number; currency: string; type: 'expense' | 'income'; category: string; dueDate: string | null; recurrence: 'none' | 'monthly'; recurringDay: number | null; paid: boolean; paidAt: string | null; notes: string; createdAt: string; updatedAt: string | null; }
 export interface Bookmark { id: number; userId: number; title: string; url: string; description: string; tags: string; createdAt: string; }
 export interface Snippet { id: number; userId: number; title: string; code: string; language: string; description: string; tags: string; createdAt: string; updatedAt: string | null; }
-export interface AnalyticsData { total: number; today: number; week: number; topPages: { page: string; count: number }[]; }
+export interface AnalyticsData { total: number; today: number; week: number; topPages: { page: string; count: number }[]; chartData: { date: string; count: number }[]; }
 
 export interface ChatConversation { id: number; userId: number; title: string; model: string; createdAt: string; updatedAt: string | null; }
 export interface ChatMessage { id: number; conversationId: number; role: 'user' | 'assistant' | 'system'; content: string; createdAt: string; }
@@ -20,10 +20,11 @@ export interface SiteSetting { id: number; key: string; value: string; descripti
 export interface SocialLink { id: number; platform: string; url: string; icon: string; displayOrder: number; isActive: boolean; createdAt: string; }
 export interface Subscriber { id: number; email: string; status: string; ipAddress: string | null; createdAt: string; }
 export interface UserListItem { id: number; email: string; role: string; createdAt: string; }
-export interface UserPreferences { hiddenTabs: string[]; }
+export interface UserPreferences { hiddenTabs: string[]; pomodoroWork: number; pomodoroBreak: number; }
 export interface WeatherData { city: string; temp: number; feelsLike: number; humidity: number; description: string; icon: string; wind: number; }
 export interface GitHubEvent { type: string; repo: string; message: string; createdAt: string; }
-export interface SpotifyData { isPlaying: boolean; track: string; artist: string; albumImage: string; trackUrl: string; }
+export interface SpotifyData { isPlaying: boolean; track: string; artist: string; albumImage: string; trackUrl: string; previewUrl: string | null; }
+export interface SpotifyRecentTrack { id: number; spotifyTrackId: string; track: string; artist: string; album: string; albumImageUrl: string; localImage: string | null; trackUrl: string; playedAt: string; createdAt: string; }
 export interface ChatContextData {
   notes: Pick<Note, 'title' | 'content' | 'color' | 'pinned'>[];
   blogs: Pick<Blog, 'title' | 'slug' | 'category' | 'tags' | 'published'>[];
@@ -33,7 +34,9 @@ export interface ChatContextData {
   projects: Pick<Project, 'title' | 'description' | 'category'>[];
 }
 
-export type TabId = 'overview' | 'notes' | 'blogs' | 'projects' | 'messages' | 'todos' | 'payments' | 'bookmarks' | 'snippets' | 'analytics' | 'calendar' | 'timer' | 'chat' | 'spotify' | 'settings' | 'guestbook' | 'comments' | 'audit' | 'users' | 'social' | 'subscribers';
+export type JournalMood = 'calm' | 'good' | 'hard' | 'bright' | 'tired';
+export interface JournalEntry { id: number; userId: number; entryDate: string; title: string; content: string; mood: JournalMood; image: string | null; createdAt: string; updatedAt: string | null; }
+export type TabId = 'overview' | 'notes' | 'blogs' | 'projects' | 'messages' | 'todos' | 'payments' | 'bookmarks' | 'snippets' | 'analytics' | 'calendar' | 'timer' | 'chat' | 'spotify' | 'settings' | 'guestbook' | 'comments' | 'audit' | 'users' | 'social' | 'subscribers' | 'journal' | 'files';
 
 export const COLOR_MAP: Record<string, { bg: string; border: string; text: string; badge: string }> = {
   neutral: { bg: 'bg-neutral-900/60', border: 'border-white/10', text: 'text-white', badge: 'bg-neutral-800' },

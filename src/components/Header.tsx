@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { href: '#blog', label: 'Yazılarım' },
   { href: '/search', label: 'Ara' },
   { href: '#contact', label: 'İletişim' },
+  { href: '/webp-converter', label: 'WebP Dönüştürücü' },
 ];
 
 export default function Header({ user, logoutAction }: HeaderProps) {

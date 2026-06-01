@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import * as T from './types';
 import { Empty, PlusIcon, Btn } from './ui';
 import { createProjectAction, updateProjectAction, deleteProjectAction } from '@/app/actions/projects';
@@ -78,7 +79,7 @@ export default function ProjectsModule({ projects: initialProjects, toastFn }: P
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {projects.length === 0 ? <Empty /> : projects.map((p) => (
           <div key={p.id} className="group flex items-start gap-3 p-3 rounded-xl bg-neutral-900/30 border border-white/5 hover:border-white/10 transition-all">
-            <img src={p.image} alt={p.title} className="w-12 h-12 rounded-lg object-cover shrink-0 bg-neutral-800" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }} />
+            <Image src={p.image} alt={p.title} width={48} height={48} className="w-12 h-12 rounded-lg object-cover shrink-0 bg-neutral-800" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }} />
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm">{p.title}</p>
               <p className="text-[11px] text-neutral-500 mt-0.5">{p.category} • Sıra {p.displayOrder} {p.published ? '' : '• Gizli'}</p>

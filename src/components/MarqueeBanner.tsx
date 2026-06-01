@@ -9,7 +9,7 @@ const MARQUEE_ITEMS = [
 export default function MarqueeBanner() {
   return (
     <div className="py-12 border-y border-white/5 bg-neutral-950 overflow-hidden relative rotate-[-1deg] scale-105 transform-gpu">
-      <div className="marquee-content flex w-fit animate-[scroll_30s_linear_infinite]">
+      <div className="marquee-content flex w-fit animate-scroll">
         {[1, 2].map((i) => (
           <div
             key={i}

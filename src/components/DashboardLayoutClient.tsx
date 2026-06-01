@@ -1,64 +1,22 @@
-﻿'use client';
+'use client';
 
-import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useCallback, useMemo } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { toast } from 'sonner';
 import ThemeToggle from './ThemeToggle';
 import * as T from './dashboard/types';
-import OverviewModule from './dashboard/OverviewModule';
-import NotesModule from './dashboard/NotesModule';
-import BlogsModule from './dashboard/BlogsModule';
-import ProjectsModule from './dashboard/ProjectsModule';
-import MessagesModule from './dashboard/MessagesModule';
-import TodosModule from './dashboard/TodosModule';
-import PaymentsModule from './dashboard/PaymentsModule';
-import BookmarksModule from './dashboard/BookmarksModule';
-import SnippetsModule from './dashboard/SnippetsModule';
-import AnalyticsModule from './dashboard/AnalyticsModule';
-import TimerModule from './dashboard/TimerModule';
-import ChatModule from './dashboard/ChatModule';
-import SettingsModule from './dashboard/SettingsModule';
-import GuestbookModule from './dashboard/GuestbookModule';
-import CommentsModule from './dashboard/CommentsModule';
-import AuditModule from './dashboard/AuditModule';
-import UsersModule from './dashboard/UsersModule';
-import SocialLinksModule from './dashboard/SocialLinksModule';
-import SubscribersModule from './dashboard/SubscribersModule';
-import CalendarModule from './dashboard/CalendarModule';
-import SpotifyModule from './dashboard/SpotifyModule';
 import { getVisibleTabIds } from '@/lib/dashboard/preferences';
 
 interface Props {
-  notes: T.Note[];
-  blogs: T.Blog[];
-  projects: T.Project[];
-  messages: T.Message[];
-  todos: T.Todo[];
-  payments: T.Payment[];
-  bookmarks: T.Bookmark[];
-  snippets: T.Snippet[];
-  analytics: T.AnalyticsData;
-  conversations: T.ChatConversation[];
-  chatSettings: T.ChatSettings | null;
-  guestbookEntries: T.GuestbookEntry[];
-  comments: T.Comment[];
-  auditLogs: T.AuditLog[];
-  settings: T.SiteSetting[];
-  preferences: T.UserPreferences;
-  users: T.UserListItem[];
-  socialLinks: T.SocialLink[];
-  subscribers: T.Subscriber[];
-  weather: T.WeatherData | null;
-  githubEvents: T.GitHubEvent[] | null;
-  spotifyData: T.SpotifyData | null;
+  children: React.ReactNode;
   userEmail: string;
   isAdmin: boolean;
+  unread: number;
+  preferences: T.UserPreferences;
   logoutAction: () => Promise<void>;
 }
 
 import type { TabId } from './dashboard/types';
-export type { TabId };
 
 const TABS: { id: TabId; label: string; icon: string; adminOnly?: boolean }[] = [
   { id: 'overview', label: 'Genel Bakış', icon: 'M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z' },
@@ -82,6 +40,8 @@ const TABS: { id: TabId; label: string; icon: string; adminOnly?: boolean }[] = 
   { id: 'users', label: 'Kullanıcılar', icon: 'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z', adminOnly: true },
   { id: 'social', label: 'Sosyal Linkler', icon: 'M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z', adminOnly: true },
   { id: 'subscribers', label: 'Aboneler', icon: 'M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z', adminOnly: true },
+  { id: 'journal', label: 'Günlük', icon: 'M19 3H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h12V3zm-2 16H7V5h10v14zM9 7h6v2H9V7zm0 4h6v2H9v-2zm0 4h4v2H9v-2z' },
+  { id: 'files', label: 'Dosyalar', icon: 'M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z', adminOnly: true },
 ];
 
 const CONFIGURABLE_TABS: TabId[] = [
@@ -98,13 +58,15 @@ const CONFIGURABLE_TABS: TabId[] = [
   'timer',
   'guestbook',
   'comments',
+  'journal',
 ];
 
 const RAW_TAB_GROUPS: { key?: string; title: string; ids: TabId[]; adminGroup?: boolean }[] = [
-  { key: 'management', title: 'Yönetim', ids: ['blogs', 'chat', 'spotify', 'audit', 'users', 'social', 'subscribers', 'settings'], adminGroup: true },
+  { key: 'management', title: 'Yönetim', ids: ['blogs', 'chat', 'spotify', 'audit', 'users', 'social', 'subscribers', 'files', 'settings'], adminGroup: true },
   { title: 'Ana Panel', ids: ['overview', 'analytics', 'calendar', 'timer'] },
   { title: 'İçerik', ids: ['notes', 'projects', 'messages', 'todos', 'payments', 'bookmarks', 'snippets'] },
   { title: 'Topluluk', ids: ['guestbook', 'comments'] },
+  { title: 'Kişisel', ids: ['journal'] },
 ];
 
 const TAB_GROUPS: { key: string; title: string; ids: TabId[]; adminGroup?: boolean }[] = RAW_TAB_GROUPS.map((group, index) => ({
@@ -112,18 +74,30 @@ const TAB_GROUPS: { key: string; title: string; ids: TabId[]; adminGroup?: boole
   key: group.key ?? `group-${index}`,
 }));
 
-export default function DashboardClient(props: Props) {
+export default function DashboardLayoutClient({ children, userEmail, isAdmin, unread, preferences, logoutAction }: Props) {
   const router = useRouter();
-  const [tab, setTab] = useState<TabId>('overview');
+  const pathname = usePathname();
+  
+  const tab = useMemo<TabId>(() => {
+    const parts = pathname.split('/');
+    const last = parts[parts.length - 1];
+    if (last && TABS.some((t) => t.id === last)) {
+      return last as TabId;
+    }
+    return 'overview';
+  }, [pathname]);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
-  const toastFn = useCallback((msg: string, ok: boolean) => {
-    if (ok) toast.success(msg);
-    else toast.error(msg);
-  }, []);
 
-  const unread = props.messages.filter((m) => !m.read).length;
-  const visibleTabIds = getVisibleTabIds(TABS.map((item) => item.id), props.preferences.hiddenTabs, CONFIGURABLE_TABS);
+  const handleTabChange = useCallback((newTab: TabId) => {
+    setMenuOpen(false);
+    const url = newTab === 'overview' ? '/dashboard' : `/dashboard/${newTab}`;
+    router.push(url);
+  }, [router]);
+
+  const visibleTabIds = getVisibleTabIds(TABS.map((item) => item.id), preferences.hiddenTabs, CONFIGURABLE_TABS);
+  
   const visibleGroups = TAB_GROUPS
     .map((group) => ({
       ...group,
@@ -131,7 +105,7 @@ export default function DashboardClient(props: Props) {
         .map((id) => TABS.find((item) => item.id === id))
         .filter((item): item is (typeof TABS)[number] => Boolean(item))
         .filter((item) => visibleTabIds.includes(item.id))
-        .filter((item) => !item.adminOnly || props.isAdmin),
+        .filter((item) => !item.adminOnly || isAdmin),
     }))
     .filter((group) => group.tabs.length > 0);
 
@@ -139,20 +113,23 @@ export default function DashboardClient(props: Props) {
     setCollapsedGroups((current) => ({ ...current, [groupKey]: !current[groupKey] }));
   };
 
-  const handleLogout = async () => { await props.logoutAction(); router.push('/'); };
-
-  const fmt = (d: string | null) => d ? new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }) : '';
+  const handleLogout = async () => { 
+    await logoutAction(); 
+    router.push('/'); 
+  };
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white font-sans selection:bg-white selection:text-black lg:flex">
       <div className="lg:hidden fixed top-0 inset-x-0 h-14 flex items-center justify-between px-4 bg-neutral-950/90 backdrop-blur-xl border-b border-white/5 z-40">
         <div className="flex items-center gap-2">
           <button onClick={() => setMenuOpen(!menuOpen)} className="p-2 -ml-2 text-neutral-400 hover:text-white" aria-label="Menu">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d={menuOpen ? 'M18 6L6 18M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} /></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d={menuOpen ? 'M18 6L6 18M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} />
+            </svg>
           </button>
           <span className="text-sm font-bold tracking-tight">Dashboard</span>
         </div>
-        <span className="text-xs text-neutral-500 truncate max-w-[120px]">{props.userEmail}</span>
+        <span className="text-xs text-neutral-500 truncate max-w-[120px]">{userEmail}</span>
       </div>
 
       <aside className={`fixed lg:sticky lg:top-0 inset-y-0 left-0 z-30 w-60 lg:h-screen bg-neutral-950 border-r border-white/5 p-5 flex flex-col transition-transform duration-300 ${menuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
@@ -167,53 +144,63 @@ export default function DashboardClient(props: Props) {
             const isCollapsed = collapsedGroups[group.key] && !isActiveGroup;
 
             return (
-            <div key={group.title} className="space-y-1.5">
-              <button
-                type="button"
-                onClick={() => toggleGroup(group.key)}
-                className={`w-full flex items-center justify-between px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors ${isActiveGroup ? 'text-neutral-400' : 'text-neutral-700 hover:text-neutral-500'}`}
-              >
-                <span>{group.title}</span>
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className={`transition-transform ${isCollapsed ? '-rotate-90' : 'rotate-0'}`}
+              <div key={group.title} className="space-y-1.5">
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group.key)}
+                  className={`w-full flex items-center justify-between px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors ${isActiveGroup ? 'text-neutral-400' : 'text-neutral-700 hover:text-neutral-500'}`}
                 >
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </button>
-
-              <div
-                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isCollapsed ? 'grid-rows-[0fr] opacity-0 pointer-events-none' : 'grid-rows-[1fr] opacity-100'}`}
-                aria-hidden={isCollapsed}
-              >
-                <div className="overflow-hidden space-y-1.5">
-              {group.tabs.map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => { setTab(t.id); setMenuOpen(false); }}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${tab === t.id ? 'bg-white/10 text-white' : 'text-neutral-500 hover:text-white hover:bg-white/5'}`}
+                  <span>{group.title}</span>
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className={`transition-transform ${isCollapsed ? '-rotate-90' : 'rotate-0'}`}
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d={t.icon} /></svg>
-                    <span className="flex-1 text-left">{t.label}</span>
-                    {t.id === 'messages' && unread > 0 && <span className="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{unread}</span>}
-                    {t.adminOnly && <span className="text-[9px] text-amber-400 border border-amber-500/20 px-1.5 rounded">admin</span>}
-                  </button>
-                ))}
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+
+                <div
+                  className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isCollapsed ? 'grid-rows-[0fr] opacity-0 pointer-events-none' : 'grid-rows-[1fr] opacity-100'}`}
+                  aria-hidden={isCollapsed}
+                >
+                  <div className="overflow-hidden space-y-1.5">
+                    {group.tabs.map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => { handleTabChange(t.id); }}
+                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${tab === t.id ? 'bg-white/10 text-white' : 'text-neutral-500 hover:text-white hover:bg-white/5'}`}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                          <path d={t.icon} />
+                        </svg>
+                        <span className="flex-1 text-left">{t.label}</span>
+                        {t.id === 'messages' && unread > 0 && (
+                          <span className="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                            {unread}
+                          </span>
+                        )}
+                        {t.adminOnly && (
+                          <span className="text-[9px] text-amber-400 border border-amber-500/20 px-1.5 rounded">
+                            admin
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
             );
           })}
         </nav>
 
         <div className="pt-4 mt-4 border-t border-white/5 space-y-3">
           <div className="flex items-center justify-between px-3">
-            <p className="text-[11px] text-neutral-600">{props.userEmail}</p>
+            <p className="text-[11px] text-neutral-600">{userEmail}</p>
             <ThemeToggle size={16} />
           </div>
           <div className="flex gap-2 px-3">
@@ -227,27 +214,7 @@ export default function DashboardClient(props: Props) {
 
       <main className="flex-1 min-w-0 p-5 lg:p-8 pt-20 lg:pt-8">
         <div className="max-w-5xl mx-auto">
-          {tab === 'overview' && <OverviewModule notes={props.notes} messages={props.messages} todos={props.todos} analytics={props.analytics} projects={props.projects} isAdmin={props.isAdmin} blogs={props.blogs} onTab={setTab} visibleTabIds={visibleTabIds} weather={props.weather} githubEvents={props.githubEvents} spotifyData={props.spotifyData} />}
-          {tab === 'notes' && <NotesModule notes={props.notes} fmt={fmt} toastFn={toastFn} />}
-          {tab === 'blogs' && props.isAdmin && <BlogsModule blogs={props.blogs} toastFn={toastFn} />}
-          {tab === 'projects' && <ProjectsModule projects={props.projects} toastFn={toastFn} />}
-          {tab === 'messages' && <MessagesModule messages={props.messages} toastFn={toastFn} />}
-          {tab === 'todos' && <TodosModule todos={props.todos} fmt={fmt} toastFn={toastFn} />}
-          {tab === 'payments' && <PaymentsModule payments={props.payments} toastFn={toastFn} />}
-          {tab === 'bookmarks' && <BookmarksModule bookmarks={props.bookmarks} toastFn={toastFn} />}
-          {tab === 'snippets' && <SnippetsModule snippets={props.snippets} toastFn={toastFn} />}
-          {tab === 'analytics' && <AnalyticsModule analytics={props.analytics} />}
-          {tab === 'calendar' && <CalendarModule todos={props.todos} />}
-          {tab === 'timer' && <TimerModule />}
-          {tab === 'chat' && props.isAdmin && <ChatModule conversations={props.conversations} chatSettings={props.chatSettings} toastFn={toastFn} />}
-          {tab === 'spotify' && props.isAdmin && <SpotifyModule spotifyData={props.spotifyData} settings={props.settings} toastFn={toastFn} />}
-          {tab === 'settings' && <SettingsModule userEmail={props.userEmail} settings={props.settings} preferences={props.preferences} tabs={TABS} configurableTabs={CONFIGURABLE_TABS} toastFn={toastFn} />}
-          {tab === 'guestbook' && <GuestbookModule entries={props.guestbookEntries} toastFn={toastFn} />}
-          {tab === 'comments' && <CommentsModule comments={props.comments} toastFn={toastFn} />}
-          {tab === 'audit' && props.isAdmin && <AuditModule logs={props.auditLogs} toastFn={toastFn} />}
-          {tab === 'users' && props.isAdmin && <UsersModule users={props.users} toastFn={toastFn} />}
-          {tab === 'social' && props.isAdmin && <SocialLinksModule links={props.socialLinks} toastFn={toastFn} />}
-          {tab === 'subscribers' && props.isAdmin && <SubscribersModule subscribers={props.subscribers} toastFn={toastFn} />}
+          {children}
         </div>
       </main>
     </div>

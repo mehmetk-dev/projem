@@ -52,13 +52,18 @@ export async function getPublishedBlogs({
   limit = 20,
   offset = 0,
 }: { category?: string; limit?: number; offset?: number } = {}) {
-  let query = db.select().from(blogs).where(eq(blogs.published, true)).orderBy(desc(blogs.publishedAt));
+  try {
+    let query = db.select().from(blogs).where(eq(blogs.published, true)).orderBy(desc(blogs.publishedAt));
 
-  if (category) {
-    query = db.select().from(blogs).where(and(eq(blogs.published, true), eq(blogs.category, category))).orderBy(desc(blogs.publishedAt));
+    if (category) {
+      query = db.select().from(blogs).where(and(eq(blogs.published, true), eq(blogs.category, category))).orderBy(desc(blogs.publishedAt));
+    }
+
+    return query.limit(limit).offset(offset).all();
+  } catch (error) {
+    console.error('getPublishedBlogs error:', error);
+    return [];
   }
-
-  return query.limit(limit).offset(offset).all();
 }
 
 export async function getBlogBySlug(slug: string) {
@@ -94,10 +99,10 @@ export async function createBlogAction(
 
   try {
     if (ogImageFile instanceof File && ogImageFile.size > 0) {
-      ogImagePath = await saveUploadedImage(ogImageFile, 'blogs');
+      ogImagePath = await saveUploadedImage(ogImageFile, 'blog');
     }
     if (coverImageFile instanceof File && coverImageFile.size > 0) {
-      coverImagePath = await saveUploadedImage(coverImageFile, 'blogs');
+      coverImagePath = await saveUploadedImage(coverImageFile, 'blog');
     }
   } catch (error) {
     return { error: error instanceof Error ? error.message : 'Görsel yüklenemedi.' };
@@ -151,10 +156,10 @@ export async function updateBlogAction(
 
   try {
     if (ogImageFile instanceof File && ogImageFile.size > 0) {
-      ogImagePath = await saveUploadedImage(ogImageFile, 'blogs');
+      ogImagePath = await saveUploadedImage(ogImageFile, 'blog');
     }
     if (coverImageFile instanceof File && coverImageFile.size > 0) {
-      coverImagePath = await saveUploadedImage(coverImageFile, 'blogs');
+      coverImagePath = await saveUploadedImage(coverImageFile, 'blog');
     }
   } catch (error) {
     return { error: error instanceof Error ? error.message : 'Görsel yüklenemedi.' };

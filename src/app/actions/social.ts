@@ -14,12 +14,17 @@ export interface SocialLinkActionState {
 }
 
 export async function getSocialLinks() {
-  return db
-    .select()
-    .from(socialLinks)
-    .where(eq(socialLinks.isActive, true))
-    .orderBy(socialLinks.displayOrder)
-    .all();
+  try {
+    return db
+      .select()
+      .from(socialLinks)
+      .where(eq(socialLinks.isActive, true))
+      .orderBy(socialLinks.displayOrder)
+      .all();
+  } catch (error) {
+    console.error('getSocialLinks error:', error);
+    return [];
+  }
 }
 
 export async function getAllSocialLinks() {

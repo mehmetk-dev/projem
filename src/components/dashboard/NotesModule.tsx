@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import * as T from './types';
 import { Empty, PlusIcon, Btn, ActionBtn, Input } from './ui';
 import { createNoteAction, updateNoteAction, deleteNoteAction, togglePinNoteAction } from '@/app/actions/notes';
@@ -110,7 +111,7 @@ export default function NotesModule({ notes: initialNotes, fmt, toastFn }: Props
             <label className="block text-xs text-neutral-500">Görsel (isteğe bağlı)</label>
             <input name="imageFile" type="file" accept="image/*" className="w-full text-xs text-neutral-400 file:bg-neutral-800 file:text-white file:border-0 file:px-3 file:py-1.5 file:rounded-lg file:mr-3" />
           </div>
-          {f.image && <img src={f.image} alt="preview" className="w-full h-32 object-cover rounded-lg border border-white/10" />}
+          {f.image && <Image src={f.image} alt="preview" width={400} height={128} className="w-full h-32 object-cover rounded-lg border border-white/10" />}
           <Input name="content" value={f.content} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setF((s) => ({ ...s, content: e.target.value }))} placeholder="Notunuzu yazın..." rows={4} />
           <div className="flex items-center gap-2 pt-1">
             {(['neutral', 'blue', 'green', 'amber', 'rose', 'violet'] as const).map((c) => (
@@ -146,7 +147,7 @@ function NoteGrid({ notes, title, onEdit, onDel, onPin, fmt }: { notes: T.Note[]
             const c = T.COLOR_MAP[note.color] || T.COLOR_MAP.neutral;
             return (
               <div key={note.id} className={`group relative rounded-xl p-4 border transition-all hover:border-white/20 hover:-translate-y-0.5 ${c.bg} ${c.border}`}>
-                {note.image && <img src={note.image} alt="" className="w-full h-28 object-cover rounded-lg mb-3 border border-white/5" />}
+                {note.image && <Image src={note.image} alt="" width={400} height={112} className="w-full h-28 object-cover rounded-lg mb-3 border border-white/5" />}
                 <div className="flex justify-between items-start mb-2">
                   <h3 className={`font-semibold text-sm line-clamp-2 ${c.text}`}>{note.title}</h3>
                   <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">

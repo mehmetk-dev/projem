@@ -1,7 +1,7 @@
 @custom-variant dark (&:is(.dark *));
 
-/* Animation for fade-in blur effect */
-.animate-on-scroll {
+/* Animation for fade-in blur effect — only when JS is available */
+.js-animations .animate-on-scroll {
   opacity: 0;
   filter: blur(10px);
   transform: translateY(30px);
@@ -183,4 +183,16 @@
   text-overflow: ellipsis;
   margin: 0;
   line-height: 1.3;
+}
+
+/* Spotify Dropdown Player Animation */
+@keyframes spotifyDropIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

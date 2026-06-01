@@ -68,6 +68,23 @@ export async function deleteConversationAction(formData: FormData): Promise<Chat
   }
 }
 
+export async function renameConversationAction(formData: FormData): Promise<ChatActionState> {
+  const { userId } = await requireAdmin();
+  const id = Number(formData.get('conversationId'));
+  const title = formData.get('title') as string;
+  if (!id || !title?.trim()) return { error: 'Geçersiz veri.' };
+  try {
+    await db
+      .update(chatConversations)
+      .set({ title: title.trim() })
+      .where(and(eq(chatConversations.id, id), eq(chatConversations.userId, userId)));
+    return { success: 'Sohbet yeniden adlandirildi.' };
+  } catch (error) {
+    console.error('Rename conversation error:', error);
+    return { error: 'Yeniden adlandirilamadi.' };
+  }
+}
+
 export async function createMessageAction(formData: FormData): Promise<ChatActionState> {
   const { userId } = await requireAdmin();
   const conversationId = Number(formData.get('conversationId'));

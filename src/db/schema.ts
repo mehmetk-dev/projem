@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 
 export const users = sqliteTable('users', {
@@ -58,6 +58,25 @@ export const notes = sqliteTable('notes', {
 }, (table) => [
   index('notes_user_id_idx').on(table.userId),
   index('notes_updated_at_idx').on(table.updatedAt),
+]);
+
+// --- JOURNAL ---
+export const journalEntries = sqliteTable('journal_entries', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').notNull().references(() => users.id),
+  entryDate: text('entry_date').notNull(),
+  title: text('title').notNull(),
+  content: text('content').notNull().default(''),
+  mood: text('mood', { enum: ['calm', 'good', 'hard', 'bright', 'tired'] }).notNull().default('calm'),
+  image: text('image'),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`(current_timestamp)`),
+  updatedAt: text('updated_at'),
+}, (table) => [
+  index('journal_user_id_idx').on(table.userId),
+  index('journal_entry_date_idx').on(table.entryDate),
+  uniqueIndex('journal_user_date_idx').on(table.userId, table.entryDate),
 ]);
 
 // --- BLOG ---
@@ -245,6 +264,8 @@ export const chatSettings = sqliteTable('chat_settings', {
 export const userPreferences = sqliteTable('user_preferences', {
   userId: integer('user_id').primaryKey().references(() => users.id),
   hiddenTabs: text('hidden_tabs').notNull().default('[]'),
+  pomodoroWork: integer('pomodoro_work').notNull().default(25),
+  pomodoroBreak: integer('pomodoro_break').notNull().default(5),
   createdAt: text('created_at')
     .notNull()
     .default(sql`(current_timestamp)`),
@@ -328,6 +349,25 @@ export const socialLinks = sqliteTable('social_links', {
     .default(sql`(current_timestamp)`),
 }, (table) => [
   index('social_links_order_idx').on(table.displayOrder),
+]);
+
+// --- SPOTIFY HISTORY ---
+export const spotifyRecentTracks = sqliteTable('spotify_recent_tracks', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  spotifyTrackId: text('spotify_track_id').notNull(),
+  track: text('track').notNull(),
+  artist: text('artist').notNull(),
+  album: text('album').notNull().default(''),
+  albumImageUrl: text('album_image_url').notNull().default(''),
+  localImage: text('local_image'),
+  trackUrl: text('track_url').notNull().default(''),
+  playedAt: text('played_at').notNull(),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`(current_timestamp)`),
+}, (table) => [
+  uniqueIndex('spotify_recent_tracks_unique_idx').on(table.spotifyTrackId, table.playedAt),
+  index('spotify_recent_tracks_played_at_idx').on(table.playedAt),
 ]);
 
 // --- NEWSLETTER SUBSCRIBERS ---

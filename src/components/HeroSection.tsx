@@ -1,18 +1,37 @@
 'use client';
 
+import Image from 'next/image';
 import { LocationIcon } from './Icons';
 import { AnimatedText } from './AnimatedText';
+import Galaxy from './Galaxy';
 
 interface HeroSectionProps {
   displayName: string;
-  user: { email: string } | null;
 }
 
-export default function HeroSection({ displayName, user }: HeroSectionProps) {
+export default function HeroSection({ displayName }: HeroSectionProps) {
   return (
-    <section id="about" className="relative min-h-[100svh] flex items-center pt-16 pb-10">
+    <section id="about" className="relative min-h-[100svh] flex items-center pt-16 pb-10 overflow-hidden">
+      {/* WebGL Galaxy background covering the entire section */}
+      <div className="absolute inset-0 pointer-events-none opacity-85 z-0">
+        <Galaxy 
+          mouseRepulsion
+          mouseInteraction
+          density={1}
+          glowIntensity={0.3}
+          saturation={0}
+          hueShift={140}
+          twinkleIntensity={0.3}
+          rotationSpeed={0.1}
+          repulsionStrength={2}
+          autoCenterRepulsion={0}
+          starSpeed={0.5}
+          speed={1}
+        />
+      </div>
+
       {/* Abstract glowing background */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-white/5 blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-white/5 blur-[100px] rounded-full pointer-events-none z-0" />
 
       <div className="container mx-auto px-6 lg:px-12 relative z-10 w-full">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-center justify-center lg:justify-start w-full">
@@ -33,14 +52,13 @@ export default function HeroSection({ displayName, user }: HeroSectionProps) {
             <div className="relative group shrink-0 w-[260px] h-[340px] md:w-[320px] md:h-[420px] lg:w-[360px] lg:h-[480px] animate-on-scroll">
               <div className="absolute -inset-4 border border-white/10 rounded-[2rem] transform rotate-3 transition-transform duration-700 group-hover:rotate-6 group-hover:border-white/20 shadow-2xl shadow-black/40" />
               <div className="absolute inset-0 bg-gradient-to-b from-neutral-900 via-neutral-950 to-black rounded-[2rem] overflow-hidden">
-                <img
+                <Image
                   src="/images/hero-main.png"
                   alt="Mehmet Kerem"
-                  className="w-full h-full object-cover object-bottom [filter:contrast(1.04)_brightness(0.88)_saturate(0.78)] transition-all duration-700 group-hover:[filter:contrast(1.06)_brightness(0.94)_saturate(0.9)] group-hover:scale-105"
-                  onError={(e) => {
-                    e.currentTarget.src =
-                      'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=600&auto=format&fit=crop';
-                  }}
+                  fill
+                  sizes="(max-width: 768px) 260px, (max-width: 1024px) 320px, 360px"
+                  className="object-cover object-bottom [filter:contrast(1.04)_brightness(0.88)_saturate(0.78)] transition-all duration-700 group-hover:[filter:contrast(1.06)_brightness(0.94)_saturate(0.9)] group-hover:scale-105"
+                  priority
                 />
               </div>
             </div>

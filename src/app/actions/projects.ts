@@ -25,12 +25,30 @@ const projectSchema = z.object({
 });
 
 export async function getPublishedProjects() {
-  return db
-    .select()
-    .from(projects)
-    .where(eq(projects.published, true))
-    .orderBy(projects.displayOrder)
-    .all();
+  try {
+    return db
+      .select()
+      .from(projects)
+      .where(eq(projects.published, true))
+      .orderBy(projects.displayOrder)
+      .all();
+  } catch (error) {
+    console.error('getPublishedProjects error:', error);
+    return [];
+  }
+}
+
+export async function getProjectById(id: number) {
+  try {
+    return db
+      .select()
+      .from(projects)
+      .where(eq(projects.id, id))
+      .get();
+  } catch (error) {
+    console.error('getProjectById error:', error);
+    return null;
+  }
 }
 
 export async function getMyProjects() {
@@ -53,7 +71,7 @@ export async function createProjectAction(
 
   if (imageFile instanceof File && imageFile.size > 0) {
     try {
-      imagePath = await saveUploadedImage(imageFile, 'projects');
+      imagePath = await saveUploadedImage(imageFile, 'proje');
     } catch (error) {
       return { error: error instanceof Error ? error.message : 'Görsel yüklenemedi.' };
     }
@@ -94,7 +112,7 @@ export async function updateProjectAction(
 
   if (imageFile instanceof File && imageFile.size > 0) {
     try {
-      imagePath = await saveUploadedImage(imageFile, 'projects');
+      imagePath = await saveUploadedImage(imageFile, 'proje');
     } catch (error) {
       return { error: error instanceof Error ? error.message : 'Görsel yüklenemedi.' };
     }

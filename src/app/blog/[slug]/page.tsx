@@ -1,6 +1,7 @@
 import { getBlogBySlug } from '@/app/actions/blogs';
 import { getApprovedComments } from '@/app/actions/comments';
 import CommentsSection from '@/components/blog/CommentsSection';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -92,8 +93,8 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
           </div>
 
           {post.coverImage && (
-            <div className="mb-8 rounded-2xl overflow-hidden border border-white/5">
-              <img src={post.coverImage} alt={post.title} className="w-full h-64 md:h-80 object-cover" />
+            <div className="mb-8 rounded-2xl overflow-hidden border border-white/5 relative h-64 md:h-80">
+              <Image src={post.coverImage} alt={post.title} fill className="object-cover" />
             </div>
           )}
 

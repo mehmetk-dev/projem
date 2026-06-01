@@ -39,6 +39,19 @@ const colorMap: Record<string, string> = {
   neutral: 'bg-white/5 text-neutral-300 border-white/10',
 };
 
+const strokeColorMap: Record<string, string> = {
+  emerald: '#10b981',
+  sky: '#0ea5e9',
+  amber: '#f59e0b',
+  orange: '#f97316',
+  violet: '#8b5cf6',
+  rose: '#f43f5e',
+  red: '#ef4444',
+  green: '#22c55e',
+  cyan: '#06b6d4',
+  neutral: '#a3a3a3',
+};
+
 function todayInputValue() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -68,7 +81,7 @@ function categoryIcon(category: string, size = 16) {
 export default function PaymentsModule({ payments: initialPayments, toastFn }: Props) {
   const [payments, setPayments] = useState(initialPayments);
   const [filter, setFilter] = useState<Filter>('month');
-  const [mode, setMode] = useState<'list' | 'form'>('list');
+  const [showForm, setShowForm] = useState(false);
   const [edit, setEdit] = useState<T.Payment | null>(null);
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({
@@ -99,9 +112,40 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
       .sort((a, b) => paymentDay(a) - paymentDay(b));
   }, [filter, payments, today, nextMonth]);
 
+  const categoryTotals = useMemo(() => {
+    const totals: Record<string, number> = {};
+    let totalExpense = 0;
+    
+    payments
+      .filter((p) => p.type === 'expense' && occursInMonth(p, today))
+      .forEach((p) => {
+        totals[p.category] = (totals[p.category] || 0) + p.amountCents;
+        totalExpense += p.amountCents;
+      });
+
+    return { totals, totalExpense };
+  }, [payments, today]);
+
+  const activeCategoryBreakdown = useMemo(() => {
+    if (categoryTotals.totalExpense === 0) return [];
+    return Object.entries(categoryTotals.totals)
+      .map(([catKey, amountCents]) => {
+        const meta = getCategoryMeta(catKey);
+        const percentage = Math.round((amountCents / categoryTotals.totalExpense) * 100);
+        return {
+          key: catKey,
+          label: meta.label,
+          color: meta.color,
+          amountCents,
+          percentage,
+        };
+      })
+      .sort((a, b) => b.amountCents - a.amountCents);
+  }, [categoryTotals]);
+
   const reset = () => {
     setEdit(null);
-    setMode('list');
+    setShowForm(false);
     setForm({ title: '', amount: '', type: 'expense', category: 'food', dueDate: todayInputValue(), recurrence: 'none', recurringDay: new Date().getDate(), paid: false, notes: '' });
   };
 
@@ -118,7 +162,7 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
       paid: isPaymentPaidForMonth(payment, today),
       notes: payment.notes || '',
     });
-    setMode('form');
+    setShowForm(true);
   };
 
   const submit = async (event: React.FormEvent) => {
@@ -170,7 +214,7 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
 
   const quickSet = (title: string, category: string, recurrence: 'none' | 'monthly' = 'none') => {
     setForm((current) => ({ ...current, title, category, recurrence, type: category === 'salary' || category === 'freelance' ? 'income' : 'expense' }));
-    setMode('form');
+    setShowForm(true);
   };
 
   return (
@@ -180,11 +224,9 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
           <h1 className="text-2xl font-bold tracking-tight">Ödemeler</h1>
           <p className="text-sm text-neutral-500 mt-0.5">Gelir, gider ve aylık abonelik takibi</p>
         </div>
-        {mode === 'list' && (
-          <button onClick={() => setMode('form')} className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-bold text-black hover:bg-neutral-200">
-            <Plus size={16} /> Yeni Kayıt
-          </button>
-        )}
+        <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-bold text-black hover:bg-neutral-200">
+          <Plus size={16} /> Yeni Kayıt
+        </button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
@@ -195,53 +237,56 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
         <Stat label="Gelecek ay gider" value={formatTRY(summary.nextMonthTotalCents)} tone="violet" />
       </div>
 
-      {mode === 'form' && (
-        <form onSubmit={submit} className="rounded-2xl border border-white/10 bg-neutral-900/40 p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold">{edit ? 'Kaydı Düzenle' : 'Hızlı Kayıt'}</h2>
-            <button type="button" onClick={reset} className="text-xs text-neutral-400 hover:text-white">İptal</button>
-          </div>
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={reset}>
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-neutral-900 p-5 space-y-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold">{edit ? 'Kaydı Düzenle' : 'Hızlı Kayıt'}</h2>
+              <button type="button" onClick={reset} className="text-xs text-neutral-400 hover:text-white">İptal</button>
+            </div>
+            <form onSubmit={submit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_160px] gap-3">
+                <input name="title" value={form.title} onChange={(e) => setForm((s) => ({ ...s, title: e.target.value }))} placeholder="Yemek, Spotify, maaş..." required className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30" />
+                <input name="amount" value={form.amount} onChange={(e) => setForm((s) => ({ ...s, amount: e.target.value }))} placeholder="100 TL" required inputMode="decimal" className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30" />
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_160px] gap-3">
-            <input name="title" value={form.title} onChange={(e) => setForm((s) => ({ ...s, title: e.target.value }))} placeholder="Yemek, Spotify, maaş..." required className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30" />
-            <input name="amount" value={form.amount} onChange={(e) => setForm((s) => ({ ...s, amount: e.target.value }))} placeholder="100 TL" required inputMode="decimal" className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30" />
-          </div>
+              <div className="flex flex-wrap gap-2">
+                <Segment active={form.type === 'expense'} onClick={() => setForm((s) => ({ ...s, type: 'expense', category: s.category === 'salary' || s.category === 'freelance' ? 'food' : s.category }))}>Gider</Segment>
+                <Segment active={form.type === 'income'} onClick={() => setForm((s) => ({ ...s, type: 'income', category: 'salary' }))}>Gelir</Segment>
+                <input type="hidden" name="type" value={form.type} />
+              </div>
 
-          <div className="flex flex-wrap gap-2">
-            <Segment active={form.type === 'expense'} onClick={() => setForm((s) => ({ ...s, type: 'expense', category: s.category === 'salary' || s.category === 'freelance' ? 'food' : s.category }))}>Gider</Segment>
-            <Segment active={form.type === 'income'} onClick={() => setForm((s) => ({ ...s, type: 'income', category: 'salary' }))}>Gelir</Segment>
-            <input type="hidden" name="type" value={form.type} />
-          </div>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                {PAYMENT_CATEGORIES.map((category) => (
+                  <button
+                    key={category.key}
+                    type="button"
+                    onClick={() => setForm((s) => ({ ...s, category: category.key }))}
+                    className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs transition-colors ${form.category === category.key ? colorMap[category.color] : 'border-white/10 bg-white/[0.02] text-neutral-400 hover:text-white'}`}
+                  >
+                    {categoryIcon(category.key, 14)}
+                    <span className="truncate">{category.label}</span>
+                  </button>
+                ))}
+                <input type="hidden" name="category" value={form.category} />
+              </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-            {PAYMENT_CATEGORIES.map((category) => (
-              <button
-                key={category.key}
-                type="button"
-                onClick={() => setForm((s) => ({ ...s, category: category.key }))}
-                className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs transition-colors ${form.category === category.key ? colorMap[category.color] : 'border-white/10 bg-white/[0.02] text-neutral-400 hover:text-white'}`}
-              >
-                {categoryIcon(category.key, 14)}
-                <span className="truncate">{category.label}</span>
-              </button>
-            ))}
-            <input type="hidden" name="category" value={form.category} />
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <input name="dueDate" type="date" value={form.dueDate} onChange={(e) => setForm((s) => ({ ...s, dueDate: e.target.value, recurringDay: new Date(e.target.value).getDate() }))} className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30" />
+                <input name="recurringDay" type="number" min={1} max={31} value={form.recurringDay} onChange={(e) => setForm((s) => ({ ...s, recurringDay: Number(e.target.value) }))} className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30" />
+                <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-neutral-300">
+                  <input type="checkbox" name="recurrence" value="monthly" checked={form.recurrence === 'monthly'} onChange={(e) => setForm((s) => ({ ...s, recurrence: e.target.checked ? 'monthly' : 'none' }))} className="accent-white" /> Aylık
+                </label>
+                <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-neutral-300">
+                  <input type="checkbox" name="paid" value="true" checked={form.paid} onChange={(e) => setForm((s) => ({ ...s, paid: e.target.checked }))} className="accent-white" /> Ödendi
+                </label>
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <input name="dueDate" type="date" value={form.dueDate} onChange={(e) => setForm((s) => ({ ...s, dueDate: e.target.value, recurringDay: new Date(e.target.value).getDate() }))} className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30" />
-            <input name="recurringDay" type="number" min={1} max={31} value={form.recurringDay} onChange={(e) => setForm((s) => ({ ...s, recurringDay: Number(e.target.value) }))} className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30" />
-            <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-neutral-300">
-              <input type="checkbox" name="recurrence" value="monthly" checked={form.recurrence === 'monthly'} onChange={(e) => setForm((s) => ({ ...s, recurrence: e.target.checked ? 'monthly' : 'none' }))} className="accent-white" /> Aylık
-            </label>
-            <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-neutral-300">
-              <input type="checkbox" name="paid" value="true" checked={form.paid} onChange={(e) => setForm((s) => ({ ...s, paid: e.target.checked }))} className="accent-white" /> Ödendi
-            </label>
+              <textarea name="notes" value={form.notes} onChange={(e) => setForm((s) => ({ ...s, notes: e.target.value }))} placeholder="Not (isteğe bağlı)" rows={2} className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-neutral-600 resize-none focus:outline-none focus:border-white/30" />
+              <button type="submit" disabled={busy} className="rounded-lg bg-white px-4 py-2 text-sm font-bold text-black hover:bg-neutral-200 disabled:opacity-50">{busy ? 'Kaydediliyor...' : edit ? 'Güncelle' : 'Kaydet'}</button>
+            </form>
           </div>
-
-          <textarea name="notes" value={form.notes} onChange={(e) => setForm((s) => ({ ...s, notes: e.target.value }))} placeholder="Not (isteğe bağlı)" rows={2} className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-neutral-600 resize-none focus:outline-none focus:border-white/30" />
-          <button type="submit" disabled={busy} className="rounded-lg bg-white px-4 py-2 text-sm font-bold text-black hover:bg-neutral-200 disabled:opacity-50">{busy ? 'Kaydediliyor...' : edit ? 'Güncelle' : 'Kaydet'}</button>
-        </form>
+        </div>
       )}
 
       <div className="flex gap-2 overflow-x-auto pb-1">
@@ -262,6 +307,80 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
         </div>
 
         <aside className="space-y-3">
+          {/* Gider Dağılımı Donut Chart */}
+          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-4">
+            <p className="text-xs uppercase tracking-[0.18em] text-neutral-500">Gider Dağılımı</p>
+            {categoryTotals.totalExpense === 0 ? (
+              <p className="text-sm text-neutral-500">Bu ay için gider kaydı yok.</p>
+            ) : (
+              <div className="space-y-4">
+                <div className="relative w-28 h-28 mx-auto">
+                  <svg viewBox="0 0 140 140" className="w-full h-full transform -rotate-90">
+                    <circle
+                      cx="70"
+                      cy="70"
+                      r="45"
+                      fill="transparent"
+                      stroke="rgba(255, 255, 255, 0.05)"
+                      strokeWidth="12"
+                    />
+                    {(() => {
+                      let accumulatedPercent = 0;
+                      return activeCategoryBreakdown.map((item) => {
+                        const pct = item.amountCents / categoryTotals.totalExpense;
+                        const strokeDasharray = "282.74";
+                        const strokeDashoffset = 282.74 * (1 - pct);
+                        const angle = accumulatedPercent * 360;
+                        accumulatedPercent += pct;
+                        const strokeColor = strokeColorMap[item.color] || '#a3a3a3';
+                        return (
+                          <circle
+                            key={item.key}
+                            cx="70"
+                            cy="70"
+                            r="45"
+                            fill="transparent"
+                            stroke={strokeColor}
+                            strokeWidth="12"
+                            strokeDasharray={strokeDasharray}
+                            strokeDashoffset={strokeDashoffset}
+                            transform={`rotate(${angle} 70 70)`}
+                            className="transition-all duration-300"
+                          />
+                        );
+                      });
+                    })()}
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-[9px] uppercase text-neutral-500 tracking-wider">Gider</span>
+                    <span className="text-xs font-bold text-white truncate max-w-[80px]" title={formatTRY(categoryTotals.totalExpense)}>
+                      {formatTRY(categoryTotals.totalExpense)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Category breakdown legend */}
+                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1 dashboard-sidebar-scroll">
+                  {activeCategoryBreakdown.map((item) => {
+                    const strokeColor = strokeColorMap[item.color] || '#a3a3a3';
+                    return (
+                      <div key={item.key} className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: strokeColor }} />
+                          <span className="text-neutral-300 truncate">{item.label}</span>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="text-neutral-400 mr-2">%{item.percentage}</span>
+                          <span className="font-semibold text-neutral-300">{formatTRY(item.amountCents)}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.03] p-4">
             <p className="text-xs uppercase tracking-[0.18em] text-amber-400/80 mb-3">Geciken</p>
             {summary.overdue.length === 0 ? <p className="text-sm text-neutral-500">Geciken ödeme yok.</p> : summary.overdue.slice(0, 5).map((payment) => (
