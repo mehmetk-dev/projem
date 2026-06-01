@@ -21,15 +21,15 @@ export default function BlogSection({ blogs }: BlogSectionProps) {
   const displayBlogs = blogs.length > 0 ? blogs : [];
 
   return (
-    <section id="blog" className="py-32 lg:py-48 bg-neutral-950/50 border-y border-white/5 relative">
+    <section id="blog" className="py-20 md:py-32 lg:py-48 bg-neutral-950/50 border-y border-white/5 relative">
       <div className="container mx-auto px-6 lg:px-12">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-20 animate-on-scroll">
-          <h2 className="text-6xl md:text-8xl font-black tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-b from-white to-neutral-700">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:mb-20 animate-on-scroll">
+          <h2 className="text-4xl sm:text-5xl md:text-8xl font-black tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-b from-white to-neutral-700 leading-none">
             Son
             <br />
             Yazılar
           </h2>
-          <Link href="/blog" className="mt-8 md:mt-0 pb-2 border-b border-white/20 text-sm font-medium tracking-widest uppercase hover:border-white transition-colors">
+          <Link href="/blog" className="mt-6 md:mt-0 pb-2 border-b border-white/20 text-sm font-medium tracking-widest uppercase hover:border-white transition-colors">
             Tümünü İncele
           </Link>
         </div>

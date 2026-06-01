@@ -314,7 +314,7 @@ export default function FeaturesSection() {
               <span>Kişisel Ekosistem</span>
             </div>
             
-            <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-b from-white to-neutral-500 leading-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-b from-white to-neutral-500 leading-tight">
               Tek Arayüz,<br />Sonsuz Kolaylık
             </h2>
             <p className="mt-6 text-neutral-400 text-lg leading-relaxed font-light">
@@ -326,7 +326,7 @@ export default function FeaturesSection() {
           </div>
 
           {/* Right: CardSwap Stacked Animation */}
-          <div className="w-full flex justify-center lg:justify-end animate-on-scroll pr-8 pb-12 sm:pr-12 lg:pr-20">
+          <div className="w-full flex justify-center lg:justify-end animate-on-scroll pr-0 lg:pr-20 pb-12">
             <div className="relative w-full max-w-[420px] h-[420px] shrink-0">
               <CardSwap
                 width="100%"

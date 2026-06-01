@@ -23,14 +23,35 @@
   -webkit-backface-visibility: hidden;
 }
 
+@media (max-width: 1024px) {
+  .card-swap-container {
+    position: relative;
+    bottom: auto;
+    right: auto;
+    transform: scale(0.8);
+    transform-origin: center center;
+    margin: 0 auto;
+  }
+}
+
 @media (max-width: 768px) {
   .card-swap-container {
-    transform: scale(0.75) translate(25%, 25%);
+    position: relative;
+    bottom: auto;
+    right: auto;
+    transform: scale(0.7);
+    transform-origin: center center;
+    margin: 0 auto;
   }
 }
 
 @media (max-width: 480px) {
   .card-swap-container {
-    transform: scale(0.55) translate(25%, 25%);
+    position: relative;
+    bottom: auto;
+    right: auto;
+    transform: scale(0.55);
+    transform-origin: center center;
+    margin: 0 auto;
   }
 }

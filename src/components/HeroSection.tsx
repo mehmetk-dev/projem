@@ -11,7 +11,7 @@ interface HeroSectionProps {
 
 export default function HeroSection({ displayName }: HeroSectionProps) {
   return (
-    <section id="about" className="relative min-h-[100svh] flex items-center pt-16 pb-10 overflow-hidden">
+    <section id="about" className="relative min-h-screen lg:min-h-[100svh] flex items-center pt-28 pb-16 lg:py-0 overflow-hidden">
       {/* WebGL Galaxy background covering the entire section */}
       <div className="absolute inset-0 pointer-events-none opacity-85 z-0">
         <Galaxy 

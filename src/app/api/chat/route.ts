@@ -1,7 +1,13 @@
 import { NextRequest } from 'next/server';
+import { getSession } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session?.userId) {
+      return new Response(JSON.stringify({ error: 'Yetkisiz erişim.' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+    }
+
     const body = await req.json();
     const { messages, model, systemPrompt, temperature, apiKey } = body;
 

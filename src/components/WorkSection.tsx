@@ -21,17 +21,17 @@ export default function WorkSection({ projects }: WorkSectionProps) {
   const router = useRouter();
 
   return (
-    <section id="work" className="py-32 lg:py-48 relative">
+    <section id="work" className="py-20 md:py-32 lg:py-48 relative">
       <div className="container mx-auto px-6 lg:px-12">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-20 animate-on-scroll">
-          <h2 className="text-6xl md:text-8xl font-black tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-b from-white to-neutral-700">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:mb-20 animate-on-scroll">
+          <h2 className="text-4xl sm:text-5xl md:text-8xl font-black tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-b from-white to-neutral-700 leading-none">
             Seçkin
             <br />
             Çalışmalar
           </h2>
           <Link
             href="/projects"
-            className="mt-8 md:mt-0 pb-2 border-b border-white/20 text-sm font-medium tracking-widest uppercase hover:border-white transition-colors"
+            className="mt-6 md:mt-0 pb-2 border-b border-white/20 text-sm font-medium tracking-widest uppercase hover:border-white transition-colors"
           >
             Tümünü İncele
           </Link>

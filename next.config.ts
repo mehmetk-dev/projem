@@ -68,7 +68,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://sdk.scdn.co; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: i.scdn.co; font-src 'self'; connect-src 'self' https://api.spotify.com https://accounts.spotify.com https://*.spotify.com; frame-src https://sdk.scdn.co https://open.spotify.com; media-src 'self' https://*.spotify.com;",
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://sdk.scdn.co https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: i.scdn.co; font-src 'self'; connect-src 'self' https://api.spotify.com https://accounts.spotify.com https://*.spotify.com https://cloudflareinsights.com https://*.cloudflareinsights.com; frame-src https://sdk.scdn.co https://open.spotify.com; media-src 'self' https://*.spotify.com;",
           },
         ],
       },
