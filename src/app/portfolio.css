@@ -1,0 +1,186 @@
+@custom-variant dark (&:is(.dark *));
+
+/* Animation for fade-in blur effect */
+.animate-on-scroll {
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(30px);
+  transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-on-scroll.animate-in {
+  opacity: 1;
+  filter: blur(0px);
+  transform: translateY(0);
+}
+
+/* Staggered animation delays for cards */
+.grid > *:nth-child(1) { transition-delay: 0.1s; }
+.grid > *:nth-child(2) { transition-delay: 0.2s; }
+.grid > *:nth-child(3) { transition-delay: 0.3s; }
+
+/* Added letter-by-letter blur animation styles */
+.letter-blur {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(8px);
+  animation: letter-blur-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes letter-blur-in {
+  0% {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0);
+  }
+}
+
+/* Added typing cursor animation for smooth blinking effect */
+.typing-cursor {
+  animation: blink 1s step-start infinite;
+  font-weight: 300;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* ═══════════════════════════════════════
+   Spotify Now Playing Widget
+   ═══════════════════════════════════════ */
+
+.spotify-now-playing {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px 10px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 320px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.spotify-now-playing:hover {
+  background: rgba(29, 185, 84, 0.08);
+  border-color: rgba(29, 185, 84, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(29, 185, 84, 0.1);
+}
+
+.spotify-album-art {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.spotify-album-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.spotify-album-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1DB954 0%, #191414 100%);
+  border-radius: 6px;
+}
+
+/* Equalizer animation */
+.spotify-eq {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  display: flex;
+  gap: 1.5px;
+  align-items: flex-end;
+  height: 10px;
+  padding: 2px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 2px;
+}
+
+.spotify-eq span {
+  display: block;
+  width: 2px;
+  background: #1DB954;
+  border-radius: 1px;
+  animation: eq-bar 1.2s ease-in-out infinite;
+}
+
+.spotify-eq span:nth-child(1) {
+  animation-delay: 0s;
+  height: 4px;
+}
+
+.spotify-eq span:nth-child(2) {
+  animation-delay: 0.2s;
+  height: 7px;
+}
+
+.spotify-eq span:nth-child(3) {
+  animation-delay: 0.4s;
+  height: 5px;
+}
+
+@keyframes eq-bar {
+  0%, 100% { height: 3px; }
+  50% { height: 10px; }
+}
+
+.spotify-track-info {
+  overflow: hidden;
+  min-width: 0;
+}
+
+.spotify-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+
+.spotify-status span {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #1DB954;
+}
+
+.spotify-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.spotify-artist {
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  line-height: 1.3;
+}

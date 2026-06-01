@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1778956626384,
+      "tag": "0000_mighty_omega_flight",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1778957024863,
+      "tag": "0001_even_diamondback",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1778957486295,
+      "tag": "0002_wise_war_machine",
+      "breakpoints": true
+    }
+  ]
+}
