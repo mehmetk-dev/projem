@@ -37,10 +37,10 @@ uniform float uRepulsionStrength;
 uniform float uMouseActiveFactor;
 uniform float uAutoCenterRepulsion;
 uniform bool uTransparent;
+uniform float uNumLayers;
 
 varying vec2 vUv;
 
-#define NUM_LAYER 4.0
 #define STAR_COLOR_CUTOFF 0.2
 #define MAT45 mat2(0.7071, -0.7071, 0.7071, 0.7071)
 #define PERIOD 3.0
@@ -154,11 +154,13 @@ void main() {
 
   vec3 col = vec3(0.0);
 
-  for (float i = 0.0; i < 1.0; i += 1.0 / NUM_LAYER) {
-    float depth = fract(i + uStarSpeed * uSpeed);
+  for (int i = 0; i < 4; i++) {
+    if (float(i) >= uNumLayers) break;
+    float layerIdx = float(i) / uNumLayers;
+    float depth = fract(layerIdx + uStarSpeed * uSpeed);
     float scale = mix(20.0 * uDensity, 0.5 * uDensity, depth);
     float fade = depth * smoothstep(1.0, 0.9, depth);
-    col += StarLayer(uv * scale + i * 453.32) * fade;
+    col += StarLayer(uv * scale + layerIdx * 453.32) * fade;
   }
 
   if (uTransparent) {
@@ -192,9 +194,12 @@ interface GalaxyProps {
   [key: string]: any;
 }
 
+const DEFAULT_FOCAL: [number, number] = [0.5, 0.5];
+const DEFAULT_ROTATION: [number, number] = [1.0, 0.0];
+
 export default function Galaxy({
-  focal = [0.5, 0.5],
-  rotation = [1.0, 0.0],
+  focal = DEFAULT_FOCAL,
+  rotation = DEFAULT_ROTATION,
   starSpeed = 0.5,
   density = 1,
   hueShift = 140,
@@ -217,17 +222,24 @@ export default function Galaxy({
   const targetMouseActive = useRef(0.0);
   const smoothMouseActive = useRef(0.0);
 
+  const focalX = focal[0];
+  const focalY = focal[1];
+  const rotationX = rotation[0];
+  const rotationY = rotation[1];
+
   useEffect(() => {
     if (!ctnDom.current) return;
     const ctn = ctnDom.current;
     
     // Set device pixel ratio and initialize OGL Renderer with antialiasing
-    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    const isMobile = window.innerWidth < 768 || /Mobi|Android/i.test(navigator.userAgent);
+    const dpr = isMobile ? 1.0 : Math.min(2.5, window.devicePixelRatio || 1);
+    
     const renderer = new Renderer({
       alpha: transparent,
       premultipliedAlpha: false,
       dpr,
-      antialias: true
+      antialias: !isMobile
     });
     const gl = renderer.gl;
 
@@ -255,6 +267,21 @@ export default function Galaxy({
     window.addEventListener('resize', resize, false);
     resize();
 
+    // IntersectionObserver to pause rendering when component is not in viewport
+    let isVisible = true;
+    let observer: IntersectionObserver | null = null;
+    if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            isVisible = entry.isIntersecting;
+          });
+        },
+        { threshold: 0.01 }
+      );
+      observer.observe(ctn);
+    }
+
     const geometry = new Triangle(gl);
     program = new Program(gl, {
       vertex: vertexShader,
@@ -264,8 +291,8 @@ export default function Galaxy({
         uResolution: {
           value: new Color(gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height)
         },
-        uFocal: { value: new Float32Array(focal) },
-        uRotation: { value: new Float32Array(rotation) },
+        uFocal: { value: new Float32Array([focalX, focalY]) },
+        uRotation: { value: new Float32Array([rotationX, rotationY]) },
         uStarSpeed: { value: starSpeed },
         uDensity: { value: density },
         uHueShift: { value: hueShift },
@@ -281,7 +308,8 @@ export default function Galaxy({
         uRepulsionStrength: { value: repulsionStrength },
         uMouseActiveFactor: { value: 0.0 },
         uAutoCenterRepulsion: { value: autoCenterRepulsion },
-        uTransparent: { value: transparent }
+        uTransparent: { value: transparent },
+        uNumLayers: { value: isMobile ? 2.0 : 4.0 }
       }
     });
 
@@ -290,6 +318,8 @@ export default function Galaxy({
 
     function update(t: number) {
       animateId = requestAnimationFrame(update);
+      if (!isVisible) return;
+
       if (!disableAnimation) {
         program.uniforms.uTime.value = t * 0.001;
         program.uniforms.uStarSpeed.value = (t * 0.001 * starSpeed) / 10.0;
@@ -339,6 +369,9 @@ export default function Galaxy({
     return () => {
       cancelAnimationFrame(animateId);
       window.removeEventListener('resize', resize);
+      if (observer) {
+        observer.disconnect();
+      }
       if (mouseInteraction) {
         ctn.removeEventListener('mousemove', handleMouseMove);
         ctn.removeEventListener('mouseleave', handleMouseLeave);
@@ -349,8 +382,10 @@ export default function Galaxy({
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
   }, [
-    focal,
-    rotation,
+    focalX,
+    focalY,
+    rotationX,
+    rotationY,
     starSpeed,
     density,
     hueShift,

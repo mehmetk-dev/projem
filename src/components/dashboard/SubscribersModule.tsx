@@ -44,8 +44,8 @@ export default function SubscribersModule({ subscribers }: Props) {
       ) : (
         <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
           {subscribers.map((s) => (
-            <div key={s.id} className="flex items-center justify-between p-3 rounded-lg border border-neutral-200 dark:border-white/5 bg-neutral-100 dark:bg-white/[0.02]">
-              <div className="flex items-center gap-3">
+            <div key={s.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-lg border border-neutral-200 dark:border-white/5 bg-neutral-100 dark:bg-white/[0.02]">
+              <div className="flex flex-wrap items-center gap-3">
                 <span className="text-sm text-neutral-900 dark:text-white">{s.email}</span>
                 <span className={`text-[10px] px-2 py-0.5 rounded border ${s.status === 'active' ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10' : 'text-neutral-400 border-neutral-500/20 bg-neutral-500/10'}`}>
                   {s.status}

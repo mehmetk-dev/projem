@@ -85,8 +85,8 @@ export default function AuditModule({ logs }: Props) {
               key={log.id}
               className="p-4 rounded-xl border border-neutral-200 dark:border-white/5 bg-neutral-100 dark:bg-white/[0.02] text-sm"
             >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className={`text-[10px] px-2 py-0.5 rounded border font-medium ${ACTION_COLORS[log.action] || 'text-neutral-600 dark:text-neutral-400 border-neutral-500/20 bg-neutral-500/10'}`}>
                     {log.action}
                   </span>
@@ -99,7 +99,7 @@ export default function AuditModule({ logs }: Props) {
                 </div>
               </div>
               {(log.oldValue || log.newValue) && (
-                <div className="grid grid-cols-2 gap-2 text-[11px] text-neutral-500 dark:text-neutral-400">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-neutral-500 dark:text-neutral-400">
                   {log.oldValue && (
                     <div className="bg-rose-500/5 rounded-lg p-2 border border-rose-500/10">
                       <span className="text-rose-600 dark:text-rose-400 font-medium">Eski:</span> {log.oldValue}

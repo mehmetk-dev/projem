@@ -54,7 +54,7 @@ export default function AnalyticsModule({ analytics }: { analytics: T.AnalyticsD
         <p className="text-sm text-neutral-500 mt-1">Ziyaretçi verileri</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
           { label: 'Toplam', value: analytics.total },
           { label: 'Bugün', value: analytics.today },

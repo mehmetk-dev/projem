@@ -61,7 +61,7 @@ function BlogCard({ post }: { post: BlogItem }) {
 
   return (
     <Link href={`/blog/${post.slug}`}>
-      <article className="group cursor-pointer p-8 md:p-12 rounded-[2rem] bg-neutral-900/30 border border-white/5 hover:bg-neutral-900/80 transition-all duration-500 animate-on-scroll">
+      <article className="group cursor-pointer p-6 sm:p-8 md:p-12 rounded-2xl sm:rounded-[2rem] bg-neutral-900/30 border border-white/5 hover:bg-neutral-900/80 transition-all duration-500 animate-on-scroll">
         <div className="flex flex-col md:flex-row md:items-center gap-8 justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-4 mb-6">

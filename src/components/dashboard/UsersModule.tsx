@@ -59,7 +59,7 @@ export default function UsersModule({ users, toastFn }: Props) {
       ) : (
         <div className="space-y-3">
           {users.map((user) => (
-            <div key={user.id} className="p-4 rounded-xl border border-neutral-200 dark:border-white/5 bg-neutral-100 dark:bg-white/[0.02] flex items-center justify-between">
+            <div key={user.id} className="p-4 rounded-xl border border-neutral-200 dark:border-white/5 bg-neutral-100 dark:bg-white/[0.02] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-neutral-900 dark:text-white">{user.email}</p>
                 <p className="text-[11px] text-neutral-500 dark:text-neutral-400">{new Date(user.createdAt).toLocaleDateString('tr-TR')}</p>

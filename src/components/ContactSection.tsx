@@ -15,7 +15,7 @@ export default function ContactSection() {
       <div className="container mx-auto px-6 lg:px-12 relative z-10">
         <div className="grid lg:grid-cols-2 gap-24 lg:gap-32">
           <div className="flex flex-col justify-center animate-on-scroll">
-            <h2 className="text-7xl md:text-8xl font-black tracking-tighter uppercase text-white mb-8 leading-[0.9]">
+            <h2 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter uppercase text-white mb-8 leading-[0.9]">
               Fikrini
               <br />
               Hayata
@@ -60,7 +60,7 @@ export default function ContactSection() {
             </div>
           </div>
 
-          <div className="bg-neutral-900/20 backdrop-blur-xl border border-white/10 p-10 md:p-16 rounded-[3rem] animate-on-scroll">
+          <div className="bg-neutral-900/20 backdrop-blur-xl border border-white/10 p-6 sm:p-10 md:p-16 rounded-2xl sm:rounded-[3rem] animate-on-scroll">
             <h3 className="text-3xl font-bold tracking-tight mb-12">Mesaj Bırak</h3>
             {submitSuccess ? (
               <div className="text-emerald-400 text-lg font-medium py-12 text-center">
