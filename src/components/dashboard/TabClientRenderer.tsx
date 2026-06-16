@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback } from 'react';
+import type { ComponentProps } from 'react';
 import { toast } from 'sonner';
-import * as T from './types';
 import NotesModule from './NotesModule';
 import BlogsModule from './BlogsModule';
 import ProjectsModule from './ProjectsModule';
@@ -33,7 +33,7 @@ const TABS: { id: TabId; label: string; icon: string; adminOnly?: boolean }[] = 
   { id: 'overview', label: 'Genel Bakış', icon: 'M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z' },
   { id: 'notes', label: 'Notlar', icon: 'M17 3a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2h10zm-4 11H9v2h4v-2zm4-4H9v2h8V10zm0-4H9v2h8V6z' },
   { id: 'blogs', label: 'Blog', icon: 'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-4 9h8v-2H9v2zm0-4h8v-2H9v2z', adminOnly: true },
-  { id: 'projects', label: 'Projeler', icon: 'M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM10 4h4v2h-4V4zm10 14H4V8h16v10z' },
+  { id: 'projects', label: 'Projeler', icon: 'M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM10 4h4v2h-4V4zm10 14H4V8h16v10z', adminOnly: true },
   { id: 'messages', label: 'Mesajlar', icon: 'M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z' },
   { id: 'todos', label: 'Görevler', icon: 'M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.4-1.4L12 14.2l7.6-7.6L21 8l-9 9z' },
   { id: 'payments', label: 'Ödemeler', icon: 'M3 6h18v12H3V6zm2 2v8h14V8H5zm2 6h4v-2H7v2zm8-4a2 2 0 100 4 2 2 0 000-4z' },
@@ -74,11 +74,12 @@ const CONFIGURABLE_TABS: TabId[] = [
 
 interface Props {
   tab: TabId;
-  data: any;
+  data: Record<string, unknown>;
   userEmail: string;
+  openCreateProject?: boolean;
 }
 
-export default function TabClientRenderer({ tab, data, userEmail }: Props) {
+export default function TabClientRenderer({ tab, data, userEmail, openCreateProject = false }: Props) {
   const toastFn = useCallback((msg: string, ok: boolean) => {
     if (ok) toast.success(msg);
     else toast.error(msg);
@@ -90,47 +91,53 @@ export default function TabClientRenderer({ tab, data, userEmail }: Props) {
 
   switch (tab) {
     case 'notes':
-      return <NotesModule notes={data.notes} fmt={fmt} toastFn={toastFn} />;
+      return <NotesModule notes={data.notes as ComponentProps<typeof NotesModule>['notes']} fmt={fmt} toastFn={toastFn} />;
     case 'blogs':
-      return <BlogsModule blogs={data.blogs} toastFn={toastFn} />;
+      return <BlogsModule blogs={data.blogs as ComponentProps<typeof BlogsModule>['blogs']} toastFn={toastFn} />;
     case 'projects':
-      return <ProjectsModule projects={data.projects} toastFn={toastFn} />;
+      return <ProjectsModule projects={data.projects as ComponentProps<typeof ProjectsModule>['projects']} toastFn={toastFn} initialMode={openCreateProject ? 'form' : 'list'} />;
     case 'messages':
-      return <MessagesModule messages={data.messages} toastFn={toastFn} />;
+      return (
+        <MessagesModule
+          messages={data.messages as ComponentProps<typeof MessagesModule>['messages']}
+          directMessageData={data.directMessageData as ComponentProps<typeof MessagesModule>['directMessageData']}
+          toastFn={toastFn}
+        />
+      );
     case 'todos':
-      return <TodosModule todos={data.todos} fmt={fmt} toastFn={toastFn} />;
+      return <TodosModule todos={data.todos as ComponentProps<typeof TodosModule>['todos']} fmt={fmt} toastFn={toastFn} />;
     case 'payments':
-      return <PaymentsModule payments={data.payments} toastFn={toastFn} />;
+      return <PaymentsModule payments={data.payments as ComponentProps<typeof PaymentsModule>['payments']} toastFn={toastFn} />;
     case 'bookmarks':
-      return <BookmarksModule bookmarks={data.bookmarks} toastFn={toastFn} />;
+      return <BookmarksModule bookmarks={data.bookmarks as ComponentProps<typeof BookmarksModule>['bookmarks']} toastFn={toastFn} />;
     case 'snippets':
-      return <SnippetsModule snippets={data.snippets} toastFn={toastFn} />;
+      return <SnippetsModule snippets={data.snippets as ComponentProps<typeof SnippetsModule>['snippets']} toastFn={toastFn} />;
     case 'analytics':
-      return <AnalyticsModule analytics={data.analytics} />;
+      return <AnalyticsModule analytics={data.analytics as ComponentProps<typeof AnalyticsModule>['analytics']} />;
     case 'calendar':
-      return <CalendarModule todos={data.todos} />;
+      return <CalendarModule todos={data.todos as ComponentProps<typeof CalendarModule>['todos']} />;
     case 'timer':
-      return <TimerModule preferences={data.preferences} />;
+      return <TimerModule preferences={data.preferences as ComponentProps<typeof TimerModule>['preferences']} />;
     case 'chat':
-      return <ChatModule conversations={data.conversations} chatSettings={data.chatSettings} toastFn={toastFn} />;
+      return <ChatModule conversations={data.conversations as ComponentProps<typeof ChatModule>['conversations']} chatSettings={data.chatSettings as ComponentProps<typeof ChatModule>['chatSettings']} toastFn={toastFn} />;
     case 'spotify':
-      return <SpotifyModule spotifyData={data.spotifyData} recentTracks={data.recentTracks} settings={data.settings} toastFn={toastFn} />;
+      return <SpotifyModule spotifyData={data.spotifyData as ComponentProps<typeof SpotifyModule>['spotifyData']} recentTracks={data.recentTracks as ComponentProps<typeof SpotifyModule>['recentTracks']} settings={data.settings as ComponentProps<typeof SpotifyModule>['settings']} toastFn={toastFn} />;
     case 'settings':
-      return <SettingsModule userEmail={userEmail} settings={data.settings} preferences={data.preferences} tabs={TABS} configurableTabs={CONFIGURABLE_TABS} toastFn={toastFn} />;
+      return <SettingsModule userEmail={userEmail} settings={data.settings as ComponentProps<typeof SettingsModule>['settings']} preferences={data.preferences as ComponentProps<typeof SettingsModule>['preferences']} tabs={TABS} configurableTabs={CONFIGURABLE_TABS} toastFn={toastFn} />;
     case 'guestbook':
-      return <GuestbookModule entries={data.entries} toastFn={toastFn} />;
+      return <GuestbookModule entries={data.entries as ComponentProps<typeof GuestbookModule>['entries']} toastFn={toastFn} />;
     case 'comments':
-      return <CommentsModule comments={data.comments} toastFn={toastFn} />;
+      return <CommentsModule comments={data.comments as ComponentProps<typeof CommentsModule>['comments']} toastFn={toastFn} />;
     case 'audit':
-      return <AuditModule logs={data.logs} toastFn={toastFn} />;
+      return <AuditModule logs={data.logs as ComponentProps<typeof AuditModule>['logs']} toastFn={toastFn} />;
     case 'users':
-      return <UsersModule users={data.users} toastFn={toastFn} />;
+      return <UsersModule users={data.users as ComponentProps<typeof UsersModule>['users']} toastFn={toastFn} />;
     case 'social':
-      return <SocialLinksModule links={data.links} toastFn={toastFn} />;
+      return <SocialLinksModule links={data.links as ComponentProps<typeof SocialLinksModule>['links']} toastFn={toastFn} />;
     case 'subscribers':
-      return <SubscribersModule subscribers={data.subscribers} toastFn={toastFn} />;
+      return <SubscribersModule subscribers={data.subscribers as ComponentProps<typeof SubscribersModule>['subscribers']} toastFn={toastFn} />;
     case 'journal':
-      return <JournalModule entries={data.entries} toastFn={toastFn} />;
+      return <JournalModule entries={data.entries as ComponentProps<typeof JournalModule>['entries']} toastFn={toastFn} />;
     case 'files':
       return <FilesModule toastFn={toastFn} />;
     default:

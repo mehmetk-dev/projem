@@ -47,7 +47,7 @@ export async function submitGuestbookAction(
   formData: FormData
 ): Promise<GuestbookActionState> {
   const ip = await getClientIP();
-  const limit = rateLimitCheck(`guestbook:${ip}`, 3, 300000);
+  const limit = await rateLimitCheck(`guestbook:${ip}`, 3, 300000);
   if (!limit.success) {
     return { error: formatRateLimitError(limit.resetInSeconds) };
   }

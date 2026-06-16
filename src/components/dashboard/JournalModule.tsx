@@ -8,6 +8,7 @@ import {
   deleteJournalEntryAction,
   updateJournalEntryAction,
 } from '@/app/actions/journal';
+import { normalizeMediaUrl } from '@/lib/media-url';
 import * as T from './types';
 
 interface Props {
@@ -53,8 +54,12 @@ function getMood(value: T.JournalMood) {
   return moodOptions.find((mood) => mood.value === value) || moodOptions[0];
 }
 
+function normalizeJournalEntry(entry: T.JournalEntry): T.JournalEntry {
+  return { ...entry, image: normalizeMediaUrl(entry.image) || null };
+}
+
 export default function JournalModule({ entries: initialEntries, toastFn }: Props) {
-  const [entries, setEntries] = useState(initialEntries);
+  const [entries, setEntries] = useState(() => initialEntries.map(normalizeJournalEntry));
   const [editing, setEditing] = useState<T.JournalEntry | null>(null);
   const [busy, setBusy] = useState(false);
   const maxEntryDate = maxEntryDateValue();
@@ -111,7 +116,7 @@ export default function JournalModule({ entries: initialEntries, toastFn }: Prop
       title: entry.title,
       content: entry.content,
       mood: entry.mood,
-      image: entry.image || '',
+      image: normalizeMediaUrl(entry.image),
     });
   };
 
@@ -144,7 +149,7 @@ export default function JournalModule({ entries: initialEntries, toastFn }: Prop
       return;
     }
 
-    setEntries((current) => [result.data as T.JournalEntry, ...current].sort((a, b) => b.entryDate.localeCompare(a.entryDate)));
+    setEntries((current) => [normalizeJournalEntry(result.data as T.JournalEntry), ...current].sort((a, b) => b.entryDate.localeCompare(a.entryDate)));
     toastFn(result.success || 'Kaydedildi.', true);
     resetCreate();
     formEl.reset();
@@ -167,7 +172,7 @@ export default function JournalModule({ entries: initialEntries, toastFn }: Prop
       return;
     }
 
-    const nextEntry = result.data as T.JournalEntry;
+    const nextEntry = normalizeJournalEntry(result.data as T.JournalEntry);
     setEntries((current) => current.map((entry) => (entry.id === nextEntry.id ? nextEntry : entry)).sort((a, b) => b.entryDate.localeCompare(a.entryDate)));
     toastFn(result.success || 'Güncellendi.', true);
     resetEdit();

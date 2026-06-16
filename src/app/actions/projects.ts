@@ -3,7 +3,7 @@
 import { db } from '@/db';
 import { projects } from '@/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
-import { requireAuth } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { saveUploadedImage } from '@/lib/server/uploads';
@@ -52,7 +52,7 @@ export async function getProjectById(id: number) {
 }
 
 export async function getMyProjects() {
-  const { userId } = await requireAuth();
+  const { userId } = await requireAdmin();
   return db
     .select()
     .from(projects)
@@ -65,7 +65,7 @@ export async function createProjectAction(
   _prevState: ProjectActionState | null,
   formData: FormData
 ): Promise<ProjectActionState> {
-  const { userId } = await requireAuth();
+  const { userId } = await requireAdmin();
   let imagePath = String(formData.get('image') || '').trim() || undefined;
   const imageFile = formData.get('imageFile');
 
@@ -106,7 +106,7 @@ export async function updateProjectAction(
   _prevState: ProjectActionState | null,
   formData: FormData
 ): Promise<ProjectActionState> {
-  const { userId } = await requireAuth();
+  const { userId } = await requireAdmin();
   let imagePath = String(formData.get('image') || '').trim() || undefined;
   const imageFile = formData.get('imageFile');
 
@@ -140,6 +140,8 @@ export async function updateProjectAction(
 
     const [project] = await db.update(projects).set({ ...result.data, updatedAt: new Date().toISOString() }).where(and(eq(projects.id, projectId), eq(projects.userId, userId))).returning();
     revalidatePath('/');
+    revalidatePath('/projects');
+    revalidatePath(`/projects/${projectId}`);
     return { success: 'Proje güncellendi.', data: project };
   } catch (error) {
     console.error('Update Project Error:', error);
@@ -148,13 +150,15 @@ export async function updateProjectAction(
 }
 
 export async function deleteProjectAction(formData: FormData): Promise<ProjectActionState> {
-  const { userId } = await requireAuth();
+  const { userId } = await requireAdmin();
   const projectId = Number(formData.get('projectId'));
   if (!projectId || isNaN(projectId)) return { error: 'Geçersiz ID.' };
 
   try {
     await db.delete(projects).where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
     revalidatePath('/');
+    revalidatePath('/projects');
+    revalidatePath(`/projects/${projectId}`);
     return { success: 'Proje silindi.' };
   } catch (error) {
     console.error('Delete Project Error:', error);

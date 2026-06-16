@@ -1,8 +1,5 @@
-'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 interface Project {
   id: number;
@@ -18,8 +15,6 @@ interface WorkSectionProps {
 }
 
 export default function WorkSection({ projects }: WorkSectionProps) {
-  const router = useRouter();
-
   return (
     <section id="work" className="py-20 md:py-32 lg:py-48 relative">
       <div className="container mx-auto px-6 lg:px-12">
@@ -43,13 +38,19 @@ export default function WorkSection({ projects }: WorkSectionProps) {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
-            {projects.slice(0, 6).map((project, index) => (
-              <article
+            {projects.slice(0, 6).map((project, index) => {
+              const CardTag = project.link ? 'a' : Link;
+              const cardProps = project.link
+                ? { href: project.link, target: '_blank', rel: 'noopener noreferrer' }
+                : { href: `/projects/${project.id}` };
+
+              return (
+              <CardTag
                 key={project.id}
+                {...cardProps}
                 className={`group relative rounded-[2rem] overflow-hidden bg-neutral-950 border border-white/5 hover:border-white/20 transition-all duration-700 animate-on-scroll cursor-pointer ${
                   index === 1 ? 'lg:translate-y-16' : index === 2 ? 'md:translate-x-1/2 lg:translate-x-0 lg:translate-y-32' : ''
                 }`}
-                onClick={() => project.link ? window.open(project.link, '_blank') : router.push(`/projects/${project.id}`)}
               >
                 <div className="aspect-[4/5] overflow-hidden relative">
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-700 z-10" />
@@ -72,8 +73,9 @@ export default function WorkSection({ projects }: WorkSectionProps) {
                     {project.description}
                   </p>
                 </div>
-              </article>
-            ))}
+              </CardTag>
+            );
+            })}
           </div>
         )}
       </div>

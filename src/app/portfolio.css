@@ -196,3 +196,26 @@
     transform: translateY(0) scale(1);
   }
 }
+
+@media (max-width: 767px), (prefers-reduced-motion: reduce) {
+  .js-animations .animate-on-scroll,
+  .animate-on-scroll.animate-in {
+    opacity: 1;
+    filter: none;
+    transform: none;
+    transition: none;
+  }
+
+  .letter-blur {
+    opacity: 1;
+    filter: none;
+    transform: none;
+    animation: none;
+  }
+
+  .marquee-content,
+  .typing-cursor,
+  .spotify-eq span {
+    animation: none;
+  }
+}

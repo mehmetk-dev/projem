@@ -74,7 +74,7 @@ export async function registerAction(
   const { email, password } = result.data;
 
   const ip = await getClientIP();
-  const limit = rateLimitCheck(`register:${ip}:${email}`, 3, 300000);
+  const limit = await rateLimitCheck(`register:${ip}:${email}`, 3, 300000);
   if (!limit.success) {
     return { error: formatRateLimitError(limit.resetInSeconds) };
   }
@@ -122,7 +122,7 @@ export async function loginAction(
   const { email, password } = result.data;
 
   const ip = await getClientIP();
-  const limit = rateLimitCheck(`login:${ip}:${email}`, 5, 300000);
+  const limit = await rateLimitCheck(`login:${ip}:${email}`, 5, 300000);
   if (!limit.success) {
     return { error: formatRateLimitError(limit.resetInSeconds) };
   }
@@ -165,7 +165,7 @@ export async function forgotPasswordAction(
   const { email } = result.data;
 
   const ip = await getClientIP();
-  const limit = rateLimitCheck(`forgot:${ip}:${email}`, 3, 3600000);
+  const limit = await rateLimitCheck(`forgot:${ip}:${email}`, 3, 3600000);
   if (!limit.success) {
     return { error: formatRateLimitError(limit.resetInSeconds) };
   }
@@ -192,8 +192,9 @@ export async function forgotPasswordAction(
       usedAt: null,
     });
 
-    // TODO: Integrate with email service (Resend, SendGrid, etc.)
-    console.log(`Password reset link: http://localhost:3000/reset-password?token=${token}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`Password reset link: http://localhost:3000/reset-password?token=${token}`);
+    }
 
     return { success: 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.' };
   } catch (error) {
@@ -222,7 +223,7 @@ export async function resetPasswordAction(
   const { token, password } = result.data;
 
   const ip = await getClientIP();
-  const limit = rateLimitCheck(`reset:${ip}:${token}`, 3, 300000);
+  const limit = await rateLimitCheck(`reset:${ip}:${token}`, 3, 300000);
   if (!limit.success) {
     return { error: formatRateLimitError(limit.resetInSeconds) };
   }

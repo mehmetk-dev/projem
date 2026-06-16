@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface AnimatedTextProps {
   text: string;
@@ -8,6 +8,27 @@ interface AnimatedTextProps {
 }
 
 export const AnimatedText = ({ text, className }: AnimatedTextProps) => {
+  const [canAnimate, setCanAnimate] = useState(false);
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia('(max-width: 767px)');
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setCanAnimate(!mobileQuery.matches && !motionQuery.matches);
+
+    update();
+    mobileQuery.addEventListener('change', update);
+    motionQuery.addEventListener('change', update);
+
+    return () => {
+      mobileQuery.removeEventListener('change', update);
+      motionQuery.removeEventListener('change', update);
+    };
+  }, []);
+
+  if (!canAnimate) {
+    return <span className={className}>{text}</span>;
+  }
+
   const words = text.split(' ');
   let charCount = 0;
 

@@ -99,7 +99,7 @@ export async function subscribeAction(
   formData: FormData
 ): Promise<SubscriberActionState> {
   const ip = await getClientIP();
-  const limit = rateLimitCheck(`subscribe:${ip}`, 3, 3600000);
+  const limit = await rateLimitCheck(`subscribe:${ip}`, 3, 3600000);
   if (!limit.success) {
     return { error: formatRateLimitError(limit.resetInSeconds) };
   }
@@ -133,7 +133,7 @@ export async function unsubscribeAction(formData: FormData): Promise<SubscriberA
   if (!email) return { error: 'E-posta adresi gereklidir.' };
 
   const ip = await getClientIP();
-  const limit = rateLimitCheck(`unsubscribe:${ip}`, 5, 3600000);
+  const limit = await rateLimitCheck(`unsubscribe:${ip}`, 5, 3600000);
   if (!limit.success) {
     return { error: formatRateLimitError(limit.resetInSeconds) };
   }

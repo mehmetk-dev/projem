@@ -9,6 +9,7 @@ import { createProjectAction, updateProjectAction, deleteProjectAction } from '@
 interface Props {
   projects: T.Project[];
   toastFn: (msg: string, ok: boolean) => void;
+  initialMode?: 'list' | 'form';
 }
 
 type ProjectFormState = {
@@ -21,9 +22,9 @@ type ProjectFormState = {
   published: boolean;
 };
 
-export default function ProjectsModule({ projects: initialProjects, toastFn }: Props) {
+export default function ProjectsModule({ projects: initialProjects, toastFn, initialMode = 'list' }: Props) {
   const [projects, setProjects] = useState(initialProjects);
-  const [mode, setMode] = useState<'list' | 'form'>('list');
+  const [mode, setMode] = useState<'list' | 'form'>(initialMode);
   const [edit, setEdit] = useState<T.Project | null>(null);
   const [f, setF] = useState<ProjectFormState>({ title: '', description: '', image: '/placeholder.svg', link: '', category: 'Genel', displayOrder: 0, published: true });
   const [busy, setBusy] = useState(false);

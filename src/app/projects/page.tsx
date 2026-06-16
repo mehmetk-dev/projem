@@ -1,4 +1,5 @@
 import { getPublishedProjects } from '@/app/actions/projects';
+import { getCurrentUser } from '@/lib/auth';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
@@ -17,7 +18,11 @@ export const metadata: Metadata = {
 };
 
 export default async function ProjectsListPage() {
-  const projectList = await getPublishedProjects();
+  const [projectList, user] = await Promise.all([
+    getPublishedProjects(),
+    getCurrentUser(),
+  ]);
+  const canManageProjects = user?.role === 'admin';
 
   return (
     <div className="min-h-screen bg-black text-white font-sans">
@@ -30,16 +35,31 @@ export default async function ProjectsListPage() {
           <nav className="flex items-center gap-6 text-xs uppercase tracking-widest text-neutral-400">
             <Link href="/" className="hover:text-white transition-colors">Portfolyo</Link>
             <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
+            {canManageProjects && (
+              <Link href="/dashboard/projects?new=1" className="text-white hover:text-neutral-300 transition-colors">Proje Ekle</Link>
+            )}
           </nav>
         </div>
       </header>
 
       <main className="container mx-auto px-6 lg:px-12 pt-28 pb-16">
         <div className="max-w-5xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Projeler</h1>
-          <p className="text-neutral-500 text-lg mb-12">
-            Teknoloji ve tasarımı bir araya getirdiğim çalışmalarım.
-          </p>
+          <div className="mb-12 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Projeler</h1>
+              <p className="text-neutral-500 text-lg">
+                Teknoloji ve tasarımı bir araya getirdiğim çalışmalarım.
+              </p>
+            </div>
+            {canManageProjects && (
+              <Link
+                href="/dashboard/projects?new=1"
+                className="inline-flex w-fit items-center justify-center rounded-full bg-white px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-black transition-colors hover:bg-neutral-200"
+              >
+                Proje Ekle
+              </Link>
+            )}
+          </div>
 
           {projectList.length === 0 ? (
             <div className="text-center py-24 border border-white/5 rounded-[2rem]">

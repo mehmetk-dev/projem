@@ -3,35 +3,35 @@
 import { useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import OverviewModule from './OverviewModule';
-import { TabId } from './types';
+import * as T from './types';
 import { getVisibleTabIds } from '@/lib/dashboard/preferences';
 
 interface Props {
-  notes: any[];
-  messages: any[];
-  todos: any[];
-  analytics: any;
-  projects: any[];
+  notes: T.Note[];
+  messages: T.Message[];
+  todos: T.Todo[];
+  analytics: T.AnalyticsData;
+  projects: T.Project[];
   isAdmin: boolean;
-  blogs: any[];
-  weather: any;
-  githubEvents: any;
-  spotifyData: any;
+  blogs: T.Blog[];
+  weather: T.WeatherData | null;
+  githubEvents: T.GitHubEvent[] | null;
+  spotifyData: T.SpotifyData | null;
   hiddenTabs: string[];
 }
 
-const ALL_TABS: TabId[] = [
+const ALL_TABS: T.TabId[] = [
   'overview', 'notes', 'blogs', 'projects', 'messages', 'todos', 'payments', 'bookmarks', 'snippets', 'analytics', 'calendar', 'timer', 'chat', 'spotify', 'settings', 'guestbook', 'comments', 'audit', 'users', 'social', 'subscribers', 'journal', 'files'
 ];
 
-const CONFIGURABLE_TABS: TabId[] = [
+const CONFIGURABLE_TABS: T.TabId[] = [
   'overview', 'notes', 'projects', 'messages', 'todos', 'payments', 'bookmarks', 'snippets', 'analytics', 'calendar', 'timer', 'guestbook', 'comments', 'journal'
 ];
 
 export default function OverviewWrapper(props: Props) {
   const router = useRouter();
 
-  const handleTab = useCallback((t: TabId) => {
+  const handleTab = useCallback((t: T.TabId) => {
     const url = t === 'overview' ? '/dashboard' : `/dashboard/${t}`;
     router.push(url);
   }, [router]);

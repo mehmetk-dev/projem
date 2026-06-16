@@ -1,37 +1,59 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { LocationIcon } from './Icons';
 import { AnimatedText } from './AnimatedText';
-import Galaxy from './Galaxy';
+
+const Galaxy = dynamic(() => import('./Galaxy'), { ssr: false });
 
 interface HeroSectionProps {
   displayName: string;
 }
 
 export default function HeroSection({ displayName }: HeroSectionProps) {
+  const [showGalaxy, setShowGalaxy] = useState(false);
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setShowGalaxy(desktopQuery.matches && !motionQuery.matches);
+
+    update();
+    desktopQuery.addEventListener('change', update);
+    motionQuery.addEventListener('change', update);
+
+    return () => {
+      desktopQuery.removeEventListener('change', update);
+      motionQuery.removeEventListener('change', update);
+    };
+  }, []);
+
   return (
     <section id="about" className="relative min-h-screen lg:min-h-[100svh] flex items-center pt-28 pb-16 lg:py-0 overflow-hidden">
-      {/* WebGL Galaxy background covering the entire section */}
+      <div className="absolute inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0.08),transparent_32%),radial-gradient(circle_at_18%_72%,rgba(255,255,255,0.05),transparent_26%)]" />
+
       <div className="absolute inset-0 pointer-events-none opacity-85 z-0">
-        <Galaxy 
-          mouseRepulsion
-          mouseInteraction
-          density={1}
-          glowIntensity={0.3}
-          saturation={0}
-          hueShift={140}
-          twinkleIntensity={0.3}
-          rotationSpeed={0.1}
-          repulsionStrength={2}
-          autoCenterRepulsion={0}
-          starSpeed={0.5}
-          speed={1}
-        />
+        {showGalaxy && (
+          <Galaxy
+            mouseRepulsion
+            mouseInteraction
+            density={1}
+            glowIntensity={0.3}
+            saturation={0}
+            hueShift={140}
+            twinkleIntensity={0.3}
+            rotationSpeed={0.1}
+            repulsionStrength={2}
+            autoCenterRepulsion={0}
+            starSpeed={0.5}
+            speed={1}
+          />
+        )}
       </div>
 
-      {/* Abstract glowing background */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-white/5 blur-[100px] rounded-full pointer-events-none z-0" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-white/5 blur-[100px] rounded-full pointer-events-none z-0 hidden md:block" />
 
       <div className="container mx-auto px-6 lg:px-12 relative z-10 w-full">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-center justify-center lg:justify-start w-full">

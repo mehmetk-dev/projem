@@ -4,7 +4,34 @@ import { useState, useEffect, useRef, useTransition } from 'react';
 import * as T from './types';
 import { Card } from './ui';
 import { createConversationAction, deleteConversationAction, renameConversationAction, createMessageAction, getMessages, getAllUserContext, updateChatSettingsAction } from '@/app/actions/chat';
-import { Volume2, VolumeX, Mic, Copy, Settings } from 'lucide-react';
+import { Volume2, VolumeX, Mic, Copy } from 'lucide-react';
+
+interface SpeechRecognitionEventLike {
+  results: ArrayLike<ArrayLike<{ transcript: string }>>;
+}
+
+interface SpeechRecognitionLike {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onstart: (() => void) | null;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
+interface SpeechRecognitionConstructorLike {
+  new (): SpeechRecognitionLike;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition?: SpeechRecognitionConstructorLike;
+    webkitSpeechRecognition?: SpeechRecognitionConstructorLike;
+  }
+}
 
 interface Props {
   conversations: T.ChatConversation[];
@@ -36,7 +63,7 @@ export default function ChatModule({ conversations: initialConversations, chatSe
   // TTS & STT States
   const [speakingMsgId, setSpeakingMsgId] = useState<number | null>(null);
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   // Cleanup voice output on unmount
   useEffect(() => {
@@ -278,7 +305,7 @@ export default function ChatModule({ conversations: initialConversations, chatSe
 
   const startListening = () => {
     if (typeof window === 'undefined') return;
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       toastFn('Tarayıcınız ses tanımayı desteklemiyor. Lütfen Chrome veya Edge kullanın.', false);
       return;
@@ -298,7 +325,7 @@ export default function ChatModule({ conversations: initialConversations, chatSe
     rec.interimResults = false;
 
     rec.onstart = () => setIsListening(true);
-    rec.onresult = (e: any) => {
+    rec.onresult = (e) => {
       const result = e.results[0]?.[0]?.transcript || '';
       if (result) {
         setInput((prev) => (prev ? prev + ' ' + result : result));

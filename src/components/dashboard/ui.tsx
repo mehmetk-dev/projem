@@ -64,7 +64,7 @@ export function Btn({ children, onClick, variant = 'default' }: { children: Reac
     danger: 'text-rose-600 dark:text-rose-400 hover:text-rose-500 dark:hover:text-rose-300 border border-rose-500/20 hover:bg-rose-500/10',
     ghost: 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white border border-neutral-200 dark:border-white/10 hover:border-neutral-400 dark:hover:border-white/20',
   };
-  return <button onClick={onClick} className={`${base} ${styles[variant]}`}>{children}</button>;
+  return <button type="button" onClick={onClick} className={`${base} ${styles[variant]}`}>{children}</button>;
 }
 
 export function ActionBtn({ onClick, title, children }: { onClick: () => void; title?: string; children: React.ReactNode }) {

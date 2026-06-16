@@ -1,7 +1,4 @@
-'use client';
-
 import { Sparkles, MessageSquare, LineChart, FileText, Image as ImageIcon, CheckSquare, Layers, TrendingUp, Terminal, Calendar, Activity } from 'lucide-react';
-import CardSwap, { Card } from './CardSwap';
 
 const MODULES = [
   {
@@ -325,66 +322,44 @@ export default function FeaturesSection() {
             </p>
           </div>
 
-          {/* Right: CardSwap Stacked Animation */}
-          <div className="w-full flex justify-center lg:justify-end animate-on-scroll pr-0 lg:pr-20 pb-12">
-            <div className="relative w-full max-w-[420px] h-[420px] shrink-0">
-              <CardSwap
-                width="100%"
-                height="100%"
-                cardDistance={35}
-                verticalDistance={40}
-                delay={4000}
-                pauseOnHover={true}
-                skewAmount={4}
-                easing="elastic"
-              >
-                {MODULES.map((mod, index) => {
-                  const Icon = mod.icon;
-                  return (
-                    <Card
-                      key={index}
-                      className={`p-6 flex flex-col justify-between border border-white/15 bg-neutral-950/95 rounded-[2.2rem] shadow-2xl backdrop-blur-lg overflow-hidden group/card w-full h-full transition-colors duration-500 ${mod.borderColor}`}
-                    >
-                      {/* Ambient background glow inside the card */}
-                      <div className={`absolute top-0 right-0 w-32 h-32 rounded-full filter blur-3xl opacity-20 group-hover/card:opacity-45 transition-opacity duration-700 pointer-events-none ${mod.glowColor}`} />
-                      <div className={`absolute inset-0 bg-gradient-to-br ${mod.color} opacity-30 group-hover/card:opacity-50 transition-opacity duration-500 pointer-events-none`} />
+          {/* Right: Lightweight module grid */}
+          <div className="w-full animate-on-scroll">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {MODULES.map((mod) => {
+                const Icon = mod.icon;
 
-                      <div className="relative z-10">
-                        <div className="flex items-center justify-between mb-3.5">
-                          <div className={`w-11 h-11 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center group-hover/card:scale-110 transition-transform duration-500 ${mod.iconColor}`}>
-                            <Icon size={18} />
-                          </div>
-                          <span className={`text-[8px] font-mono tracking-widest uppercase border border-white/5 bg-white/5 px-2.5 py-1 rounded-md text-neutral-400 group-hover/card:border-white/20 transition-colors`}>
-                            {mod.badge}
-                          </span>
+                return (
+                  <article
+                    key={mod.title}
+                    className={`group/card relative overflow-hidden rounded-2xl border border-white/10 bg-neutral-950/90 p-4 transition-colors duration-300 ${mod.borderColor}`}
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-br ${mod.color} opacity-25 transition-opacity duration-300 group-hover/card:opacity-40 pointer-events-none`} />
+                    <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl opacity-20 pointer-events-none ${mod.glowColor}`} />
+
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className={`w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center ${mod.iconColor}`}>
+                          <Icon size={17} />
                         </div>
-                        
-                        <h3 className="text-xl font-bold text-white mb-2 tracking-tight">
-                          {mod.title}
-                        </h3>
-                        <p className="text-neutral-400 text-xs leading-relaxed font-light">
-                          {mod.desc}
-                        </p>
+                        <span className="text-[8px] font-mono tracking-widest uppercase border border-white/5 bg-white/5 px-2 py-1 rounded-md text-neutral-400">
+                          {mod.badge}
+                        </span>
                       </div>
 
-                      {/* Custom Visual Panel Mockup */}
-                      <div className="relative z-10 my-1">
+                      <h3 className="text-lg font-bold text-white mb-2 tracking-tight">
+                        {mod.title}
+                      </h3>
+                      <p className="text-neutral-400 text-xs leading-relaxed font-light">
+                        {mod.desc}
+                      </p>
+
+                      <div className="mt-3">
                         {mod.renderVisual()}
                       </div>
-
-                      {/* Subtle badge inside the card */}
-                      <div className="relative z-10 flex items-center justify-between mt-3 border-t border-white/5 pt-3">
-                        <span className="text-[8px] font-mono tracking-widest text-neutral-500 uppercase">
-                          Modül Detayı
-                        </span>
-                        <span className="text-xs font-semibold text-white/50 group-hover/card:text-white transition-colors flex items-center gap-1 cursor-pointer">
-                          İncele &rarr;
-                        </span>
-                      </div>
-                    </Card>
-                  );
-                })}
-              </CardSwap>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </div>
 

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { NavLink } from './NavLink';
 import { MenuIcon } from './Icons';
@@ -24,6 +24,17 @@ const NAV_ITEMS = [
 export default function Header({ user, logoutAction }: HeaderProps) {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 1024px)');
+    const update = () => setIsDesktop(query.matches);
+
+    update();
+    query.addEventListener('change', update);
+
+    return () => query.removeEventListener('change', update);
+  }, []);
 
   const handleLogout = async () => {
     await logoutAction();
@@ -50,7 +61,7 @@ export default function Header({ user, logoutAction }: HeaderProps) {
         </nav>
 
         <div className="hidden lg:flex items-center gap-4 xl:gap-6">
-          <SpotifyNowPlaying />
+          {isDesktop && <SpotifyNowPlaying />}
           {user ? (
             <>
               <Link

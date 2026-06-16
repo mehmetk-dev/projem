@@ -53,7 +53,7 @@ export default async function DashboardPage() {
   const [notes, projects, messages, todos, analytics, blogs, preferences, weather, githubEvents, spotifyData] = await Promise.all([
     getNotes().catch(safeCatch('notes', [])),
     getMyProjects().catch(safeCatch('projects', [])),
-    getMessages().catch(safeCatch('messages', [])),
+    isAdmin ? getMessages().catch(safeCatch('messages', [])) : Promise.resolve([]),
     getMyTodos().catch(safeCatch('todos', [])),
     getAnalytics().catch(safeCatch('analytics', { total: 0, today: 0, week: 0, topPages: [], chartData: [] })),
     isAdmin ? getMyBlogs().catch(safeCatch('blogs', [])) : Promise.resolve([]),

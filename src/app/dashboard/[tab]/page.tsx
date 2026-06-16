@@ -2,7 +2,7 @@ import { getSession, getCurrentUser } from '@/lib/auth';
 import { getNotes } from '@/app/actions/notes';
 import { getMyBlogs } from '@/app/actions/blogs';
 import { getMyProjects } from '@/app/actions/projects';
-import { getMessages } from '@/app/actions/messages';
+import { getDirectMessageDashboardData, getMessages } from '@/app/actions/messages';
 import { getMyTodos } from '@/app/actions/todos';
 import { getMyPayments } from '@/app/actions/payments';
 import { getMyBookmarks } from '@/app/actions/bookmarks';
@@ -32,14 +32,17 @@ const VALID_TABS: TabId[] = [
   'audit', 'users', 'social', 'subscribers', 'journal', 'files'
 ];
 
-const ADMIN_ONLY_TABS = ['blogs', 'chat', 'spotify', 'audit', 'users', 'social', 'subscribers', 'files'];
+const ADMIN_ONLY_TABS = ['blogs', 'projects', 'chat', 'spotify', 'audit', 'users', 'social', 'subscribers', 'files'];
 
 interface PageProps {
   params: Promise<{ tab: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function DashboardTabPage({ params }: PageProps) {
+export default async function DashboardTabPage({ params, searchParams }: PageProps) {
   const { tab } = await params;
+  const query = await searchParams;
+  const openCreateProject = tab === 'projects' && query.new === '1';
 
   if (!VALID_TABS.includes(tab as TabId)) {
     notFound();
@@ -61,7 +64,7 @@ export default async function DashboardTabPage({ params }: PageProps) {
     redirect('/dashboard');
   }
 
-  let data: any = {};
+  const data: Record<string, unknown> = {};
 
   // Query ONLY the database table required for the current active tab
   switch (tab) {
@@ -75,7 +78,8 @@ export default async function DashboardTabPage({ params }: PageProps) {
       data.projects = await getMyProjects();
       break;
     case 'messages':
-      data.messages = await getMessages();
+      data.directMessageData = await getDirectMessageDashboardData();
+      data.messages = isAdmin ? await getMessages() : [];
       break;
     case 'todos':
     case 'calendar':
@@ -139,7 +143,7 @@ export default async function DashboardTabPage({ params }: PageProps) {
 
   return (
     <Suspense>
-      <TabClientRenderer tab={tab as TabId} data={data} userEmail={user.email} />
+      <TabClientRenderer tab={tab as TabId} data={data} userEmail={user.email} openCreateProject={openCreateProject} />
     </Suspense>
   );
 }

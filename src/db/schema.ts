@@ -43,6 +43,19 @@ export const sessions = sqliteTable('sessions', {
   index('sessions_token_idx').on(table.token),
 ]);
 
+export const rateLimits = sqliteTable('rate_limits', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  keyHash: text('key_hash').notNull().unique(),
+  count: integer('count').notNull().default(0),
+  resetAt: integer('reset_at').notNull(),
+  updatedAt: text('updated_at')
+    .notNull()
+    .default(sql`(current_timestamp)`),
+}, (table) => [
+  uniqueIndex('rate_limits_key_hash_unique').on(table.keyHash),
+  index('rate_limits_reset_at_idx').on(table.resetAt),
+]);
+
 export const notes = sqliteTable('notes', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: integer('user_id').notNull().references(() => users.id),
@@ -141,6 +154,22 @@ export const messages = sqliteTable('messages', {
 }, (table) => [
   index('messages_read_idx').on(table.read),
   index('messages_created_at_idx').on(table.createdAt),
+]);
+
+// --- DIRECT MESSAGES (Admin <-> Users) ---
+export const directMessages = sqliteTable('direct_messages', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id').notNull().references(() => users.id),
+  senderId: integer('sender_id').notNull().references(() => users.id),
+  content: text('content').notNull(),
+  readAt: text('read_at'),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`(current_timestamp)`),
+}, (table) => [
+  index('direct_messages_user_id_idx').on(table.userId),
+  index('direct_messages_sender_id_idx').on(table.senderId),
+  index('direct_messages_created_at_idx').on(table.createdAt),
 ]);
 
 // --- TODOS ---

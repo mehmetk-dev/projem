@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 export default function DashboardError({
   error,
@@ -46,12 +47,12 @@ export default function DashboardError({
           >
             Tekrar Dene
           </button>
-          <a
+          <Link
             href="/dashboard"
             className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium transition-colors"
           >
             Dashboard&apos;a Dön
-          </a>
+          </Link>
         </div>
       </div>
     </div>

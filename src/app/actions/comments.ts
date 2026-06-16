@@ -44,7 +44,7 @@ export async function submitCommentAction(
   formData: FormData
 ): Promise<CommentActionState> {
   const ip = await getClientIP();
-  const limit = rateLimitCheck(`comment:${ip}`, 5, 60000);
+  const limit = await rateLimitCheck(`comment:${ip}`, 5, 60000);
   if (!limit.success) {
     return { error: formatRateLimitError(limit.resetInSeconds) };
   }

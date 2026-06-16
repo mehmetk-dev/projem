@@ -2,6 +2,14 @@ export interface Note { id: number; userId: number; title: string; content: stri
 export interface Blog { id: number; userId: number; title: string; slug: string; content: string; excerpt: string | null; metaTitle: string | null; metaDescription: string | null; ogImage: string | null; coverImage: string | null; category: string; tags: string; published: boolean; publishedAt: string | null; createdAt: string; updatedAt: string | null; }
 export interface Project { id: number; userId: number; title: string; description: string; image: string; link: string | null; category: string; displayOrder: number; published: boolean; createdAt: string; updatedAt: string | null; }
 export interface Message { id: number; name: string; email: string; subject: string | null; content: string; read: boolean; createdAt: string; }
+export interface DirectMessage { id: number; userId: number; senderId: number; content: string; readAt: string | null; createdAt: string; }
+export interface DirectMessageContact { id: number; email: string; role: string; createdAt: string; }
+export interface DirectMessageDashboardData {
+  currentUserId: number;
+  isAdmin: boolean;
+  contacts: DirectMessageContact[];
+  directMessages: DirectMessage[];
+}
 export interface Todo { id: number; userId: number; title: string; description: string; priority: string; dueDate: string | null; completed: boolean; completedAt: string | null; createdAt: string; updatedAt: string | null; }
 export interface Payment { id: number; userId: number; title: string; amountCents: number; currency: string; type: 'expense' | 'income'; category: string; dueDate: string | null; recurrence: 'none' | 'monthly'; recurringDay: number | null; paid: boolean; paidAt: string | null; notes: string; createdAt: string; updatedAt: string | null; }
 export interface Bookmark { id: number; userId: number; title: string; url: string; description: string; tags: string; createdAt: string; }

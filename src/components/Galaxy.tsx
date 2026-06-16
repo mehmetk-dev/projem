@@ -191,7 +191,6 @@ interface GalaxyProps {
   repulsionStrength?: number;
   autoCenterRepulsion?: number;
   transparent?: boolean;
-  [key: string]: any;
 }
 
 const DEFAULT_FOCAL: [number, number] = [0.5, 0.5];
@@ -214,7 +213,6 @@ export default function Galaxy({
   rotationSpeed = 0.1,
   autoCenterRepulsion = 0,
   transparent = true,
-  ...rest
 }: GalaxyProps) {
   const ctnDom = useRef<HTMLDivElement>(null);
   const targetMousePos = useRef({ x: 0.5, y: 0.5 });
@@ -251,21 +249,11 @@ export default function Galaxy({
       gl.clearColor(0, 0, 0, 1);
     }
 
-    let program: Program;
-
-    function resize() {
+    function setRendererSize() {
       const scale = 1;
       renderer.setSize(ctn.offsetWidth * scale, ctn.offsetHeight * scale);
-      if (program) {
-        program.uniforms.uResolution.value = new Color(
-          gl.canvas.width,
-          gl.canvas.height,
-          gl.canvas.width / gl.canvas.height
-        );
-      }
     }
-    window.addEventListener('resize', resize, false);
-    resize();
+    setRendererSize();
 
     // IntersectionObserver to pause rendering when component is not in viewport
     let isVisible = true;
@@ -283,7 +271,7 @@ export default function Galaxy({
     }
 
     const geometry = new Triangle(gl);
-    program = new Program(gl, {
+    const program = new Program(gl, {
       vertex: vertexShader,
       fragment: fragmentShader,
       uniforms: {
@@ -312,6 +300,17 @@ export default function Galaxy({
         uNumLayers: { value: isMobile ? 2.0 : 4.0 }
       }
     });
+
+    function resize() {
+      setRendererSize();
+      program.uniforms.uResolution.value = new Color(
+        gl.canvas.width,
+        gl.canvas.height,
+        gl.canvas.width / gl.canvas.height
+      );
+    }
+    window.addEventListener('resize', resize, false);
+    resize();
 
     const mesh = new Mesh(gl, { geometry, program });
     let animateId: number;
@@ -402,5 +401,5 @@ export default function Galaxy({
     transparent
   ]);
 
-  return <div ref={ctnDom} className="galaxy-container" {...rest} />;
+  return <div ref={ctnDom} className="galaxy-container" />;
 }
