@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Sparkles, MessageSquare, LineChart, FileText, Image as ImageIcon, CheckSquare, Layers, TrendingUp, Terminal, Calendar, Activity } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { Orbitron } from 'next/font/google';
 import CircularGallery from './ui/CircularGallery';
 
@@ -11,469 +11,914 @@ const orbitron = Orbitron({
   display: 'swap',
 });
 
-function cloneWithStyles(element: HTMLElement): HTMLElement {
-  const clone = element.cloneNode(true) as HTMLElement;
-  
-  const copyStyles = (source: HTMLElement, target: HTMLElement) => {
-    const computed = window.getComputedStyle(source);
-    for (let i = 0; i < computed.length; i++) {
-      const key = computed[i];
-      target.style.setProperty(key, computed.getPropertyValue(key));
-    }
-    
-    if (source.tagName.toLowerCase() === 'svg') {
-      target.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-    }
-    
-    for (let i = 0; i < source.children.length; i++) {
-      copyStyles(source.children[i] as HTMLElement, target.children[i] as HTMLElement);
-    }
-  };
-  
-  copyStyles(element, clone);
-  return clone;
+// ── Canvas 2D Drawing Helpers ────────────────────────────────────────────────
+
+const CARD_W = 320;
+const CARD_H = 400;
+const SCALE = 2;
+
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
 }
 
-async function captureElement(element: HTMLElement): Promise<string> {
-  const width = element.offsetWidth || 320;
-  const height = element.offsetHeight || 400;
-  const scale = 2; // 2x scale for sharp rendering while keeping GPU workload manageable
-  
-  const scaledWidth = width * scale;
-  const scaledHeight = height * scale;
-  
-  const cloned = cloneWithStyles(element);
-  cloned.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
-  cloned.style.width = '100%';
-  cloned.style.height = '100%';
-  cloned.style.margin = '0';
-  cloned.style.boxSizing = 'border-box';
-  
-  const svgString = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="${scaledWidth}" height="${scaledHeight}" viewBox="0 0 ${width} ${height}">
-      <foreignObject width="${width}" height="${height}">
-        ${new XMLSerializer().serializeToString(cloned)}
-      </foreignObject>
-    </svg>
-  `;
-  
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = scaledWidth;
-      canvas.height = scaledHeight;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.clearRect(0, 0, scaledWidth, scaledHeight);
-        ctx.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL('image/png'));
-      } else {
-        reject(new Error('Canvas context is null'));
-      }
-    };
-    img.onerror = () => {
-      reject(new Error('Failed to load SVG image into canvas'));
-    };
-  });
+function drawModuleCard(
+  ctx: CanvasRenderingContext2D,
+  idx: number
+): string {
+  const scale = SCALE;
+  const W = CARD_W;
+  const H = CARD_H;
+  // Clear entire canvas before drawing each card (shared canvas reused)
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.save();
+  ctx.scale(scale, scale);
+
+  const mod = MODULES[idx];
+
+  // Card background
+  roundRect(ctx, 0, 0, W, H, 16);
+  const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+  bgGrad.addColorStop(0, 'rgba(23,23,23,1)');
+  bgGrad.addColorStop(1, 'rgba(10,10,10,1)');
+  ctx.fillStyle = bgGrad;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Gradient overlay
+  const overlayGrad = ctx.createLinearGradient(0, 0, W, H);
+  overlayGrad.addColorStop(0, mod.colorStart);
+  overlayGrad.addColorStop(1, mod.colorEnd);
+  ctx.globalAlpha = 0.3;
+  roundRect(ctx, 0, 0, W, H, 16);
+  ctx.fillStyle = overlayGrad;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // Glow circle top-right
+  ctx.globalAlpha = 0.25;
+  ctx.beginPath();
+  ctx.arc(W - 14, 14, W * 0.175, 0, Math.PI * 2);
+  if (mod.colorStart) ctx.fillStyle = mod.colorStart;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // Icon container
+  roundRect(ctx, 24, 24, 48, 48, 12);
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.stroke();
+
+  // Icon (draw as SVG-like shapes for each module)
+  drawIcon(ctx, idx, 48, 48);
+
+  // Badge
+  const badgeW = ctx.measureText(mod.badge.toUpperCase()).width + 20;
+  roundRect(ctx, W - 24 - badgeW, 30, badgeW, 24, 8);
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(212,212,212,1)';
+  ctx.font = '10px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(mod.badge.toUpperCase(), W - 24 - badgeW / 2, 46);
+
+  // Title
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 20px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(mod.title, 24, 104);
+
+  // Description (word wrap)
+  ctx.fillStyle = 'rgba(212,212,212,1)';
+  ctx.font = '13px sans-serif';
+  wrapText(ctx, mod.desc, 24, 124, W - 48, 18);
+
+  // Visual area
+  ctx.save();
+  mod.drawVisual(ctx, 24, 170, W - 48, H - 194);
+  ctx.restore();
+
+  ctx.restore();
+
+  const canvas = ctx.canvas;
+  const fullCanvas = document.createElement('canvas');
+  fullCanvas.width = W * scale;
+  fullCanvas.height = H * scale;
+  const fullCtx = fullCanvas.getContext('2d')!;
+  fullCtx.drawImage(canvas, 0, 0);
+  return fullCanvas.toDataURL('image/png');
 }
 
-const MODULES = [
-  {
-    icon: Layers,
-    title: 'Kişisel Portfolyo',
-    desc: 'Yaptığım projeleri, tasarım çalışmalarımı ve yazılım tecrübelerimi modern bir arayüzle sergilediğim kişisel showcase alanı.',
-    color: 'from-blue-500/20 to-indigo-500/5',
-    glowColor: 'bg-blue-500/5',
-    borderColor: 'group-hover/card:border-blue-500/40',
-    iconColor: 'text-blue-400',
-    badge: 'Portfolyo',
-    renderVisual: () => (
-      <div className="mt-4 p-4 bg-neutral-900/60 border border-blue-500/10 rounded-[1.2rem] space-y-4 backdrop-blur-md shadow-inner">
-        {/* Profile Card Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-white/5">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white shadow-md shadow-blue-500/20 font-mono">&lt;/&gt;</div>
-            <div className="leading-none">
-              <p className="text-xs font-bold text-white font-mono">Mehmet Kerem</p>
-              <p className="text-[9px] text-blue-400 font-mono tracking-wider mt-0.5">FULL-STACK DEVELOPER</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-            <span className="text-[9px] text-emerald-300 font-bold font-mono">AKTİF</span>
-          </div>
-        </div>
-
-        {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-2.5">
-          <div className="bg-white/5 p-2 rounded-lg border border-white/5 text-center">
-            <p className="text-[10px] text-neutral-450 font-mono">Projeler</p>
-            <p className="text-sm font-bold text-white font-mono mt-0.5">18+</p>
-          </div>
-          <div className="bg-white/5 p-2 rounded-lg border border-white/5 text-center">
-            <p className="text-[10px] text-neutral-450 font-mono">Skor</p>
-            <p className="text-sm font-bold text-emerald-400 font-mono mt-0.5">%100</p>
-          </div>
-          <div className="bg-white/5 p-2 rounded-lg border border-white/5 text-center">
-            <p className="text-[10px] text-neutral-450 font-mono">Deneyim</p>
-            <p className="text-sm font-bold text-blue-400 font-mono mt-0.5">5y+</p>
-          </div>
-        </div>
-
-        {/* Tags */}
-        <div className="flex flex-wrap gap-1.5">
-          {['Next.js 16', 'React 19', 'WebGL', 'GSAP'].map((tag) => (
-            <span key={tag} className="text-[9px] px-2 py-0.5 rounded border border-blue-500/20 bg-blue-500/5 text-blue-300 font-mono">
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
-    )
-  },
-  {
-    icon: MessageSquare,
-    title: 'AI Kişisel Asistan',
-    desc: 'Sesli yanıt (TTS/STT) özellikli, tüm veritabanı notlarımı ve projelerimi analiz edebilen entegre yapay zeka sohbet modülü.',
-    color: 'from-purple-500/20 to-pink-500/5',
-    glowColor: 'bg-purple-500/5',
-    borderColor: 'group-hover/card:border-purple-500/40',
-    iconColor: 'text-purple-400',
-    badge: 'Yapay Zeka',
-    renderVisual: () => (
-      <div className="mt-4 p-4 bg-neutral-900/60 border border-purple-500/10 rounded-[1.2rem] space-y-3.5 backdrop-blur-md shadow-inner text-[11px] font-mono">
-        {/* Chat bubbles */}
-        <div className="space-y-2.5">
-          <div className="flex justify-end">
-            <div className="bg-neutral-850 text-neutral-200 px-3 py-1.5 rounded-2xl rounded-tr-sm max-w-[85%] border border-white/5 text-right leading-relaxed">
-              Projelerimi analiz et.
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <div className="w-5 h-5 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-[10px] shrink-0">🤖</div>
-            <div className="bg-purple-950/30 text-purple-200/90 px-3 py-1.5 rounded-2xl rounded-tl-sm max-w-[85%] border border-purple-500/20 leading-relaxed text-[10.5px]">
-              Notlar ve portfolyo tarandı. 12 aktif proje tespit edildi.
-            </div>
-          </div>
-        </div>
-
-        {/* Voice and Waveform Overlay */}
-        <div className="flex items-center justify-between bg-purple-950/20 border border-purple-500/15 rounded-xl px-3 py-2">
-          <div className="flex items-center gap-1 h-6 w-28">
-            {[0.4, 0.7, 0.9, 0.3, 0.5, 0.8, 0.4, 0.6, 0.3].map((h, i) => (
-              <span 
-                key={i} 
-                style={{ height: `${h * 100}%` }} 
-                className="w-1 bg-gradient-to-t from-purple-500 to-pink-400 rounded-full animate-pulse" 
-              />
-            ))}
-          </div>
-          <div className="flex items-center gap-1.5 text-[10px] text-purple-300 uppercase tracking-widest animate-pulse font-bold">
-            <Activity size={10} /> TTS Aktif
-          </div>
-        </div>
-      </div>
-    )
-  },
-  {
-    icon: LineChart,
-    title: 'Finansal Analitik',
-    desc: 'Gelir-gider tabloları, kategorik harcama analizleri ve etkileşimli SVG grafiklerle donatılmış gelişmiş finans yönetim paneli.',
-    color: 'from-emerald-500/20 to-teal-500/5',
-    glowColor: 'bg-emerald-500/5',
-    borderColor: 'group-hover/card:border-emerald-500/40',
-    iconColor: 'text-emerald-400',
-    badge: 'Muhasebe',
-    renderVisual: () => (
-      <div className="mt-4 p-4 bg-neutral-900/60 border border-emerald-500/10 rounded-[1.2rem] space-y-3.5 backdrop-blur-md shadow-inner">
-        {/* Balance & Stats */}
-        <div className="flex items-center justify-between text-mono">
-          <div>
-            <p className="text-[10px] text-neutral-450 uppercase tracking-wider font-mono">Net Bakiye</p>
-            <p className="text-base font-black text-white font-mono mt-0.5">₺134,850.00</p>
-          </div>
-          <div className="text-right">
-            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold font-mono">
-              <TrendingUp size={10} /> +%14.2
-            </div>
-            <p className="text-[9px] text-neutral-450 font-mono mt-1">Son 30 Gün</p>
-          </div>
-        </div>
-
-        {/* SVG Mini Line Chart */}
-        <div className="relative h-14 w-full mt-1 bg-neutral-950/40 rounded-lg border border-white/5 overflow-hidden">
-          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 40" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
-              </linearGradient>
-            </defs>
-            {/* Grid Lines */}
-            <line x1="0" y1="10" x2="100" y2="10" stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />
-            <line x1="0" y1="20" x2="100" y2="20" stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />
-            <line x1="0" y1="30" x2="100" y2="30" stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />
-            {/* Gradient Area under curve */}
-            <path d="M 0 40 L 0 32 Q 25 18 40 25 T 80 8 Q 90 10 100 2 L 100 40 Z" fill="url(#chart-grad)" />
-            {/* Curve stroke */}
-            <path d="M 0 32 Q 25 18 40 25 T 80 8 Q 90 10 100 2" fill="none" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" />
-            {/* Intersect point dot */}
-            <circle cx="80" cy="8" r="1.5" fill="#10b981" />
-            <circle cx="80" cy="8" r="3" fill="none" stroke="#10b981" strokeWidth="0.5" className="animate-ping" style={{ transformOrigin: '80px 8px' }} />
-          </svg>
-          {/* Chart Tooltip */}
-          <div className="absolute top-1 right-6 bg-emerald-500 text-neutral-950 px-1.5 py-0.5 rounded text-[9px] font-black font-mono shadow-md">
-            ₺24,500
-          </div>
-        </div>
-      </div>
-    )
-  },
-  {
-    icon: FileText,
-    title: 'Markdown Editörü',
-    desc: 'R2 bulut medya kütüphanesi entegrasyonu ve anlık canlı önizleme özelliği sunan zengin blog yazma ve not alma editörü.',
-    color: 'from-amber-500/20 to-orange-500/5',
-    glowColor: 'bg-amber-500/5',
-    borderColor: 'group-hover/card:border-amber-500/40',
-    iconColor: 'text-amber-400',
-    badge: 'Blog Editör',
-    renderVisual: () => (
-      <div className="mt-4 p-3 bg-neutral-900/60 border border-amber-500/10 rounded-[1.2rem] backdrop-blur-md shadow-inner grid grid-cols-2 gap-2 h-24 text-[9px] font-mono overflow-hidden">
-        {/* Editor (Left) */}
-        <div className="bg-neutral-950/80 p-2 rounded-lg border border-white/5 flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-1 border-b border-white/5">
-            <span className="text-[8px] text-neutral-450 uppercase tracking-widest flex items-center gap-1"><Terminal size={8} /> EDITÖR</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-          </div>
-          <div className="space-y-0.5 text-neutral-300 font-light overflow-hidden text-[8px] leading-snug">
-            <p><span className="text-amber-500">#</span> Mehmet Kerem</p>
-            <p className="text-neutral-600">---</p>
-            <p><span className="text-amber-500">&gt;</span> Fullstack</p>
-            <p><span className="text-amber-500">-</span> React 19</p>
-            <p><span className="text-amber-500">-</span> WebGL & GSAP</p>
-          </div>
-        </div>
-
-        {/* Live Preview (Right) */}
-        <div className="bg-white/[0.02] p-2 rounded-lg border border-amber-500/15 flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-1 border-b border-amber-500/10">
-            <span className="text-[8px] text-amber-400 uppercase tracking-widest flex items-center gap-1"><FileText size={8} /> ÖNİZLEME</span>
-            <span className="text-[7px] text-emerald-400 px-1 rounded bg-emerald-500/10 border border-emerald-500/20 font-bold uppercase">CANLI</span>
-          </div>
-          <div className="space-y-0.5 text-neutral-200 font-sans leading-tight overflow-hidden text-[8.5px]">
-            <h4 className="font-bold text-white text-[9px] leading-tight">Mehmet Kerem</h4>
-            <div className="border-l border-amber-500/50 pl-1 py-0.5 text-[7.5px] text-neutral-300 italic">
-              Fullstack
-            </div>
-            <ul className="list-disc pl-2 space-y-0.5 text-neutral-300 leading-none">
-              <li>React 19</li>
-              <li>WebGL & GSAP</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    )
-  },
-  {
-    icon: ImageIcon,
-    title: 'Lokal WebP Dönüştürücü',
-    desc: 'Resimleri tarayıcıda tamamen yerel (HTML5 Canvas) olarak işleyen, hiçbir sunucuya yüklemeden sıkıştıran gizlilik odaklı araç.',
-    color: 'from-cyan-500/20 to-blue-500/5',
-    glowColor: 'bg-cyan-500/5',
-    borderColor: 'group-hover/card:border-cyan-500/40',
-    iconColor: 'text-cyan-400',
-    badge: 'Resim Optimizasyon',
-    renderVisual: () => (
-      <div className="mt-4 p-4 bg-neutral-900/60 border border-cyan-500/10 rounded-[1.2rem] space-y-3.5 backdrop-blur-md shadow-inner">
-        {/* Upload area with glowing dashed border */}
-        <div className="border border-dashed border-cyan-500/35 bg-cyan-950/10 rounded-xl p-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-white/5 flex flex-col items-center justify-center relative shrink-0">
-              <span className="text-[8px] font-mono text-neutral-450 uppercase">PNG</span>
-              <span className="text-[9px] text-white font-bold font-mono mt-0.5">2.4<span className="text-[7px]">MB</span></span>
-            </div>
-            <div className="leading-tight">
-              <p className="text-[10px] font-bold text-white font-mono">avatar.png</p>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="w-20 h-1.5 bg-neutral-800 rounded-full overflow-hidden">
-                  <div className="w-[84%] h-full bg-cyan-400 rounded-full" />
-                </div>
-                <span className="text-[9px] text-cyan-400 font-mono font-bold animate-pulse">84%</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="text-right shrink-0">
-            <div className="w-10 h-10 rounded-lg bg-cyan-950/40 border border-cyan-500/30 flex flex-col items-center justify-center relative shadow-md shadow-cyan-500/10">
-              <span className="text-[8px] font-mono text-cyan-300 uppercase">WEBP</span>
-              <span className="text-[9px] text-cyan-400 font-bold font-mono mt-0.5">380<span className="text-[7px]">KB</span></span>
-            </div>
-          </div>
-        </div>
-
-        {/* Efficiency Badge */}
-        <div className="flex items-center justify-between text-[10.5px] font-mono bg-cyan-500/10 border border-cyan-500/20 px-3 py-1.5 rounded-lg">
-          <span className="text-neutral-300">Gizlilik: %100 Yerel İşlem</span>
-          <span className="text-cyan-400 font-bold font-mono uppercase tracking-wider">-%84 Boyut</span>
-        </div>
-      </div>
-    )
-  },
-  {
-    icon: CheckSquare,
-    title: 'Üretkenlik Merkezi',
-    desc: 'Yapılacaklar listesi (Todos), favori linklerin saklandığı yer imleri (Bookmarks) ve hızlı kod kütüphanesi (Snippets).',
-    color: 'from-rose-500/20 to-red-500/5',
-    glowColor: 'bg-rose-500/5',
-    borderColor: 'group-hover/card:border-rose-500/40',
-    iconColor: 'text-rose-400',
-    badge: 'Ajanda',
-    renderVisual: () => (
-      <div className="mt-4 p-3 bg-neutral-900/60 border border-rose-500/10 rounded-[1.2rem] backdrop-blur-md shadow-inner grid grid-cols-2 gap-2 h-24 text-[9px] font-mono overflow-hidden">
-        {/* Checklist */}
-        <div className="bg-neutral-950/80 p-2 rounded-lg border border-white/5 space-y-1.5">
-          <div className="text-[8px] text-neutral-450 uppercase tracking-widest border-b border-white/5 pb-1 flex items-center gap-1"><CheckSquare size={8} /> GÖREVLER</div>
-          <div className="space-y-1">
-            <div className="flex items-center gap-1 text-neutral-500 line-through">
-              <div className="w-3 h-3 rounded bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-[7px] text-rose-400 shrink-0">✓</div>
-              <span className="truncate">CardSwap Refactor</span>
-            </div>
-            <div className="flex items-center gap-1 text-neutral-500 line-through">
-              <div className="w-3 h-3 rounded bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-[7px] text-rose-400 shrink-0">✓</div>
-              <span className="truncate">WebP Converter</span>
-            </div>
-            <div className="flex items-center gap-1 text-neutral-200">
-              <div className="w-3 h-3 rounded border border-white/10 flex items-center justify-center text-[7px] shrink-0" />
-              <span className="truncate flex items-center gap-1">Yayınla <span className="w-1 h-1 rounded-full bg-rose-400 animate-ping" /></span>
-            </div>
-          </div>
-        </div>
-
-        {/* Schedule */}
-        <div className="bg-white/[0.02] p-2 rounded-lg border border-rose-500/15 flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-1 border-b border-rose-500/10">
-            <span className="text-[8px] text-rose-400 uppercase tracking-widest flex items-center gap-1"><Calendar size={8} /> AJANDA</span>
-            <span className="text-[7px] text-neutral-455 font-bold">HAZİRAN</span>
-          </div>
-          <div className="flex justify-between items-center gap-1 mt-1">
-            {/* Small Calendar Row */}
-            {['Pt', 'Sa', 'Ça', 'Pe', 'Cu'].map((day, idx) => (
-              <div key={day} className={`flex flex-col items-center flex-1 py-0.5 rounded ${idx === 0 ? 'bg-rose-500/25 border border-rose-500/30 font-bold text-rose-300' : 'text-neutral-500'}`}>
-                <span className="text-[6px] uppercase">{day}</span>
-                <span className="text-[8px] font-mono mt-0.5">{idx + 1}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    )
+function wrapText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number
+) {
+  const words = text.split(' ');
+  let line = '';
+  let currentY = y;
+  for (const word of words) {
+    const test = line ? line + ' ' + word : word;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      ctx.fillText(line, x, currentY);
+      line = word;
+      currentY += lineHeight;
+    } else {
+      line = test;
+    }
   }
+  if (line) ctx.fillText(line, x, currentY);
+}
+
+function drawIcon(
+  ctx: CanvasRenderingContext2D,
+  idx: number,
+  cx: number,
+  cy: number
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.strokeStyle = iconColors[idx];
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  switch (idx) {
+    case 0: // Layers
+      ctx.strokeRect(-8, -2, 16, 6);
+      ctx.strokeRect(-10, -8, 16, 6);
+      ctx.strokeRect(-6, 4, 16, 4);
+      break;
+    case 1: // MessageSquare
+      roundRect(ctx, -10, -9, 20, 14, 4);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-4, 5);
+      ctx.lineTo(-6, 9);
+      ctx.lineTo(2, 5);
+      ctx.stroke();
+      break;
+    case 2: // LineChart
+      ctx.beginPath();
+      ctx.moveTo(-10, 6);
+      ctx.lineTo(-10, -6);
+      ctx.lineTo(10, -6);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-8, 0);
+      ctx.lineTo(-4, -5);
+      ctx.lineTo(2, -3);
+      ctx.lineTo(8, -8);
+      ctx.stroke();
+      break;
+    case 3: // FileText
+      roundRect(ctx, -8, -10, 16, 20, 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-4, -5);
+      ctx.lineTo(6, -5);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-4, -1);
+      ctx.lineTo(6, -1);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-4, 3);
+      ctx.lineTo(2, 3);
+      ctx.stroke();
+      break;
+    case 4: // Image
+      roundRect(ctx, -10, -10, 20, 20, 3);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(-3, -3, 4, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-10, 2);
+      ctx.lineTo(-4, -1);
+      ctx.lineTo(4, 6);
+      ctx.lineTo(10, 8);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(4, -4, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = iconColors[idx];
+      ctx.fill();
+      break;
+    case 5: // CheckSquare
+      roundRect(ctx, -9, -10, 18, 18, 3);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-4, 0);
+      ctx.lineTo(-1, 3);
+      ctx.lineTo(5, -4);
+      ctx.stroke();
+      break;
+  }
+  ctx.restore();
+}
+
+const iconColors = [
+  '#60a5fa', // blue-400
+  '#c084fc', // purple-400
+  '#34d399', // emerald-400
+  '#fbbf24', // amber-400
+  '#22d3ee', // cyan-400
+  '#fb7185', // rose-400
 ];
 
-// Helper to yield to the main thread between heavy operations
-const yieldToMain = () => new Promise<void>(resolve => setTimeout(resolve, 0));
+// ── Module Visual Drawing Functions ──────────────────────────────────────────
 
-// Schedule work during idle time to avoid blocking user interactions
-const scheduleIdle = (cb: () => void): number => {
-  if (typeof requestIdleCallback === 'function') {
-    return requestIdleCallback(cb, { timeout: 6000 }) as unknown as number;
-  }
-  return setTimeout(cb, 3000) as unknown as number;
-};
+function drawPortfolioVisual(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+  const innerW = w;
+  // Container
+  roundRect(ctx, x, y, innerW, h, 19);
+  ctx.fillStyle = 'rgba(23,23,23,0.6)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(96,165,250,0.1)';
+  ctx.stroke();
 
-const cancelIdle = (id: number) => {
-  if (typeof cancelIdleCallback === 'function') {
-    cancelIdleCallback(id as unknown as number);
-  } else {
-    clearTimeout(id);
+  let cy = y + 16;
+
+  // Profile row
+  roundRect(ctx, x + 10, cy, 10, 10, 3); // avatar placeholder
+  ctx.fillStyle = '#3b82f6';
+  ctx.fill();
+
+  // Name + title
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 12px monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('Mehmet Kerem', x + 26, cy + 6);
+  ctx.fillStyle = '#60a5fa';
+  ctx.font = '8px monospace';
+  ctx.fillText('FULL-STACK DEVELOPER', x + 26, cy + 14);
+
+  // Active badge
+  const badgeX = x + innerW - 56;
+  roundRect(ctx, badgeX, cy, 46, 16, 8);
+  ctx.fillStyle = 'rgba(52,211,153,0.1)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(52,211,153,0.2)';
+  ctx.stroke();
+  ctx.fillStyle = '#6ee7b7';
+  ctx.font = 'bold 8px monospace';
+  ctx.fillText('AKTİF', badgeX + 8, cy + 11);
+
+  // Separator
+  cy += 26;
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.beginPath();
+  ctx.moveTo(x + 10, cy);
+  ctx.lineTo(x + innerW - 10, cy);
+  ctx.stroke();
+  cy += 10;
+
+  // Stats grid (3 columns)
+  const statW = (innerW - 40) / 3;
+  const stats = [
+    { label: 'Projeler', value: '18+' },
+    { label: 'Skor', value: '%100' },
+    { label: 'Deneyim', value: '5y+' },
+  ];
+  for (let i = 0; i < 3; i++) {
+    const sx = x + 10 + i * (statW + 4);
+    roundRect(ctx, sx, cy, statW, 40, 8);
+    ctx.fillStyle = 'rgba(255,255,255,0.04)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.stroke();
+    ctx.fillStyle = '#a3a3a3';
+    ctx.font = '9px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(stats[i].label, sx + statW / 2, cy + 16);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 13px monospace';
+    ctx.fillText(stats[i].value, sx + statW / 2, cy + 32);
   }
-};
+  cy += 54;
+
+  // Tags
+  const tags = ['Next.js 16', 'React 19', 'WebGL', 'GSAP'];
+  let tagX = x + 10;
+  for (const tag of tags) {
+    const tw = ctx.measureText(tag).width + 16;
+    if (tagX + tw > x + innerW - 10) break;
+    roundRect(ctx, tagX, cy, tw, 20, 6);
+    ctx.fillStyle = 'rgba(96,165,250,0.05)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(96,165,250,0.2)';
+    ctx.stroke();
+    ctx.fillStyle = '#93c5fd';
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(tag, tagX + tw / 2, cy + 13);
+    tagX += tw + 6;
+  }
+}
+
+function drawAIVisual(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+  roundRect(ctx, x, y, w, h, 19);
+  ctx.fillStyle = 'rgba(23,23,23,0.6)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(192,132,252,0.1)';
+  ctx.stroke();
+
+  let cy = y + 12;
+
+  // User bubble (right)
+  const userText = 'Projelerimi analiz et.';
+  ctx.font = '10px monospace';
+  const userW = ctx.measureText(userText).width + 20;
+  const userX = x + w - userW - 8;
+  roundRect(ctx, userX, cy, userW, 22, 10);
+  ctx.fillStyle = 'rgba(38,38,38,1)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.stroke();
+  ctx.fillStyle = '#e5e5e5';
+  ctx.textAlign = 'left';
+  ctx.fillText(userText, userX + 10, cy + 15);
+  cy += 30;
+
+  // Bot bubble (left)
+  const botText = 'Notlar ve portfolyo tarandı.';
+  ctx.font = '10px monospace';
+  const botW = ctx.measureText(botText).width + 20;
+  ctx.fillStyle = '#c084fc';
+  ctx.font = '10px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🤖', x + 16, cy + 7);
+  roundRect(ctx, x + 28, cy - 4, Math.min(botW, w - 60), 22, 10);
+  ctx.fillStyle = 'rgba(88,28,135,0.3)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(192,132,252,0.2)';
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(233,213,255,0.9)';
+  ctx.font = '10px monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText(botText, x + 38, cy + 11);
+  cy += 30;
+
+  // Voice waveform + TTS indicator
+  roundRect(ctx, x + 8, cy, w - 16, 32, 11);
+  ctx.fillStyle = 'rgba(88,28,135,0.15)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(192,132,252,0.12)';
+  ctx.stroke();
+
+  // Wave bars
+  const barW = 4;
+  const barGap = 3;
+  const barCount = 9;
+  const barsH = [8, 14, 18, 6, 10, 16, 8, 12, 6];
+  const startBX = x + 16;
+  for (let i = 0; i < barCount; i++) {
+    const bh = barsH[i] || 8;
+    const bx = startBX + i * (barW + barGap);
+    const by = cy + 16 - bh / 2;
+    const barGrad = ctx.createLinearGradient(bx, by, bx, by + bh);
+    barGrad.addColorStop(0, '#c084fc');
+    barGrad.addColorStop(1, '#f472b6');
+    ctx.fillStyle = barGrad;
+    roundRect(ctx, bx, by, barW, bh, 2);
+    ctx.fill();
+  }
+
+  ctx.fillStyle = '#c084fc';
+  ctx.font = 'bold 9px monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText('TTS AKTİF', x + w - 16, cy + 21);
+}
+
+function drawFinanceVisual(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+  roundRect(ctx, x, y, w, h, 19);
+  ctx.fillStyle = 'rgba(23,23,23,0.6)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(52,211,153,0.1)';
+  ctx.stroke();
+
+  // Balance
+  ctx.fillStyle = '#a3a3a3';
+  ctx.font = '9px monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('NET BAKİYE', x + 14, y + 36);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 18px monospace';
+  ctx.fillText('₺134,850.00', x + 14, y + 56);
+
+  // Trending badge
+  const trendX = x + w - 70;
+  roundRect(ctx, trendX, y + 24, 56, 20, 6);
+  ctx.fillStyle = 'rgba(52,211,153,0.15)';
+  ctx.fill();
+  ctx.fillStyle = '#34d399';
+  ctx.font = 'bold 9px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('+%14.2', trendX + 28, y + 38);
+  ctx.fillStyle = '#a3a3a3';
+  ctx.font = '8px monospace';
+  ctx.fillText('Son 30 Gün', trendX + 28, y + 52);
+
+  // Chart
+  const chartX = x + 10;
+  const chartY = y + 68;
+  const chartW = w - 20;
+  const chartH = h - 84;
+
+  roundRect(ctx, chartX, chartY, chartW, chartH, 8);
+  ctx.fillStyle = 'rgba(10,10,10,0.4)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.stroke();
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 0.5;
+  for (let i = 1; i < 4; i++) {
+    const gy = chartY + (chartH / 4) * i;
+    ctx.beginPath();
+    ctx.moveTo(chartX + 4, gy);
+    ctx.lineTo(chartX + chartW - 4, gy);
+    ctx.stroke();
+  }
+
+  // Gradient area
+  const points = [
+    [0, 32], [25, 18], [40, 25], [60, 15], [80, 8], [100, 2],
+  ];
+  ctx.beginPath();
+  ctx.moveTo(chartX + 4, chartY + chartH - 4);
+  for (let i = 0; i < points.length; i++) {
+    const px = chartX + 4 + (points[i][0] / 100) * (chartW - 8);
+    const py = chartY + 4 + (points[i][1] / 43) * (chartH - 8);
+    ctx.lineTo(px, py);
+  }
+  ctx.lineTo(chartX + chartW - 4, chartY + chartH - 4);
+  ctx.closePath();
+  const areaGrad = ctx.createLinearGradient(chartX, chartY, chartX, chartY + chartH);
+  areaGrad.addColorStop(0, 'rgba(16,185,129,0.25)');
+  areaGrad.addColorStop(1, 'rgba(16,185,129,0)');
+  ctx.fillStyle = areaGrad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.strokeStyle = '#10b981';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let i = 0; i < points.length; i++) {
+    const px = chartX + 4 + (points[i][0] / 100) * (chartW - 8);
+    const py = chartY + 4 + (points[i][1] / 43) * (chartH - 8);
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  // Tooltip dot + badge
+  const tpX = chartX + 4 + (80 / 100) * (chartW - 8);
+  const tpY = chartY + 4 + (8 / 43) * (chartH - 8);
+  ctx.beginPath();
+  ctx.arc(tpX, tpY, 3, 0, Math.PI * 2);
+  ctx.fillStyle = '#10b981';
+  ctx.fill();
+  roundRect(ctx, tpX - 22, tpY - 22, 44, 16, 4);
+  ctx.fillStyle = '#10b981';
+  ctx.fill();
+  ctx.fillStyle = '#0a0a0a';
+  ctx.font = 'bold 8px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('₺24,500', tpX, tpY - 11);
+}
+
+function drawMarkdownVisual(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+  const halfW = (w - 8) / 2;
+
+  // Left pane (Editor)
+  roundRect(ctx, x, y, halfW, h, 12);
+  ctx.fillStyle = 'rgba(10,10,10,0.8)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.stroke();
+
+  ctx.fillStyle = '#a3a3a3';
+  ctx.font = '7px monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('EDİTÖR', x + 8, y + 14);
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.beginPath();
+  ctx.moveTo(x + 6, y + 20);
+  ctx.lineTo(x + halfW - 6, y + 20);
+  ctx.stroke();
+
+  const editorLines = [
+    { text: '# Mehmet Kerem', color: '#f59e0b' },
+    { text: '---', color: '#525252' },
+    { text: '> Fullstack Dev', color: '#f59e0b' },
+    { text: '- React 19', color: '#f59e0b' },
+    { text: '- WebGL & GSAP', color: '#f59e0b' },
+  ];
+  ctx.font = '8px monospace';
+  for (let i = 0; i < editorLines.length; i++) {
+    ctx.fillStyle = editorLines[i].color;
+    ctx.fillText(editorLines[i].text, x + 8, y + 32 + i * 14);
+  }
+
+  // Right pane (Preview)
+  const rx = x + halfW + 8;
+  roundRect(ctx, rx, y, halfW, h, 12);
+  ctx.fillStyle = 'rgba(255,255,255,0.015)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(251,191,36,0.12)';
+  ctx.stroke();
+
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = '7px monospace';
+  ctx.fillText('ÖNİZLEME', rx + 8, y + 14);
+  ctx.strokeStyle = 'rgba(251,191,36,0.08)';
+  ctx.beginPath();
+  ctx.moveTo(rx + 6, y + 20);
+  ctx.lineTo(rx + halfW - 6, y + 20);
+  ctx.stroke();
+
+  ctx.fillStyle = '#52b950';
+  ctx.font = 'bold 6px monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText('CANLI', rx + halfW - 8, y + 14);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 9px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('Mehmet Kerem', rx + 8, y + 34);
+
+  ctx.fillStyle = 'rgba(212,212,212,0.8)';
+  ctx.font = 'italic 7px sans-serif';
+  ctx.fillStyle = 'rgba(251,191,36,0.5)';
+  ctx.fillRect(rx + 8, y + 42, 2, 18);
+  ctx.fillStyle = 'rgba(212,212,212,0.7)';
+  ctx.fillText('Fullstack Dev', rx + 14, y + 48);
+
+  ctx.fillStyle = 'rgba(163,163,163,1)';
+  ctx.font = '7px sans-serif';
+  ctx.fillText('• React 19', rx + 12, y + 64);
+  ctx.fillText('• WebGL & GSAP', rx + 12, y + 76);
+}
+
+function drawWebPVisual(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+  roundRect(ctx, x, y, w, h, 19);
+  ctx.fillStyle = 'rgba(23,23,23,0.6)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(34,211,238,0.1)';
+  ctx.stroke();
+
+  // Upload area with dashed border
+  roundRect(ctx, x + 10, y + 10, w - 20, h / 2 - 10, 12);
+  ctx.fillStyle = 'rgba(8,145,178,0.08)';
+  ctx.fill();
+  ctx.setLineDash([4, 4]);
+  ctx.strokeStyle = 'rgba(34,211,238,0.3)';
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // File card (left)
+  const fileX = x + 20;
+  const fileY = y + 24;
+  roundRect(ctx, fileX, fileY, 36, 36, 8);
+  ctx.fillStyle = 'rgba(38,38,38,1)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.stroke();
+  ctx.fillStyle = '#a3a3a3';
+  ctx.font = '7px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('PNG', fileX + 18, fileY + 18);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 8px monospace';
+  ctx.fillText('2.4MB', fileX + 18, fileY + 28);
+
+  // File name + progress
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 9px monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('avatar.png', x + 64, y + 34);
+  roundRect(ctx, x + 64, y + 42, 64, 6, 3);
+  ctx.fillStyle = 'rgba(38,38,38,1)';
+  ctx.fill();
+  roundRect(ctx, x + 64, y + 42, 64 * 0.84, 6, 3);
+  ctx.fillStyle = '#22d3ee';
+  ctx.fill();
+  ctx.fillStyle = '#22d3ee';
+  ctx.font = 'bold 8px monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText('84%', x + w - 20, y + 48);
+
+  // Output card (right)
+  const outX = x + w - 56;
+  roundRect(ctx, outX, fileY, 36, 36, 8);
+  ctx.fillStyle = 'rgba(8,145,178,0.35)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(34,211,238,0.25)';
+  ctx.stroke();
+  ctx.fillStyle = '#67e8f9';
+  ctx.font = '7px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('WEBP', outX + 18, fileY + 18);
+  ctx.fillText('380KB', outX + 18, fileY + 28);
+
+  // Efficiency badge
+  roundRect(ctx, x + 10, y + h / 2 + 4, w - 20, 24, 8);
+  ctx.fillStyle = 'rgba(34,211,238,0.08)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(34,211,238,0.18)';
+  ctx.stroke();
+  ctx.fillStyle = '#e5e5e5';
+  ctx.font = '9px monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('Gizlilik: %100 Yerel İşlem', x + 20, y + h / 2 + 20);
+  ctx.fillStyle = '#22d3ee';
+  ctx.font = 'bold 9px monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText('-%84 Boyut', x + w - 20, y + h / 2 + 20);
+}
+
+function drawProductivityVisual(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+  const halfW = (w - 8) / 2;
+
+  // Left pane (Tasks)
+  roundRect(ctx, x, y, halfW, h, 12);
+  ctx.fillStyle = 'rgba(10,10,10,0.8)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.stroke();
+
+  ctx.fillStyle = '#a3a3a3';
+  ctx.font = '7px monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('GÖREVLER', x + 8, y + 14);
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.beginPath();
+  ctx.moveTo(x + 6, y + 20);
+  ctx.lineTo(x + halfW - 6, y + 20);
+  ctx.stroke();
+
+  // Done tasks
+  const tasks = [
+    { text: 'CardSwap Refactor', done: true },
+    { text: 'WebP Converter', done: true },
+    { text: 'Yayınla', done: false },
+  ];
+  for (let i = 0; i < tasks.length; i++) {
+    const ty = y + 32 + i * 18;
+    const t = tasks[i];
+    roundRect(ctx, x + 8, ty, 12, 12, 4);
+    if (t.done) {
+      ctx.fillStyle = 'rgba(251,113,133,0.15)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(251,113,133,0.25)';
+      ctx.stroke();
+      ctx.fillStyle = '#fb7185';
+      ctx.font = '7px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('✓', x + 14, ty + 10);
+      ctx.fillStyle = 'rgba(115,115,115,1)';
+      ctx.font = '8px monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(t.text, x + 26, ty + 10);
+    } else {
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(229,229,229,1)';
+      ctx.textAlign = 'left';
+      ctx.fillText(t.text, x + 26, ty + 10);
+    }
+  }
+
+  // Right pane (Calendar)
+  const rx = x + halfW + 8;
+  roundRect(ctx, rx, y, halfW, h, 12);
+  ctx.fillStyle = 'rgba(255,255,255,0.015)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(251,113,133,0.12)';
+  ctx.stroke();
+
+  ctx.fillStyle = '#fb7185';
+  ctx.font = '7px monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('AJANDA', rx + 8, y + 14);
+  ctx.strokeStyle = 'rgba(251,113,133,0.08)';
+  ctx.beginPath();
+  ctx.moveTo(rx + 6, y + 20);
+  ctx.lineTo(rx + halfW - 6, y + 20);
+  ctx.stroke();
+
+  const days = ['Pt', 'Sa', 'Ça', 'Pe', 'Cu'];
+  const dayW = (halfW - 12) / 5;
+  for (let i = 0; i < days.length; i++) {
+    const dx = rx + 6 + i * dayW;
+    const dy = y + 26;
+    if (i === 0) {
+      roundRect(ctx, dx, dy, dayW - 1, 30, 6);
+      ctx.fillStyle = 'rgba(251,113,133,0.2)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(251,113,133,0.25)';
+      ctx.stroke();
+      ctx.fillStyle = '#fda4af';
+    } else {
+      ctx.fillStyle = '#525252';
+    }
+    ctx.font = '6px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(days[i], dx + dayW / 2 - 0.5, dy + 14);
+    ctx.font = '9px monospace';
+    ctx.fillText(String(i + 1), dx + dayW / 2 - 0.5, dy + 26);
+  }
+}
+
+// ── Module Definitions ───────────────────────────────────────────────────────
+
+const MODULES: {
+  icon: string;
+  title: string;
+  desc: string;
+  colorStart: string;
+  colorEnd: string;
+  badge: string;
+  drawVisual: (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) => void;
+}[] = [
+  {
+    icon: 'Layers',
+    title: 'Kişisel Portfolyo',
+    desc: 'Yaptığım projeleri, tasarım çalışmalarımı ve yazılım tecrübelerimi modern bir arayüzle sergilediğim kişisel showcase alanı.',
+    colorStart: 'rgba(59,130,246,0.2)',
+    colorEnd: 'rgba(99,102,241,0.05)',
+    badge: 'Portfolyo',
+    drawVisual: drawPortfolioVisual,
+  },
+  {
+    icon: 'MessageSquare',
+    title: 'AI Kişisel Asistan',
+    desc: 'Sesli yanıt (TTS/STT) özellikli, tüm veritabanı notlarımı ve projelerimi analiz edebilen entegre yapay zeka sohbet modülü.',
+    colorStart: 'rgba(168,85,247,0.2)',
+    colorEnd: 'rgba(236,72,153,0.05)',
+    badge: 'Yapay Zeka',
+    drawVisual: drawAIVisual,
+  },
+  {
+    icon: 'LineChart',
+    title: 'Finansal Analitik',
+    desc: 'Gelir-gider tabloları, kategorik harcama analizleri ve etkileşimli SVG grafiklerle donatılmış gelişmiş finans yönetim paneli.',
+    colorStart: 'rgba(16,185,129,0.2)',
+    colorEnd: 'rgba(20,184,166,0.05)',
+    badge: 'Muhasebe',
+    drawVisual: drawFinanceVisual,
+  },
+  {
+    icon: 'FileText',
+    title: 'Markdown Editörü',
+    desc: 'R2 bulut medya kütüphanesi entegrasyonu ve anlık canlı önizleme özelliği sunan zengin blog yazma ve not alma editörü.',
+    colorStart: 'rgba(245,158,11,0.2)',
+    colorEnd: 'rgba(249,115,22,0.05)',
+    badge: 'Blog Editör',
+    drawVisual: drawMarkdownVisual,
+  },
+  {
+    icon: 'Image',
+    title: 'Lokal WebP Dönüştürücü',
+    desc: 'Resimleri tarayıcıda tamamen yerel (HTML5 Canvas) olarak işleyen, hiçbir sunucuya yüklemeden sıkıştıran gizlilik odaklı araç.',
+    colorStart: 'rgba(6,182,212,0.2)',
+    colorEnd: 'rgba(59,130,246,0.05)',
+    badge: 'Resim Optimizasyon',
+    drawVisual: drawWebPVisual,
+  },
+  {
+    icon: 'CheckSquare',
+    title: 'Üretkenlik Merkezi',
+    desc: 'Yapılacaklar listesi (Todos), favori linklerin saklandığı yer imleri (Bookmarks) ve hızlı kod kütüphanesi (Snippets).',
+    colorStart: 'rgba(244,63,94,0.2)',
+    colorEnd: 'rgba(239,68,68,0.05)',
+    badge: 'Ajanda',
+    drawVisual: drawProductivityVisual,
+  },
+];
+
+// ── Yield Helpers ────────────────────────────────────────────────────────────
+
+const yieldToMain = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+// ── Component ────────────────────────────────────────────────────────────────
 
 export default function FeaturesSection() {
   const [cardImages, setCardImages] = useState<string[]>([]);
-  const [showHiddenCards, setShowHiddenCards] = useState(false);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const sectionRef = useRef<HTMLDivElement>(null);
-
-  // Defer rendering of hidden capture cards to avoid bloating initial DOM
-  useEffect(() => {
-    const id = scheduleIdle(() => setShowHiddenCards(true));
-    return () => cancelIdle(id);
-  }, []);
+  const didGenerate = useRef(false);
 
   useEffect(() => {
-    if (!showHiddenCards) return;
+    if (didGenerate.current) return;
 
-    let observer: IntersectionObserver | null = null;
-    let didCapture = false;
     let cancelled = false;
+    let observer: IntersectionObserver | null = null;
 
-    const captureAll = async () => {
-      if (didCapture || cancelled) return;
-      didCapture = true;
+    const generateAll = async () => {
+      if (didGenerate.current || cancelled) return;
+      didGenerate.current = true;
 
-      if (observer) {
-        observer.disconnect();
-      }
+      if (observer) observer.disconnect();
 
-      // Small delay to ensure browser layout is stable
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      
+      // Wait for layout stability
+      await new Promise((r) => setTimeout(r, 200));
+
+      // Create one shared canvas for drawing
+      const canvas = document.createElement('canvas');
+      canvas.width = CARD_W * SCALE;
+      canvas.height = CARD_H * SCALE;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
       const images: string[] = [];
-      for (let i = 0; i < cardRefs.current.length; i++) {
+      for (let i = 0; i < MODULES.length; i++) {
         if (cancelled) return;
-        const el = cardRefs.current[i];
-        if (el) {
-          try {
-            const dataUrl = await captureElement(el);
-            images.push(dataUrl);
-            // Yield to main thread between captures to prevent long tasks
-            await yieldToMain();
-          } catch (err) {
-            console.error('Failed to capture card', i, err);
-          }
+        try {
+          const dataUrl = drawModuleCard(ctx, i);
+          images.push(dataUrl);
+          await yieldToMain();
+        } catch (err) {
+          console.error('Failed to render card', i, err);
         }
       }
-      if (!cancelled && images.length === cardRefs.current.length) {
+      if (!cancelled && images.length === MODULES.length) {
         setCardImages(images);
       }
     };
 
-    // Use requestIdleCallback so capture doesn't compete with initial page interactions
-    const idleId = scheduleIdle(() => { captureAll(); });
+    // Defer generation so it doesn't block page paint
+    const idleId =
+      typeof requestIdleCallback === 'function'
+        ? requestIdleCallback(() => generateAll(), { timeout: 4000 })
+        : setTimeout(() => generateAll(), 500);
 
-    // Intersection observer to trigger capture when user scrolls near
-    if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
-      observer = new IntersectionObserver((entries) => {
-        if (entries.some(entry => entry.isIntersecting)) {
-          cancelIdle(idleId);
-          captureAll();
-        }
-      }, {
-        rootMargin: '400px'
-      });
-
-      if (sectionRef.current) {
-        observer.observe(sectionRef.current);
-      }
+    // Also trigger via IntersectionObserver when user scrolls near
+    if (typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) {
+            if (typeof idleId === 'number') {
+              cancelIdleCallback(idleId);
+            } else {
+              clearTimeout(idleId);
+            }
+            generateAll();
+          }
+        },
+        { rootMargin: '400px' }
+      );
+      if (sectionRef.current) observer.observe(sectionRef.current);
     }
 
     return () => {
       cancelled = true;
-      cancelIdle(idleId);
-      if (observer) {
-        observer.disconnect();
+      if (typeof idleId === 'number') {
+        cancelIdleCallback(idleId);
+      } else {
+        clearTimeout(idleId);
       }
+      if (observer) observer.disconnect();
     };
-  }, [showHiddenCards]);
+  }, []);
 
   return (
-    <section id="capabilities" ref={sectionRef} className="py-24 border-t border-white/5 bg-black relative overflow-hidden">
-      {/* Hidden element to force browser to load Orbitron font file locally complying with CSP */}
-      <span className={`${orbitron.className} absolute opacity-0 pointer-events-none -z-50`} aria-hidden="true">
+    <section
+      id="capabilities"
+      ref={sectionRef}
+      className="py-24 border-t border-white/5 bg-black relative overflow-hidden"
+    >
+      <span
+        className={`${orbitron.className} absolute opacity-0 pointer-events-none -z-50`}
+        aria-hidden="true"
+      >
         Orbitron Font Loader
       </span>
 
@@ -481,65 +926,29 @@ export default function FeaturesSection() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[35vw] bg-white/[0.01] rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-72 h-72 bg-white/[0.02] rounded-full blur-[90px] pointer-events-none" />
 
-      {/* Invisible capturing container – deferred to avoid bloating initial render */}
-      {showHiddenCards && <div className="absolute opacity-0 pointer-events-none -z-50 top-0 left-0 flex flex-col gap-4" style={{ width: '320px' }}>
-        {MODULES.map((mod, idx) => {
-          const Icon = mod.icon;
-          return (
-            <div
-              key={mod.title}
-              ref={(el) => { cardRefs.current[idx] = el; }}
-              className={`group/card relative overflow-hidden rounded-2xl border border-white/15 bg-neutral-950 p-6 ${mod.borderColor} w-[320px] h-[400px] flex flex-col justify-between`}
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${mod.color} opacity-30 pointer-events-none`} />
-              <div className={`absolute top-0 right-0 w-28 h-28 rounded-full blur-3xl opacity-25 pointer-events-none ${mod.glowColor}`} />
-
-              <div className="relative z-10 flex flex-col h-full justify-between w-full">
-                <div>
-                  <div className="flex items-center justify-between mb-3.5">
-                    <div className={`w-12 h-12 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center ${mod.iconColor} shrink-0`}>
-                      <Icon size={22} />
-                    </div>
-                    <span className="text-[10px] font-mono tracking-widest uppercase border border-white/10 bg-white/10 px-2.5 py-1 rounded-md text-neutral-300">
-                      {mod.badge}
-                    </span>
-                  </div>
-
-                  <h3 className="text-xl font-bold text-white mb-2.5 tracking-tight">
-                    {mod.title}
-                  </h3>
-                  <p className="text-neutral-300 text-[13px] leading-relaxed font-normal">
-                    {mod.desc}
-                  </p>
-                </div>
-
-                <div className="mt-3.5">
-                  {mod.renderVisual()}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>}
-
       <div className="container mx-auto px-6 lg:px-12 relative z-10">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-16 lg:gap-20">
-          
           {/* Left: Text Content */}
           <div className="max-w-2xl lg:max-w-xl animate-on-scroll">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 text-[11px] font-mono tracking-widest uppercase text-neutral-300 mb-6">
               <Sparkles size={11} className="text-yellow-500 animate-pulse" />
               <span>Kişisel Ekosistem</span>
             </div>
-            
+
             <h2 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-b from-white to-neutral-400 leading-tight">
-              Peki, Nedir<br />Bu Site?
+              Peki, Nedir
+              <br />
+              Bu Site?
             </h2>
             <p className="mt-6 text-neutral-350 text-lg sm:text-xl leading-relaxed font-light">
-              Burası aslında benim internetteki küçük atölyem. Hem yaptığım projeleri paylaşıyorum hem de günlük hayatta işime yarayan küçük araçları burada toplayıp kullanıyorum.
+              Burası aslında benim internetteki küçük atölyem. Hem yaptığım projeleri
+              paylaşıyorum hem de günlük hayatta işime yarayan küçük araçları burada
+              toplayıp kullanıyorum.
             </p>
             <p className="mt-4 text-neutral-400 text-sm sm:text-base leading-relaxed font-light">
-              Kendi ihtiyaçlarıma göre şekillendirdiğim, yeni bir şeye ihtiyaç duydukça geliştirmeye devam ettiğim bir yer. Yani sadece sabit bir site değil, benimle birlikte büyüyüp değişen canlı bir köşe.
+              Kendi ihtiyaçlarıma göre şekillendirdiğim, yeni bir şeye ihtiyaç
+              duydukça geliştirmeye devam ettiğim bir yer. Yani sadece sabit bir site
+              değil, benimle birlikte büyüyüp değişen canlı bir köşe.
             </p>
           </div>
 
@@ -555,7 +964,7 @@ export default function FeaturesSection() {
                 scrollSpeed={2}
                 items={cardImages.map((img, idx) => ({
                   image: img,
-                  text: MODULES[idx].title
+                  text: MODULES[idx].title,
                 }))}
               />
             ) : (
@@ -565,7 +974,6 @@ export default function FeaturesSection() {
               </div>
             )}
           </div>
-
         </div>
       </div>
     </section>
