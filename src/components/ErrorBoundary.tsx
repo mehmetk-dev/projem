@@ -72,10 +72,6 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
           </div>
           
-          <div className="p-3 bg-rose-500/5 rounded-lg border border-rose-500/10 text-xs text-rose-300 font-mono break-all max-h-32 overflow-y-auto">
-            {this.state.error.message}
-          </div>
-
           <div className="flex gap-2">
             <button
               onClick={this.handleReset}

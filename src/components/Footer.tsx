@@ -1,9 +1,8 @@
 import Link from 'next/link';
 
 const FOOTER_NAV = [
-  { href: '#about', label: 'Hakkımda' },
-  { href: '#work', label: 'Projeler' },
-  { href: '#blog', label: 'Yazılarım' },
+  { href: '/projects', label: 'Projeler' },
+  { href: '/blog', label: 'Yazılarım' },
   { href: '#contact', label: 'İletişim' },
 ];
 
@@ -21,7 +20,7 @@ export default function Footer() {
           <Link href="/" className="logo text-4xl font-black tracking-tighter uppercase">
             MEHMET
             <br />
-            <span className="text-neutral-600">KEREM.</span>
+            <span className="text-neutral-500">KEREM</span>
           </Link>
 
           <nav className="flex flex-wrap justify-center gap-8 md:gap-12 text-[11px] font-medium tracking-[0.2em] uppercase text-neutral-400">
@@ -37,7 +36,7 @@ export default function Footer() {
           </nav>
         </div>
 
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-10 border-t border-white/5 text-[11px] font-mono tracking-[0.1em] text-neutral-600 uppercase">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-10 border-t border-white/5 text-[11px] font-mono tracking-[0.1em] text-neutral-500 uppercase">
           <div>© 2026 Mehmet Kerem. Tüm hakları saklıdır.</div>
           <div className="flex gap-6">
             {SOCIAL_LINKS.map((item) => (

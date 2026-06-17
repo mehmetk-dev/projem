@@ -2,11 +2,12 @@
 
 import { db } from '@/db';
 import { directMessages, messages, users } from '@/db/schema';
-import { and, asc, desc, eq, ne } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ne } from 'drizzle-orm';
 import { getCurrentUser, requireAdmin } from '@/lib/auth';
 import { rateLimitCheck, getClientIP, formatRateLimitError } from '@/lib/rate-limit';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import { sendContactEmail } from '@/lib/mail';
 
 export interface MessageActionState {
   error?: string;
@@ -55,6 +56,12 @@ export async function submitContactAction(
 
   try {
     await db.insert(messages).values(result.data);
+    
+    // Send email notification asynchronously
+    sendContactEmail(result.data.name, result.data.email, result.data.content).catch((err) => {
+      console.error('Failed to trigger email notification:', err);
+    });
+
     revalidatePath('/dashboard/messages');
     return { success: 'Mesajınız iletildi. En kısa sürede dönüş yapacağım.' };
   } catch (error) {
@@ -70,8 +77,8 @@ export async function getMessages() {
 
 export async function getUnreadMessageCount() {
   await requireAdmin();
-  const all = await db.select().from(messages).where(eq(messages.read, false)).all();
-  return all.length;
+  const row = await db.select({ value: count() }).from(messages).where(eq(messages.read, false)).get();
+  return row?.value ?? 0;
 }
 
 export async function markMessageReadAction(formData: FormData): Promise<MessageActionState> {

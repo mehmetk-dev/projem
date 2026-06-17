@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { LocationIcon } from './Icons';
-import { AnimatedText } from './AnimatedText';
+import SplitText from './SplitText';
 
 const Galaxy = dynamic(() => import('./Galaxy'), { ssr: false });
 
@@ -14,13 +14,31 @@ interface HeroSectionProps {
 
 export default function HeroSection({ displayName }: HeroSectionProps) {
   const [showGalaxy, setShowGalaxy] = useState(false);
+  const [greetingComplete, setGreetingComplete] = useState(false);
+  const [sentenceComplete, setSentenceComplete] = useState(false);
 
   useEffect(() => {
     const desktopQuery = window.matchMedia('(min-width: 768px)');
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setShowGalaxy(desktopQuery.matches && !motionQuery.matches);
 
-    update();
+    if (!desktopQuery.matches || motionQuery.matches) return;
+
+    // Delay Galaxy mount so WebGL shader compilation doesn't block initial paint
+    const scheduleGalaxy = () => {
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(() => setShowGalaxy(true), { timeout: 2000 });
+      } else {
+        setTimeout(() => setShowGalaxy(true), 1200);
+      }
+    };
+
+    scheduleGalaxy();
+
+    const update = () => {
+      const shouldShow = desktopQuery.matches && !motionQuery.matches;
+      if (!shouldShow) setShowGalaxy(false);
+    };
+
     desktopQuery.addEventListener('change', update);
     motionQuery.addEventListener('change', update);
 
@@ -57,18 +75,6 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
 
       <div className="container mx-auto px-6 lg:px-12 relative z-10 w-full">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-center justify-center lg:justify-start w-full">
-          <div className="hidden lg:flex flex-col items-center justify-center h-full shrink-0">
-            <div className="[writing-mode:vertical-rl] rotate-180 text-[clamp(60px,10vh,120px)] leading-[0.75] font-black tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-t from-white via-white to-neutral-900 select-none opacity-90">
-              <AnimatedText text={displayName} />
-            </div>
-          </div>
-
-          <div className="lg:hidden w-full text-center mb-4">
-            <div className="text-[clamp(40px,10vw,80px)] leading-tight font-black tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-neutral-500 flex items-center justify-center">
-              <AnimatedText text={displayName} />
-            </div>
-          </div>
-
           <div className="flex flex-col lg:flex-row-reverse items-center lg:items-center justify-between w-full gap-12 lg:gap-16">
             {/* Photo: Right Side on Desktop */}
             <div className="relative group shrink-0 w-[260px] h-[340px] md:w-[320px] md:h-[420px] lg:w-[360px] lg:h-[480px] animate-on-scroll">
@@ -88,7 +94,7 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
             {/* Bio: Left Side on Desktop */}
             <div className="flex flex-col max-w-xl">
               <div className="flex items-center gap-4 mb-4 text-[10px] md:text-[11px] font-mono tracking-[0.3em] uppercase text-neutral-500">
-                <span>Yazılım Geliştirici & Ürün Tasarımcısı</span>
+                <span>Yazılım Geliştirici</span>
                 <span className="w-1 h-1 bg-neutral-500 rounded-full" />
                 <span className="flex items-center gap-2">
                   <LocationIcon />
@@ -96,16 +102,34 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
                 </span>
               </div>
 
-              <div className="text-2xl md:text-3xl lg:text-4xl font-light text-neutral-400 leading-[1.3] tracking-tight">
-                <AnimatedText text="Selam! Ben Kerem." /> <br className="hidden md:block" />
-                <AnimatedText text="Tasarım ve yazılımı birleştirerek " />
-                <strong className="font-medium text-white">
-                  <AnimatedText text="modern ve hızlı" />
-                </strong>
-                <AnimatedText text=" dijital ürünler inşa ediyorum." />
+              <div 
+                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif' }}
+                className="text-2xl md:text-3xl lg:text-4xl font-light text-neutral-400 leading-[1.3] tracking-tight"
+              >
+                <SplitText 
+                  text="Selam! Ben Mehmet." 
+                  splitType="lines" 
+                  className="inline-block" 
+                  delay={200}
+                  onLetterAnimationComplete={() => setGreetingComplete(true)} 
+                /> <br className="hidden md:block" />
+                
+                <SplitText 
+                  splitType="lines" 
+                  play={greetingComplete} 
+                  delay={200}
+                  onLetterAnimationComplete={() => setSentenceComplete(true)}
+                >
+                  Tasarım ve yazılımı birleştirerek <strong className="font-medium text-white">modern ve hızlı</strong> dijital ürünler inşa ediyorum.
+                </SplitText>
                 
                 <div className="mt-6 text-lg md:text-xl text-neutral-400 leading-relaxed max-w-xl">
-                  <AnimatedText text="Karmaşık fikirleri basit, estetik ve hızlı çözümlere dönüştürmeyi çok seviyorum. Seninle tanıştığıma memnun oldum!" />
+                  <SplitText 
+                    text="Karmaşık fikirleri basit, estetik ve hızlı çözümlere dönüştürmeyi çok seviyorum. Seninle tanıştığıma memnun oldum!" 
+                    splitType="lines" 
+                    play={sentenceComplete} 
+                    delay={150} 
+                  />
                 </div>
               </div>
             </div>

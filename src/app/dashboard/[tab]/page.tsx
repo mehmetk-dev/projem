@@ -22,6 +22,7 @@ import { redirect, notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import TabClientRenderer from '@/components/dashboard/TabClientRenderer';
 import { TabId } from '@/components/dashboard/types';
+import { logServerError } from '@/lib/server/error-response';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,9 +35,52 @@ const VALID_TABS: TabId[] = [
 
 const ADMIN_ONLY_TABS = ['blogs', 'projects', 'chat', 'spotify', 'audit', 'users', 'social', 'subscribers', 'files'];
 
+const TAB_LABELS: Record<TabId, string> = {
+  overview: 'Genel Bakış',
+  notes: 'Notlar',
+  blogs: 'Blog',
+  projects: 'Projeler',
+  messages: 'Mesajlar',
+  todos: 'Görevler',
+  payments: 'Ödemeler',
+  bookmarks: 'Linkler',
+  snippets: 'Kodlar',
+  analytics: 'İstatistik',
+  calendar: 'Ajanda',
+  timer: 'Zamanlayıcı',
+  chat: 'Chat',
+  spotify: 'Spotify',
+  settings: 'Ayarlar',
+  guestbook: 'Ziyaretçi Defteri',
+  comments: 'Yorumlar',
+  audit: 'Audit Log',
+  users: 'Kullanıcılar',
+  social: 'Sosyal Linkler',
+  subscribers: 'Aboneler',
+  journal: 'Günlük',
+  files: 'Dosyalar',
+};
+
 interface PageProps {
   params: Promise<{ tab: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+function DashboardContentSkeleton() {
+  return (
+    <div className="space-y-5">
+      <div className="space-y-3">
+        <div className="h-8 w-44 animate-pulse rounded-lg bg-white/[0.06]" />
+        <div className="h-4 w-32 animate-pulse rounded-lg bg-white/[0.04]" />
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        {[0, 1, 2, 3].map((item) => (
+          <div key={item} className="h-28 animate-pulse rounded-2xl border border-white/5 bg-neutral-900/30" />
+        ))}
+      </div>
+      <div className="h-64 animate-pulse rounded-2xl border border-white/5 bg-neutral-900/30" />
+    </div>
+  );
 }
 
 export default async function DashboardTabPage({ params, searchParams }: PageProps) {
@@ -64,86 +108,120 @@ export default async function DashboardTabPage({ params, searchParams }: PagePro
     redirect('/dashboard');
   }
 
+  return (
+    <Suspense fallback={<DashboardContentSkeleton />}>
+      <DashboardTabContent
+        tab={tab as TabId}
+        isAdmin={isAdmin}
+        userEmail={user.email}
+        openCreateProject={openCreateProject}
+      />
+    </Suspense>
+  );
+}
+
+async function DashboardTabContent({
+  tab,
+  isAdmin,
+  userEmail,
+  openCreateProject,
+}: {
+  tab: TabId;
+  isAdmin: boolean;
+  userEmail: string;
+  openCreateProject: boolean;
+}) {
   const data: Record<string, unknown> = {};
 
-  // Query ONLY the database table required for the current active tab
-  switch (tab) {
-    case 'notes':
-      data.notes = await getNotes();
-      break;
-    case 'blogs':
-      data.blogs = await getMyBlogs();
-      break;
-    case 'projects':
-      data.projects = await getMyProjects();
-      break;
-    case 'messages':
-      data.directMessageData = await getDirectMessageDashboardData();
-      data.messages = isAdmin ? await getMessages() : [];
-      break;
-    case 'todos':
-    case 'calendar':
-      data.todos = await getMyTodos();
-      break;
-    case 'payments':
-      data.payments = await getMyPayments();
-      break;
-    case 'bookmarks':
-      data.bookmarks = await getMyBookmarks();
-      break;
-    case 'snippets':
-      data.snippets = await getMySnippets();
-      break;
-    case 'analytics':
-      data.analytics = await getAnalytics();
-      break;
-    case 'timer':
-      data.preferences = await getMyPreferences();
-      break;
-    case 'chat':
-      data.conversations = await getConversations();
-      data.chatSettings = await getChatSettings();
-      break;
-    case 'spotify':
-      data.spotifyData = await getSpotifyNowPlaying().catch(() => null);
-      data.recentTracks = await getSpotifyRecentTracks();
-      data.settings = await getSettings();
-      break;
-    case 'settings':
-      data.settings = await getSettings();
-      data.preferences = await getMyPreferences();
-      break;
-    case 'guestbook':
-      data.entries = await getAllGuestbookEntries();
-      break;
-    case 'comments':
-      data.comments = await getAllComments();
-      break;
-    case 'audit':
-      data.logs = await getAuditLogs();
-      break;
-    case 'users':
-      data.users = await getAllUsers();
-      break;
-    case 'social':
-      data.links = await getAllSocialLinks();
-      break;
-    case 'subscribers':
-      data.subscribers = await getSubscribers();
-      break;
-    case 'journal':
-      data.entries = await getJournalEntries();
-      break;
-    case 'files':
-      // Files uses R2 API on-demand, no pre-fetched data needed
-      break;
-    default:
-      notFound();
+  try {
+    // Query ONLY the database table required for the current active tab
+    switch (tab) {
+      case 'notes':
+        data.notes = await getNotes();
+        break;
+      case 'blogs':
+        data.blogs = await getMyBlogs();
+        break;
+      case 'projects':
+        data.projects = await getMyProjects();
+        break;
+      case 'messages':
+        [data.directMessageData, data.messages] = await Promise.all([
+          getDirectMessageDashboardData(),
+          isAdmin ? getMessages() : Promise.resolve([]),
+        ]);
+        break;
+      case 'todos':
+      case 'calendar':
+        data.todos = await getMyTodos();
+        break;
+      case 'payments':
+        data.payments = await getMyPayments();
+        break;
+      case 'bookmarks':
+        data.bookmarks = await getMyBookmarks();
+        break;
+      case 'snippets':
+        data.snippets = await getMySnippets();
+        break;
+      case 'analytics':
+        data.analytics = await getAnalytics();
+        break;
+      case 'timer':
+        data.preferences = await getMyPreferences();
+        break;
+      case 'chat':
+        [data.conversations, data.chatSettings] = await Promise.all([
+          getConversations(),
+          getChatSettings(),
+        ]);
+        break;
+      case 'spotify':
+        [data.spotifyData, data.recentTracks, data.settings] = await Promise.all([
+          getSpotifyNowPlaying().catch(() => null),
+          getSpotifyRecentTracks(),
+          getSettings(),
+        ]);
+        break;
+      case 'settings':
+        [data.settings, data.preferences] = await Promise.all([
+          getSettings(),
+          getMyPreferences(),
+        ]);
+        break;
+      case 'guestbook':
+        data.entries = await getAllGuestbookEntries();
+        break;
+      case 'comments':
+        data.comments = await getAllComments();
+        break;
+      case 'audit':
+        data.logs = await getAuditLogs();
+        break;
+      case 'users':
+        data.users = await getAllUsers();
+        break;
+      case 'social':
+        data.links = await getAllSocialLinks();
+        break;
+      case 'subscribers':
+        data.subscribers = await getSubscribers();
+        break;
+      case 'journal':
+        data.entries = await getJournalEntries();
+        break;
+      case 'files':
+        // Files uses R2 API on-demand, no pre-fetched data needed
+        break;
+      default:
+        notFound();
+    }
+  } catch (error) {
+    logServerError('Dashboard tab load error', error, { tab });
+    data.loadError = `${TAB_LABELS[tab]} yüklenemedi. Lütfen tekrar deneyin.`;
   }
 
   return (
-    <Suspense>
-      <TabClientRenderer tab={tab as TabId} data={data} userEmail={user.email} openCreateProject={openCreateProject} />
-    </Suspense>
+    <TabClientRenderer tab={tab} data={data} userEmail={userEmail} openCreateProject={openCreateProject} />
   );
 }

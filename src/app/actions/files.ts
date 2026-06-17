@@ -3,6 +3,7 @@
 import { requireAdmin } from '@/lib/auth';
 import { listR2Objects, deleteR2Object, uploadImageBufferToR2 } from '@/lib/server/r2-storage';
 import { normalizeStorageFolder } from '@/lib/server/storage-paths';
+import { userSafeMessage } from '@/lib/server/app-error';
 import { revalidatePath } from 'next/cache';
 
 export interface R2FileInfo {
@@ -129,6 +130,6 @@ export async function uploadFileAction(
     revalidatePath('/dashboard');
     return { success: 'Dosya yüklendi.' };
   } catch (error) {
-    return { error: error instanceof Error ? error.message : 'Dosya yüklenirken hata oluştu.' };
+    return { error: userSafeMessage(error, 'Dosya yüklenirken hata oluştu.') };
   }
 }

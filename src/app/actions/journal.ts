@@ -8,6 +8,7 @@ import { db } from '@/db';
 import { journalEntries } from '@/db/schema';
 import { getSession } from '@/lib/auth';
 import { saveUploadedImage } from '@/lib/server/uploads';
+import { userSafeMessage } from '@/lib/server/app-error';
 
 export interface JournalActionState {
   error?: string;
@@ -67,7 +68,7 @@ export async function createJournalEntryAction(
     try {
       imagePath = await saveUploadedImage(imageFile, 'gunluk');
     } catch (error) {
-      return { error: error instanceof Error ? error.message : 'Görsel yüklenemedi.' };
+      return { error: userSafeMessage(error, 'Görsel yüklenemedi.') };
     }
   }
 
@@ -129,7 +130,7 @@ export async function updateJournalEntryAction(
     try {
       imagePath = await saveUploadedImage(imageFile, 'gunluk');
     } catch (error) {
-      return { error: error instanceof Error ? error.message : 'Görsel yüklenemedi.' };
+      return { error: userSafeMessage(error, 'Görsel yüklenemedi.') };
     }
   }
 

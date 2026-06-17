@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth';
 import { db } from '@/db';
 import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { jsonError, logServerError, unexpectedJsonError } from '@/lib/server/error-response';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,52 +49,54 @@ async function spotifyRequest(method: string, path: string, body?: unknown) {
   if (res.status === 404) return { error: 'Aktif Spotify cihazı bulunamadı. Spotify\'ı telefonunda veya bilgisayarında aç.', status: 404 };
   if (!res.ok) {
     const text = await res.text();
-    return { error: `Spotify hatası: ${res.status}`, status: 502, detail: text };
+    logServerError('Spotify player upstream error', text, { status: res.status });
+    return { error: `Spotify hatası: ${res.status}`, status: 502 };
   }
   return { success: true, status: 200 };
 }
 
 export async function GET() {
-  return NextResponse.json(
-    {
-      error: 'Method not allowed',
-      message: 'Bu endpoint sadece PUT metodu kabul eder. play/pause/next/previous action gönderin.',
-      usage: 'PUT /api/spotify/player { "action": "play" | "pause" | "next" | "previous" }',
-    },
-    { status: 405 }
-  );
+  return jsonError({
+    code: 'METHOD_NOT_ALLOWED',
+    message: 'Bu endpoint sadece PUT metodu kabul eder.',
+    status: 405,
+  });
 }
 
 export async function PUT(request: Request) {
-  if (!(await requireAdminUser())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  let body: { action?: string };
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Geçersiz JSON body.' }, { status: 400 });
-  }
-  const { action } = body;
+    if (!(await requireAdminUser())) {
+      return jsonError({ code: 'UNAUTHORIZED', message: 'Yetkisiz erişim.', status: 401 });
+    }
 
-  let result;
-  switch (action) {
-    case 'play':
-      result = await spotifyRequest('PUT', '/play');
-      break;
-    case 'pause':
-      result = await spotifyRequest('PUT', '/pause');
-      break;
-    case 'next':
-      result = await spotifyRequest('POST', '/next');
-      break;
-    case 'previous':
-      result = await spotifyRequest('POST', '/previous');
-      break;
-    default:
-      return NextResponse.json({ error: 'Geçersiz action: play, pause, next, previous' }, { status: 400 });
-  }
+    let body: { action?: string };
+    try {
+      body = await request.json();
+    } catch {
+      return jsonError({ code: 'INVALID_JSON', message: 'Geçersiz JSON body.', status: 400 });
+    }
+    const { action } = body;
 
-  return NextResponse.json(result, { status: result.status });
+    let result;
+    switch (action) {
+      case 'play':
+        result = await spotifyRequest('PUT', '/play');
+        break;
+      case 'pause':
+        result = await spotifyRequest('PUT', '/pause');
+        break;
+      case 'next':
+        result = await spotifyRequest('POST', '/next');
+        break;
+      case 'previous':
+        result = await spotifyRequest('POST', '/previous');
+        break;
+      default:
+        return jsonError({ code: 'VALIDATION_ERROR', message: 'Geçersiz action: play, pause, next, previous', status: 400 });
+    }
+
+    return NextResponse.json(result, { status: result.status });
+  } catch (error) {
+    return unexpectedJsonError('Spotify player API', error);
+  }
 }

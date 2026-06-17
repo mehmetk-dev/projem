@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { uploadImageBufferToR2 } from './r2-storage';
 import { createStorageFileName } from './storage-paths';
+import { ValidationError } from './app-error';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MIME_TO_EXT: Record<string, string> = {
@@ -23,15 +24,15 @@ function getExt(file: File): string | null {
 
 export async function saveUploadedImage(file: File, folder: string): Promise<string> {
   if (!file || file.size === 0) {
-    throw new Error('Dosya bulunamadı.');
+    throw new ValidationError('Dosya bulunamadı.');
   }
   if (file.size > MAX_FILE_SIZE) {
-    throw new Error('Dosya boyutu en fazla 5MB olabilir.');
+    throw new ValidationError('Dosya boyutu en fazla 5MB olabilir.');
   }
 
   const ext = getExt(file);
   if (!ext) {
-    throw new Error('Sadece JPG, PNG, WEBP veya GIF yükleyebilirsiniz.');
+    throw new ValidationError('Sadece JPG, PNG, WEBP veya GIF yükleyebilirsiniz.');
   }
 
   const fileName = createStorageFileName(ext, randomUUID);

@@ -1,10 +1,10 @@
 import { getProjectById } from '@/app/actions/projects';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import type { Metadata } from 'next';
-
-export const dynamic = 'force-dynamic';
+import { getCurrentUser, logout } from '@/lib/auth';
+import BubbleMenu from '@/components/BubbleMenu';
 
 interface ProjectDetailPageProps {
   params: Promise<{ id: string }>;
@@ -38,26 +38,24 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     notFound();
   }
 
-  const project = await getProjectById(projectId);
+  const [project, user] = await Promise.all([
+    getProjectById(projectId),
+    getCurrentUser(),
+  ]);
 
   if (!project) {
     notFound();
   }
 
+  async function handleLogout() {
+    'use server';
+    await logout();
+    redirect('/');
+  }
+
   return (
     <div className="min-h-screen bg-black text-white font-sans">
-      <header className="fixed top-0 w-full backdrop-blur-2xl bg-black/60 border-b border-white/5 z-40">
-        <div className="container mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">
-          <Link href="/" className="text-sm font-bold tracking-tight uppercase flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-            MK.
-          </Link>
-          <nav className="flex items-center gap-6 text-xs uppercase tracking-widest text-neutral-400">
-            <Link href="/projects" className="hover:text-white transition-colors">Projeler</Link>
-            <Link href="/" className="hover:text-white transition-colors">Portfolyo</Link>
-          </nav>
-        </div>
-      </header>
+      <BubbleMenu logo="M. Kerem" user={user ? { email: user.email } : null} logoutAction={handleLogout} />
 
       <main className="container mx-auto px-6 lg:px-12 pt-28 pb-16">
         <article className="max-w-3xl mx-auto">

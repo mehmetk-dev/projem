@@ -1,32 +1,39 @@
 'use client';
 
 import { useCallback } from 'react';
-import type { ComponentProps } from 'react';
+import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
-import NotesModule from './NotesModule';
-import BlogsModule from './BlogsModule';
-import ProjectsModule from './ProjectsModule';
-import MessagesModule from './MessagesModule';
-import TodosModule from './TodosModule';
-import PaymentsModule from './PaymentsModule';
-import BookmarksModule from './BookmarksModule';
-import SnippetsModule from './SnippetsModule';
-import AnalyticsModule from './AnalyticsModule';
-import CalendarModule from './CalendarModule';
-import TimerModule from './TimerModule';
-import ChatModule from './ChatModule';
-import SpotifyModule from './SpotifyModule';
-import SettingsModule from './SettingsModule';
-import GuestbookModule from './GuestbookModule';
-import CommentsModule from './CommentsModule';
-import AuditModule from './AuditModule';
-import UsersModule from './UsersModule';
-import SocialLinksModule from './SocialLinksModule';
-import SubscribersModule from './SubscribersModule';
-import JournalModule from './JournalModule';
-import FilesModule from './FilesModule';
-
+import type * as T from './types';
 import type { TabId } from './types';
+
+function ModuleFallback() {
+  return (
+    <div className="min-h-[240px] rounded-2xl border border-white/5 bg-neutral-900/30 animate-pulse" />
+  );
+}
+
+const NotesModule = dynamic(() => import('./NotesModule'), { loading: ModuleFallback });
+const BlogsModule = dynamic(() => import('./BlogsModule'), { loading: ModuleFallback });
+const ProjectsModule = dynamic(() => import('./ProjectsModule'), { loading: ModuleFallback });
+const MessagesModule = dynamic(() => import('./MessagesModule'), { loading: ModuleFallback });
+const TodosModule = dynamic(() => import('./TodosModule'), { loading: ModuleFallback });
+const PaymentsModule = dynamic(() => import('./PaymentsModule'), { loading: ModuleFallback });
+const BookmarksModule = dynamic(() => import('./BookmarksModule'), { loading: ModuleFallback });
+const SnippetsModule = dynamic(() => import('./SnippetsModule'), { loading: ModuleFallback });
+const AnalyticsModule = dynamic(() => import('./AnalyticsModule'), { loading: ModuleFallback });
+const CalendarModule = dynamic(() => import('./CalendarModule'), { loading: ModuleFallback });
+const TimerModule = dynamic(() => import('./TimerModule'), { loading: ModuleFallback });
+const ChatModule = dynamic(() => import('./ChatModule'), { loading: ModuleFallback });
+const SpotifyModule = dynamic(() => import('./SpotifyModule'), { loading: ModuleFallback });
+const SettingsModule = dynamic(() => import('./SettingsModule'), { loading: ModuleFallback });
+const GuestbookModule = dynamic(() => import('./GuestbookModule'), { loading: ModuleFallback });
+const CommentsModule = dynamic(() => import('./CommentsModule'), { loading: ModuleFallback });
+const AuditModule = dynamic(() => import('./AuditModule'), { loading: ModuleFallback });
+const UsersModule = dynamic(() => import('./UsersModule'), { loading: ModuleFallback });
+const SocialLinksModule = dynamic(() => import('./SocialLinksModule'), { loading: ModuleFallback });
+const SubscribersModule = dynamic(() => import('./SubscribersModule'), { loading: ModuleFallback });
+const JournalModule = dynamic(() => import('./JournalModule'), { loading: ModuleFallback });
+const FilesModule = dynamic(() => import('./FilesModule'), { loading: ModuleFallback });
 
 // Tab configuration
 const TABS: { id: TabId; label: string; icon: string; adminOnly?: boolean }[] = [
@@ -89,55 +96,74 @@ export default function TabClientRenderer({ tab, data, userEmail, openCreateProj
     d ? new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }) : '', 
   []);
 
+  if (typeof data.loadError === 'string') {
+    return (
+      <div className="rounded-2xl border border-rose-500/20 bg-rose-500/5 p-6">
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-500/10 text-rose-300">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v4M12 16h.01" />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold text-white">Bölüm yüklenemedi</h1>
+            <p className="mt-1 text-sm text-neutral-400">{data.loadError}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   switch (tab) {
     case 'notes':
-      return <NotesModule notes={data.notes as ComponentProps<typeof NotesModule>['notes']} fmt={fmt} toastFn={toastFn} />;
+      return <NotesModule notes={data.notes as T.Note[]} fmt={fmt} toastFn={toastFn} />;
     case 'blogs':
-      return <BlogsModule blogs={data.blogs as ComponentProps<typeof BlogsModule>['blogs']} toastFn={toastFn} />;
+      return <BlogsModule blogs={data.blogs as T.Blog[]} toastFn={toastFn} />;
     case 'projects':
-      return <ProjectsModule projects={data.projects as ComponentProps<typeof ProjectsModule>['projects']} toastFn={toastFn} initialMode={openCreateProject ? 'form' : 'list'} />;
+      return <ProjectsModule projects={data.projects as T.Project[]} toastFn={toastFn} initialMode={openCreateProject ? 'form' : 'list'} />;
     case 'messages':
       return (
         <MessagesModule
-          messages={data.messages as ComponentProps<typeof MessagesModule>['messages']}
-          directMessageData={data.directMessageData as ComponentProps<typeof MessagesModule>['directMessageData']}
+          messages={data.messages as T.Message[]}
+          directMessageData={data.directMessageData as T.DirectMessageDashboardData}
           toastFn={toastFn}
         />
       );
     case 'todos':
-      return <TodosModule todos={data.todos as ComponentProps<typeof TodosModule>['todos']} fmt={fmt} toastFn={toastFn} />;
+      return <TodosModule todos={data.todos as T.Todo[]} fmt={fmt} toastFn={toastFn} />;
     case 'payments':
-      return <PaymentsModule payments={data.payments as ComponentProps<typeof PaymentsModule>['payments']} toastFn={toastFn} />;
+      return <PaymentsModule payments={data.payments as T.Payment[]} toastFn={toastFn} />;
     case 'bookmarks':
-      return <BookmarksModule bookmarks={data.bookmarks as ComponentProps<typeof BookmarksModule>['bookmarks']} toastFn={toastFn} />;
+      return <BookmarksModule bookmarks={data.bookmarks as T.Bookmark[]} toastFn={toastFn} />;
     case 'snippets':
-      return <SnippetsModule snippets={data.snippets as ComponentProps<typeof SnippetsModule>['snippets']} toastFn={toastFn} />;
+      return <SnippetsModule snippets={data.snippets as T.Snippet[]} toastFn={toastFn} />;
     case 'analytics':
-      return <AnalyticsModule analytics={data.analytics as ComponentProps<typeof AnalyticsModule>['analytics']} />;
+      return <AnalyticsModule analytics={data.analytics as T.AnalyticsData} />;
     case 'calendar':
-      return <CalendarModule todos={data.todos as ComponentProps<typeof CalendarModule>['todos']} />;
+      return <CalendarModule todos={data.todos as T.Todo[]} />;
     case 'timer':
-      return <TimerModule preferences={data.preferences as ComponentProps<typeof TimerModule>['preferences']} />;
+      return <TimerModule preferences={data.preferences as T.UserPreferences} />;
     case 'chat':
-      return <ChatModule conversations={data.conversations as ComponentProps<typeof ChatModule>['conversations']} chatSettings={data.chatSettings as ComponentProps<typeof ChatModule>['chatSettings']} toastFn={toastFn} />;
+      return <ChatModule conversations={data.conversations as T.ChatConversation[]} chatSettings={data.chatSettings as T.ChatSettings} toastFn={toastFn} />;
     case 'spotify':
-      return <SpotifyModule spotifyData={data.spotifyData as ComponentProps<typeof SpotifyModule>['spotifyData']} recentTracks={data.recentTracks as ComponentProps<typeof SpotifyModule>['recentTracks']} settings={data.settings as ComponentProps<typeof SpotifyModule>['settings']} toastFn={toastFn} />;
+      return <SpotifyModule spotifyData={data.spotifyData as T.SpotifyData | null} recentTracks={data.recentTracks as T.SpotifyRecentTrack[]} settings={data.settings as T.SiteSetting[]} toastFn={toastFn} />;
     case 'settings':
-      return <SettingsModule userEmail={userEmail} settings={data.settings as ComponentProps<typeof SettingsModule>['settings']} preferences={data.preferences as ComponentProps<typeof SettingsModule>['preferences']} tabs={TABS} configurableTabs={CONFIGURABLE_TABS} toastFn={toastFn} />;
+      return <SettingsModule userEmail={userEmail} settings={data.settings as T.SiteSetting[]} preferences={data.preferences as T.UserPreferences} tabs={TABS} configurableTabs={CONFIGURABLE_TABS} toastFn={toastFn} />;
     case 'guestbook':
-      return <GuestbookModule entries={data.entries as ComponentProps<typeof GuestbookModule>['entries']} toastFn={toastFn} />;
+      return <GuestbookModule entries={data.entries as T.GuestbookEntry[]} toastFn={toastFn} />;
     case 'comments':
-      return <CommentsModule comments={data.comments as ComponentProps<typeof CommentsModule>['comments']} toastFn={toastFn} />;
+      return <CommentsModule comments={data.comments as T.Comment[]} toastFn={toastFn} />;
     case 'audit':
-      return <AuditModule logs={data.logs as ComponentProps<typeof AuditModule>['logs']} toastFn={toastFn} />;
+      return <AuditModule logs={data.logs as T.AuditLog[]} toastFn={toastFn} />;
     case 'users':
-      return <UsersModule users={data.users as ComponentProps<typeof UsersModule>['users']} toastFn={toastFn} />;
+      return <UsersModule users={data.users as T.UserListItem[]} toastFn={toastFn} />;
     case 'social':
-      return <SocialLinksModule links={data.links as ComponentProps<typeof SocialLinksModule>['links']} toastFn={toastFn} />;
+      return <SocialLinksModule links={data.links as T.SocialLink[]} toastFn={toastFn} />;
     case 'subscribers':
-      return <SubscribersModule subscribers={data.subscribers as ComponentProps<typeof SubscribersModule>['subscribers']} toastFn={toastFn} />;
+      return <SubscribersModule subscribers={data.subscribers as T.Subscriber[]} toastFn={toastFn} />;
     case 'journal':
-      return <JournalModule entries={data.entries as ComponentProps<typeof JournalModule>['entries']} toastFn={toastFn} />;
+      return <JournalModule entries={data.entries as T.JournalEntry[]} toastFn={toastFn} />;
     case 'files':
       return <FilesModule toastFn={toastFn} />;
     default:

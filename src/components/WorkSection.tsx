@@ -1,5 +1,5 @@
-import Image from 'next/image';
 import Link from 'next/link';
+import ImageWithFallback from './ImageWithFallback';
 
 interface Project {
   id: number;
@@ -33,7 +33,7 @@ export default function WorkSection({ projects }: WorkSectionProps) {
         </div>
 
         {projects.length === 0 ? (
-          <div className="text-center py-24 text-neutral-600 text-sm">
+          <div className="text-center py-24 text-neutral-500 text-sm">
             Henüz proje eklenmemiş.
           </div>
         ) : (
@@ -54,14 +54,12 @@ export default function WorkSection({ projects }: WorkSectionProps) {
               >
                 <div className="aspect-[4/5] overflow-hidden relative">
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-700 z-10" />
-                  <Image
+                  <ImageWithFallback
                     src={project.image}
                     alt={project.title}
                     fill
                     className="object-cover transition-transform duration-[1.5s] group-hover:scale-110"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.display = 'none';
-                    }}
+                    hideOnError
                   />
                 </div>
                 <div className="absolute inset-0 z-20 flex flex-col justify-end p-8 bg-gradient-to-t from-black via-black/80 to-transparent opacity-90 group-hover:opacity-100 transition-opacity">

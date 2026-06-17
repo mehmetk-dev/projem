@@ -56,8 +56,7 @@ export default function ChatModule({ conversations: initialConversations, chatSe
     apiKey: chatSettings?.apiKey || '',
   });
   const [settingsPending, startSettingsTransition] = useTransition();
-  const [contextStr, setContextStr] = useState('');
-  const [contextReady, setContextReady] = useState(false);
+  const contextReady = true;
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // TTS & STT States
@@ -74,21 +73,6 @@ export default function ChatModule({ conversations: initialConversations, chatSe
     };
   }, []);
 
-  // Load context once
-  useEffect(() => {
-    getAllUserContext().then((ctx) => {
-      const lines: string[] = ['Kullanıcının veritabanındaki verileri:'];
-      if (ctx.notes.length) { lines.push('Notlar:'); ctx.notes.forEach((n) => lines.push(`- ${n.title}: ${n.content.slice(0, 200)}`)); }
-      if (ctx.blogs.length) { lines.push('Bloglar:'); ctx.blogs.forEach((b) => lines.push(`- ${b.title} (${b.category})`)); }
-      if (ctx.todos.length) { lines.push('Görevler:'); ctx.todos.forEach((t) => lines.push(`- ${t.title} [${t.completed ? 'tamamlandı' : 'bekliyor'}]`)); }
-      if (ctx.bookmarks.length) { lines.push('Linkler:'); ctx.bookmarks.forEach((b) => lines.push(`- ${b.title}: ${b.url}`)); }
-      if (ctx.snippets.length) { lines.push('Kodlar:'); ctx.snippets.forEach((s) => lines.push(`- ${s.title} (${s.language})`)); }
-      if (ctx.projects.length) { lines.push('Projeler:'); ctx.projects.forEach((p) => lines.push(`- ${p.title}: ${p.description.slice(0, 120)}`)); }
-      setContextStr(lines.join('\n'));
-      setContextReady(true);
-    }).catch((err) => { console.error('[Chat] context yüklenemedi:', err); setContextReady(true); });
-  }, []);
-
   // Load messages when conversation changes
   useEffect(() => {
     if (!selectedId) return;
@@ -97,8 +81,6 @@ export default function ChatModule({ conversations: initialConversations, chatSe
 
   // Scroll to bottom
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
-
-  const systemPrompt = `${assistantSettings.systemPrompt || 'Sen Mehmet Kerem\'in kisisel asistanisin.'}\n\n${contextStr}`;
 
   const saveAssistantSettings = (event: React.FormEvent) => {
     event.preventDefault();
@@ -204,7 +186,6 @@ export default function ChatModule({ conversations: initialConversations, chatSe
         body: JSON.stringify({
           messages: apiMessages,
           model,
-          systemPrompt,
           temperature: assistantSettings.temperature,
           apiKey: assistantSettings.apiKey,
         }),

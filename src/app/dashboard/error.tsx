@@ -37,7 +37,7 @@ export default function DashboardError({
         <div>
           <h2 className="text-xl font-bold">Bir şeyler ters gitti</h2>
           <p className="text-neutral-400 text-sm mt-2">
-            {error.message || 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.'}
+            Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.
           </p>
         </div>
         <div className="flex gap-3 justify-center">

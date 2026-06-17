@@ -7,6 +7,7 @@ import { getSession, requireAdmin } from '@/lib/auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { saveUploadedImage } from '@/lib/server/uploads';
+import { userSafeMessage } from '@/lib/server/app-error';
 
 export interface BlogActionState {
   error?: string;
@@ -105,7 +106,7 @@ export async function createBlogAction(
       coverImagePath = await saveUploadedImage(coverImageFile, 'blog');
     }
   } catch (error) {
-    return { error: error instanceof Error ? error.message : 'Görsel yüklenemedi.' };
+    return { error: userSafeMessage(error, 'Görsel yüklenemedi.') };
   }
 
   const result = blogSchema.safeParse({
@@ -162,7 +163,7 @@ export async function updateBlogAction(
       coverImagePath = await saveUploadedImage(coverImageFile, 'blog');
     }
   } catch (error) {
-    return { error: error instanceof Error ? error.message : 'Görsel yüklenemedi.' };
+    return { error: userSafeMessage(error, 'Görsel yüklenemedi.') };
   }
 
   const blogId = Number(formData.get('blogId'));

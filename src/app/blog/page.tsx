@@ -2,37 +2,38 @@ import { getPublishedBlogs } from '@/app/actions/blogs';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { getCurrentUser, logout } from '@/lib/auth';
+import BubbleMenu from '@/components/BubbleMenu';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Blog | Mehmet Kerem',
-  description: 'Tasarım, yazılım ve ürün düşünce yapısı hakkındaki son içgörüler.',
+  description: 'Tasarım, yazılım and ürün düşünce yapısı hakkındaki son içgörüler.',
   openGraph: {
     title: 'Blog | Mehmet Kerem',
-    description: 'Tasarım, yazılım ve ürün düşünce yapısı hakkındaki son içgörüler.',
+    description: 'Tasarım, yazılım and ürün düşünce yapısı hakkındaki son içgörüler.',
     type: 'website',
     locale: 'tr_TR',
   },
 };
 
 export default async function BlogListPage() {
-  const blogList = await getPublishedBlogs();
+  const [blogList, user] = await Promise.all([
+    getPublishedBlogs(),
+    getCurrentUser(),
+  ]);
+
+  async function handleLogout() {
+    'use server';
+    await logout();
+    redirect('/');
+  }
 
   return (
     <div className="min-h-screen bg-black text-white font-sans">
-      <header className="fixed top-0 w-full backdrop-blur-2xl bg-black/60 border-b border-white/5 z-40">
-        <div className="container mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">
-          <Link href="/" className="text-sm font-bold tracking-tight uppercase flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-            MK.
-          </Link>
-          <nav className="flex items-center gap-6 text-xs uppercase tracking-widest text-neutral-400">
-            <Link href="/" className="hover:text-white transition-colors">Portfolyo</Link>
-            <Link href="/login" className="hover:text-white transition-colors">Giriş</Link>
-          </nav>
-        </div>
-      </header>
+      <BubbleMenu logo="M. Kerem" user={user ? { email: user.email } : null} logoutAction={handleLogout} />
 
       <main className="container mx-auto px-6 lg:px-12 pt-20 pb-16">
         <div className="max-w-3xl mx-auto">

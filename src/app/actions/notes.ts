@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { saveUploadedImage } from '@/lib/server/uploads';
+import { userSafeMessage } from '@/lib/server/app-error';
 
 // --- Types ---
 export interface NoteActionState {
@@ -60,7 +61,7 @@ export async function createNoteAction(
     try {
       imagePath = await saveUploadedImage(imageFile, 'not');
     } catch (error) {
-      return { error: error instanceof Error ? error.message : 'Görsel yüklenemedi.' };
+      return { error: userSafeMessage(error, 'Görsel yüklenemedi.') };
     }
   }
 
@@ -102,7 +103,7 @@ export async function updateNoteAction(
     try {
       imagePath = await saveUploadedImage(imageFile, 'not');
     } catch (error) {
-      return { error: error instanceof Error ? error.message : 'Görsel yüklenemedi.' };
+      return { error: userSafeMessage(error, 'Görsel yüklenemedi.') };
     }
   }
 

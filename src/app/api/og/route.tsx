@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const title = searchParams.get('title') || 'Mehmet Kerem';
-    const description = searchParams.get('description') || 'Ürün Tasarımcısı & Geliştirici';
+    const description = searchParams.get('description') || 'Yazılım Geliştirici';
 
     return new ImageResponse(
       (
@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
                 color: 'rgba(255,255,255,0.4)',
               }}
             >
-              Ürün Tasarımcısı & Geliştirici
+              Yazılım Geliştirici
             </span>
           </div>
         </div>

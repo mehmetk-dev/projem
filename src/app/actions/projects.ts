@@ -7,6 +7,7 @@ import { requireAdmin } from '@/lib/auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { saveUploadedImage } from '@/lib/server/uploads';
+import { userSafeMessage } from '@/lib/server/app-error';
 
 export interface ProjectActionState {
   error?: string;
@@ -73,7 +74,7 @@ export async function createProjectAction(
     try {
       imagePath = await saveUploadedImage(imageFile, 'proje');
     } catch (error) {
-      return { error: error instanceof Error ? error.message : 'Görsel yüklenemedi.' };
+      return { error: userSafeMessage(error, 'Görsel yüklenemedi.') };
     }
   }
 
@@ -114,7 +115,7 @@ export async function updateProjectAction(
     try {
       imagePath = await saveUploadedImage(imageFile, 'proje');
     } catch (error) {
-      return { error: error instanceof Error ? error.message : 'Görsel yüklenemedi.' };
+      return { error: userSafeMessage(error, 'Görsel yüklenemedi.') };
     }
   }
   const projectId = Number(formData.get('projectId'));

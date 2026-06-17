@@ -30,7 +30,7 @@ export default function ContactSection() {
 
             <div className="flex flex-col gap-8">
               <a
-                href="mailto:merhaba@mehmetkerem.com"
+                href="mailto:mehmetkerem2109@gmail.com"
                 className="flex items-center gap-6 group"
               >
                 <div className="w-16 h-16 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/40 transition-colors">
@@ -41,7 +41,7 @@ export default function ContactSection() {
                     E-Posta
                   </div>
                   <div className="text-xl font-medium text-white group-hover:text-neutral-300 transition-colors">
-                    merhaba@mehmetkerem.com
+                    mehmetkerem2109@gmail.com
                   </div>
                 </div>
               </a>
@@ -61,10 +61,71 @@ export default function ContactSection() {
           </div>
 
           <div className="bg-neutral-900/20 backdrop-blur-xl border border-white/10 p-6 sm:p-10 md:p-16 rounded-2xl sm:rounded-[3rem] animate-on-scroll">
+            <style>{`
+              @keyframes catWag {
+                0%, 100% { transform: translateY(0) rotate(0deg); }
+                50% { transform: translateY(-8px) rotate(3deg); }
+              }
+              .animate-cat-wag {
+                animation: catWag 2.5s ease-in-out infinite;
+                transform-origin: bottom center;
+              }
+              @keyframes fadeIn {
+                from { opacity: 0; transform: scale(0.95); }
+                to { opacity: 1; transform: scale(1); }
+              }
+              .animate-fade-in {
+                animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+              }
+            `}</style>
             <h3 className="text-3xl font-bold tracking-tight mb-12">Mesaj Bırak</h3>
             {submitSuccess ? (
-              <div className="text-emerald-400 text-lg font-medium py-12 text-center">
-                {state.success}
+              <div className="flex flex-col items-center justify-center text-center py-6 animate-fade-in">
+                <div className="relative mb-6">
+                  {/* Floating Hearts/Sparkles */}
+                  <div className="absolute -top-1 -left-1 w-4 h-4 text-rose-500 animate-ping opacity-75">♥</div>
+                  <div className="absolute -top-4 -right-1 w-3 h-3 text-amber-400 animate-pulse">✦</div>
+                  
+                  <svg
+                    viewBox="0 0 200 200"
+                    className="w-40 h-40 text-emerald-400 fill-current drop-shadow-[0_0_20px_rgba(16,185,129,0.25)] animate-cat-wag"
+                  >
+                    {/* Ears */}
+                    <path d="M50 80 L30 30 L80 65 Z" fill="currentColor" />
+                    <path d="M150 80 L170 30 L120 65 Z" fill="currentColor" />
+                    {/* Inner Ears */}
+                    <path d="M52 75 L38 40 L72 63 Z" fill="#1a1a1a" />
+                    <path d="M148 75 L162 40 L128 63 Z" fill="#1a1a1a" />
+                    {/* Head/Face */}
+                    <path d="M40 100 C40 50, 160 50, 160 100 C160 140, 40 140, 40 100 Z" fill="currentColor" />
+                    {/* Cheeks Blush */}
+                    <circle cx="62" cy="108" r="8" fill="#f43f5e" opacity="0.5" />
+                    <circle cx="138" cy="108" r="8" fill="#f43f5e" opacity="0.5" />
+                    {/* Eyes */}
+                    <circle cx="80" cy="98" r="6" fill="#1a1a1a" />
+                    <circle cx="120" cy="98" r="6" fill="#1a1a1a" />
+                    {/* Eye Sparkles */}
+                    <circle cx="78" cy="96" r="2" fill="#ffffff" />
+                    <circle cx="118" cy="96" r="2" fill="#ffffff" />
+                    {/* Nose */}
+                    <path d="M97 105 L103 105 L100 108 Z" fill="#1a1a1a" />
+                    {/* Smile */}
+                    <path d="M93 111 Q100 117 100 112 Q100 117 107 111" fill="none" stroke="#1a1a1a" strokeWidth="2.5" strokeLinecap="round" />
+                    {/* Whiskers */}
+                    <line x1="32" y1="102" x2="12" y2="100" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" opacity="0.6" />
+                    <line x1="32" y1="110" x2="10" y2="112" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" opacity="0.6" />
+                    <line x1="168" y1="102" x2="188" y2="100" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" opacity="0.6" />
+                    <line x1="168" y1="110" x2="190" y2="112" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" opacity="0.6" />
+                    {/* Cute Paws */}
+                    <rect x="65" y="128" width="24" height="18" rx="9" fill="currentColor" />
+                    <rect x="111" y="128" width="24" height="18" rx="9" fill="currentColor" />
+                  </svg>
+                </div>
+                <h4 className="text-2xl font-bold text-white mb-2 tracking-tight">Mesajınız İletildi!</h4>
+                <p className="text-neutral-400 font-light leading-relaxed max-w-sm mb-6 text-sm">
+                  {state.success}
+                </p>
+                <div className="w-12 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full animate-pulse" />
               </div>
             ) : (
               <form action={formAction} className="flex flex-col gap-10">

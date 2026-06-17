@@ -1,5 +1,6 @@
 import { getR2Object } from '@/lib/server/r2-storage';
 import { toStorageObjectKey } from '@/lib/server/storage-paths';
+import { logServerError } from '@/lib/server/error-response';
 
 const LEGACY_FOLDER_MAP: Record<string, string> = {
   journal: 'gunluk',
@@ -43,7 +44,7 @@ export async function GET(
     if (isNotFound) {
       return new Response('Not found', { status: 404 });
     }
-    console.error('Media serve error:', error);
+    logServerError('Media serve error', error, { key: fullKey.join('/') });
     return new Response('Internal server error', { status: 500 });
   }
 }

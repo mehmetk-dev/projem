@@ -34,7 +34,7 @@ export default function BlogSection({ blogs }: BlogSectionProps) {
 
         <div className="flex flex-col gap-6">
           {displayBlogs.length === 0 ? (
-            <div className="text-center py-12 text-neutral-600 text-sm">
+            <div className="text-center py-12 text-neutral-500 text-sm">
               Henüz yayınlanmış bir yazı yok.
             </div>
           ) : (
@@ -66,7 +66,7 @@ function BlogCard({ post }: { post: BlogItem }) {
               <span className="px-4 py-1.5 rounded-full border border-white/10 text-[10px] font-medium tracking-[0.2em] text-neutral-400 uppercase">
                 {post.category}
               </span>
-              <span className="text-[12px] font-mono text-neutral-600">{dateStr}</span>
+              <span className="text-[12px] font-mono text-neutral-500">{dateStr}</span>
             </div>
             <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-4 group-hover:text-neutral-300 transition-colors">
               {post.title}

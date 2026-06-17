@@ -40,6 +40,7 @@ export interface ChatContextData {
   bookmarks: Pick<Bookmark, 'title' | 'url' | 'tags'>[];
   snippets: Pick<Snippet, 'title' | 'language' | 'code'>[];
   projects: Pick<Project, 'title' | 'description' | 'category'>[];
+  journal: Pick<JournalEntry, 'entryDate' | 'title' | 'content' | 'mood'>[];
 }
 
 export type JournalMood = 'calm' | 'good' | 'hard' | 'bright' | 'tired';

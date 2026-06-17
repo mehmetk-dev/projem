@@ -231,13 +231,13 @@ export default function Galaxy({
     
     // Set device pixel ratio and initialize OGL Renderer with antialiasing
     const isMobile = window.innerWidth < 768 || /Mobi|Android/i.test(navigator.userAgent);
-    const dpr = isMobile ? 1.0 : Math.min(2.5, window.devicePixelRatio || 1);
+    const dpr = isMobile ? 0.6 : 0.85; // Lower DPR to drastically reduce GPU workload
     
     const renderer = new Renderer({
       alpha: transparent,
       premultipliedAlpha: false,
       dpr,
-      antialias: !isMobile
+      antialias: false // Disable antialiasing to save GPU rendering time
     });
     const gl = renderer.gl;
 
@@ -297,7 +297,7 @@ export default function Galaxy({
         uMouseActiveFactor: { value: 0.0 },
         uAutoCenterRepulsion: { value: autoCenterRepulsion },
         uTransparent: { value: transparent },
-        uNumLayers: { value: isMobile ? 2.0 : 4.0 }
+        uNumLayers: { value: isMobile ? 2.0 : 3.0 } // 3 layers on desktop to reduce shader passes
       }
     });
 

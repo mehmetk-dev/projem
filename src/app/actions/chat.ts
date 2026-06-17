@@ -4,7 +4,7 @@ import { db } from '@/db';
 import { chatConversations, chatMessages, chatSettings } from '@/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { requireAdmin } from '@/lib/auth';
-import { notes, blogs, todos, bookmarks, codeSnippets, projects } from '@/db/schema';
+import { notes, blogs, todos, bookmarks, codeSnippets, projects, journalEntries } from '@/db/schema';
 import type { ChatContextData } from '@/components/dashboard/types';
 
 type ChatActionData =
@@ -163,13 +163,14 @@ export async function updateChatSettingsAction(
 
 export async function getAllUserContext(): Promise<ChatContextData> {
   const { userId } = await requireAdmin();
-  const [userNotes, userBlogs, userTodos, userBookmarks, userSnippets, userProjects] = await Promise.all([
+  const [userNotes, userBlogs, userTodos, userBookmarks, userSnippets, userProjects, userJournal] = await Promise.all([
     db.select().from(notes).where(eq(notes.userId, userId)).orderBy(desc(notes.updatedAt)).all(),
     db.select().from(blogs).where(eq(blogs.userId, userId)).orderBy(desc(blogs.updatedAt)).all(),
     db.select().from(todos).where(eq(todos.userId, userId)).orderBy(desc(todos.updatedAt)).all(),
     db.select().from(bookmarks).where(eq(bookmarks.userId, userId)).orderBy(desc(bookmarks.createdAt)).all(),
     db.select().from(codeSnippets).where(eq(codeSnippets.userId, userId)).orderBy(desc(codeSnippets.updatedAt)).all(),
     db.select().from(projects).where(eq(projects.userId, userId)).orderBy(desc(projects.updatedAt)).all(),
+    db.select().from(journalEntries).where(eq(journalEntries.userId, userId)).orderBy(desc(journalEntries.entryDate)).all(),
   ]);
   return {
     notes: userNotes.map((n) => ({ title: n.title, content: n.content, color: n.color, pinned: n.pinned })),
@@ -178,5 +179,6 @@ export async function getAllUserContext(): Promise<ChatContextData> {
     bookmarks: userBookmarks.map((b) => ({ title: b.title, url: b.url, tags: b.tags })),
     snippets: userSnippets.map((s) => ({ title: s.title, language: s.language, code: s.code })),
     projects: userProjects.map((p) => ({ title: p.title, description: p.description, category: p.category })),
+    journal: userJournal.map((j) => ({ entryDate: j.entryDate, title: j.title, content: j.content, mood: j.mood })),
   };
 }

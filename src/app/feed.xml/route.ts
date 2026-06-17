@@ -1,11 +1,13 @@
 import { getPublishedBlogs } from '@/app/actions/blogs';
 import { NextResponse } from 'next/server';
+import { logServerError } from '@/lib/server/error-response';
 
 export async function GET() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-  const blogPosts = await getPublishedBlogs({ limit: 50 });
+  try {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const blogPosts = await getPublishedBlogs({ limit: 50 });
 
-  const rss = `<?xml version="1.0" encoding="UTF-8" ?>
+    const rss = `<?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Mehmet Kerem | Blog</title>
@@ -40,12 +42,16 @@ export async function GET() {
   </channel>
 </rss>`;
 
-  return new NextResponse(rss.trim(), {
-    headers: {
-      'Content-Type': 'application/rss+xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
-    },
-  });
+    return new NextResponse(rss.trim(), {
+      headers: {
+        'Content-Type': 'application/rss+xml; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
+      },
+    });
+  } catch (error) {
+    logServerError('RSS feed error', error);
+    return new NextResponse('RSS feed generation failed', { status: 500 });
+  }
 }
 
 function escapeXml(unsafe: string): string {

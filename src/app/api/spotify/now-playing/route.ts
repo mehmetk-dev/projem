@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getNowPlaying } from '@/lib/spotify';
+import { unexpectedJsonError } from '@/lib/server/error-response';
+import { ConfigurationError } from '@/lib/server/app-error';
 
 /**
  * GET /api/spotify/now-playing
@@ -9,14 +11,7 @@ import { getNowPlaying } from '@/lib/spotify';
 export async function GET() {
   // Refresh token kontrolü
   if (!process.env.SPOTIFY_REFRESH_TOKEN) {
-    return NextResponse.json(
-      {
-        error: 'Spotify not configured',
-        message: 'SPOTIFY_REFRESH_TOKEN henüz ayarlanmamış.',
-        setup: 'Tarayıcıda /api/spotify/login adresine giderek Spotify hesabını bağla.',
-      },
-      { status: 503 }
-    );
+    return unexpectedJsonError('Spotify now-playing API', new ConfigurationError('Spotify bağlantısı henüz yapılandırılmamış.'));
   }
 
   try {
@@ -35,13 +30,6 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error('[Spotify API Route] Error:', error);
-    return NextResponse.json(
-      {
-        error: 'Internal server error',
-        message: 'Spotify verisi alınırken bir hata oluştu.',
-      },
-      { status: 500 }
-    );
+    return unexpectedJsonError('Spotify now-playing API', error, 'Spotify verisi alınırken bir hata oluştu.');
   }
 }

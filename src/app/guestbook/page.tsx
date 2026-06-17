@@ -3,6 +3,9 @@ import { getApprovedGuestbookEntries } from '@/app/actions/guestbook';
 import GuestbookForm from '@/components/guestbook/GuestbookForm';
 import type { Metadata } from 'next';
 import { BookOpen } from 'lucide-react';
+import { redirect } from 'next/navigation';
+import { getCurrentUser, logout } from '@/lib/auth';
+import BubbleMenu from '@/components/BubbleMenu';
 
 export const metadata: Metadata = {
   title: 'Ziyaretçi Defteri | Mehmet Kerem',
@@ -12,22 +15,20 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function GuestbookPage() {
-  const entries = await getApprovedGuestbookEntries();
+  const [entries, user] = await Promise.all([
+    getApprovedGuestbookEntries(),
+    getCurrentUser(),
+  ]);
+
+  async function handleLogout() {
+    'use server';
+    await logout();
+    redirect('/');
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
-      <header className="fixed top-0 w-full backdrop-blur-2xl bg-background/60 border-b border-neutral-200 dark:border-white/5 z-40">
-        <div className="container mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">
-          <Link href="/" className="text-sm font-bold tracking-tight uppercase flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-foreground animate-pulse" />
-            MK.
-          </Link>
-          <nav className="flex items-center gap-6 text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-            <Link href="/" className="hover:text-foreground transition-colors">Portfolyo</Link>
-            <Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link>
-          </nav>
-        </div>
-      </header>
+      <BubbleMenu logo="M. Kerem" user={user ? { email: user.email } : null} logoutAction={handleLogout} />
 
       <main className="container mx-auto px-6 lg:px-12 pt-20 pb-16">
         <div className="max-w-2xl mx-auto">
