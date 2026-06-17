@@ -6,6 +6,7 @@ import { requireAuth } from '@/lib/auth';
 import { normalizeHiddenTabs, parseHiddenTabs } from '@/lib/dashboard/preferences';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { cache } from 'react';
 
 const CONFIGURABLE_TABS = [
   'overview',
@@ -35,7 +36,7 @@ export interface PreferencesActionState {
   data?: UserPreferencesData;
 }
 
-export async function getMyPreferences(): Promise<UserPreferencesData> {
+export const getMyPreferences = cache(async (): Promise<UserPreferencesData> => {
   const { userId } = await requireAuth();
   const row = await db.select().from(userPreferences).where(eq(userPreferences.userId, userId)).get();
   return {
@@ -43,7 +44,7 @@ export async function getMyPreferences(): Promise<UserPreferencesData> {
     pomodoroWork: row?.pomodoroWork ?? 25,
     pomodoroBreak: row?.pomodoroBreak ?? 5,
   };
-}
+});
 
 export async function savePomodoroSettingsAction(formData: FormData): Promise<PreferencesActionState> {
   const { userId } = await requireAuth();

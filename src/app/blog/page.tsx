@@ -2,11 +2,9 @@ import { getPublishedBlogs } from '@/app/actions/blogs';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
-import { getCurrentUser, logout } from '@/lib/auth';
 import BubbleMenu from '@/components/BubbleMenu';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: 'Blog | Mehmet Kerem',
@@ -20,20 +18,11 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogListPage() {
-  const [blogList, user] = await Promise.all([
-    getPublishedBlogs(),
-    getCurrentUser(),
-  ]);
-
-  async function handleLogout() {
-    'use server';
-    await logout();
-    redirect('/');
-  }
+  const blogList = await getPublishedBlogs();
 
   return (
     <div className="min-h-screen bg-black text-white font-sans">
-      <BubbleMenu logo="M. Kerem" user={user ? { email: user.email } : null} logoutAction={handleLogout} />
+      <BubbleMenu logo="M. Kerem" />
 
       <main className="container mx-auto px-6 lg:px-12 pt-20 pb-16">
         <div className="max-w-3xl mx-auto">
@@ -55,7 +44,7 @@ export default async function BlogListPage() {
                 >
                   {post.coverImage && (
                     <div className="mb-6 -mx-8 -mt-8 md:-mx-10 md:-mt-10 relative h-56">
-                      <Image src={post.coverImage} alt={post.title} fill className="object-cover" />
+                      <Image src={post.coverImage} alt={post.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 720px" loading="lazy" />
                     </div>
                   )}
                   <Link href={`/blog/${post.slug}`} className="block">

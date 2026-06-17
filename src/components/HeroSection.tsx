@@ -8,36 +8,25 @@ import SplitText from './SplitText';
 
 const Galaxy = dynamic(() => import('./Galaxy'), { ssr: false });
 
-interface HeroSectionProps {
-  displayName: string;
-}
-
-export default function HeroSection({ displayName }: HeroSectionProps) {
+export default function HeroSection() {
   const [showGalaxy, setShowGalaxy] = useState(false);
-  const [greetingComplete, setGreetingComplete] = useState(false);
-  const [sentenceComplete, setSentenceComplete] = useState(false);
 
   useEffect(() => {
     const desktopQuery = window.matchMedia('(min-width: 768px)');
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    if (!desktopQuery.matches || motionQuery.matches) return;
-
-    // Delay Galaxy mount so WebGL shader compilation doesn't block initial paint
-    const scheduleGalaxy = () => {
-      if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(() => setShowGalaxy(true), { timeout: 2000 });
-      } else {
-        setTimeout(() => setShowGalaxy(true), 1200);
+    const update = () => {
+      const shouldShow = desktopQuery.matches && !motionQuery.matches;
+      if (shouldShow && !showGalaxy) {
+        if (typeof requestIdleCallback === 'function') {
+          requestIdleCallback(() => setShowGalaxy(true), { timeout: 2000 });
+        } else {
+          setTimeout(() => setShowGalaxy(true), 1200);
+        }
       }
     };
 
-    scheduleGalaxy();
-
-    const update = () => {
-      const shouldShow = desktopQuery.matches && !motionQuery.matches;
-      if (!shouldShow) setShowGalaxy(false);
-    };
+    update();
 
     desktopQuery.addEventListener('change', update);
     motionQuery.addEventListener('change', update);
@@ -46,6 +35,7 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
       desktopQuery.removeEventListener('change', update);
       motionQuery.removeEventListener('change', update);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -102,35 +92,30 @@ export default function HeroSection({ displayName }: HeroSectionProps) {
                 </span>
               </div>
 
-              <div 
-                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif' }}
-                className="text-2xl md:text-3xl lg:text-4xl font-light text-neutral-400 leading-[1.3] tracking-tight"
-              >
-                <SplitText 
-                  text="Selam! Ben Mehmet." 
-                  splitType="lines" 
-                  className="inline-block" 
+              <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif' }}>
+                <SplitText
+                  text="Selam! Ben Mehmet."
+                  splitType="lines"
+                  className="text-2xl md:text-3xl lg:text-4xl font-light text-neutral-400 leading-[1.3] tracking-tight inline-block"
                   delay={200}
-                  onLetterAnimationComplete={() => setGreetingComplete(true)} 
-                /> <br className="hidden md:block" />
-                
-                <SplitText 
-                  splitType="lines" 
-                  play={greetingComplete} 
+                  duration={0.8}
+                />
+                <br className="hidden md:block" />
+                <SplitText
+                  splitType="lines"
                   delay={200}
-                  onLetterAnimationComplete={() => setSentenceComplete(true)}
+                  duration={0.8}
+                  className="text-2xl md:text-3xl lg:text-4xl font-light text-neutral-400 leading-[1.3] tracking-tight inline-block"
                 >
                   Tasarım ve yazılımı birleştirerek <strong className="font-medium text-white">modern ve hızlı</strong> dijital ürünler inşa ediyorum.
                 </SplitText>
-                
-                <div className="mt-6 text-lg md:text-xl text-neutral-400 leading-relaxed max-w-xl">
-                  <SplitText 
-                    text="Karmaşık fikirleri basit, estetik ve hızlı çözümlere dönüştürmeyi çok seviyorum. Seninle tanıştığıma memnun oldum!" 
-                    splitType="lines" 
-                    play={sentenceComplete} 
-                    delay={150} 
-                  />
-                </div>
+                <SplitText
+                  text="Karmaşık fikirleri basit, estetik ve hızlı çözümlere dönüştürmeyi çok seviyorum. Seninle tanıştığıma memnun oldum!"
+                  splitType="lines"
+                  delay={150}
+                  duration={0.6}
+                  className="mt-6 text-lg md:text-xl text-neutral-400 leading-relaxed max-w-xl inline-block"
+                />
               </div>
             </div>
           </div>

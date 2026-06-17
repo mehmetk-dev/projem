@@ -124,6 +124,7 @@ export const projects = sqliteTable('projects', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: integer('user_id').notNull().references(() => users.id),
   title: text('title').notNull(),
+  slug: text('slug').notNull().unique(),
   description: text('description').notNull().default(''),
   image: text('image').notNull().default('/placeholder.svg'),
   link: text('link'),
@@ -138,6 +139,7 @@ export const projects = sqliteTable('projects', {
   index('projects_user_id_idx').on(table.userId),
   index('projects_published_idx').on(table.published),
   index('projects_order_idx').on(table.displayOrder),
+  index('projects_slug_idx').on(table.slug),
 ]);
 
 // --- MESSAGES (Contact Form) ---

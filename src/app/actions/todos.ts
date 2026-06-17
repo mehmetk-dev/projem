@@ -6,6 +6,7 @@ import { eq, and, desc } from 'drizzle-orm';
 import { requireAuth } from '@/lib/auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import { cache } from 'react';
 
 export interface TodoActionState {
   error?: string;
@@ -20,7 +21,7 @@ const todoSchema = z.object({
   dueDate: z.string().trim().optional(),
 });
 
-export async function getMyTodos() {
+export const getMyTodos = cache(async () => {
   const { userId } = await requireAuth();
   return db
     .select()
@@ -28,7 +29,7 @@ export async function getMyTodos() {
     .where(eq(todos.userId, userId))
     .orderBy(desc(todos.completed), desc(todos.dueDate))
     .all();
-}
+});
 
 export async function createTodoAction(
   _prevState: TodoActionState | null,

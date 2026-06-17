@@ -94,7 +94,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 {result.projects.map((project) => (
                   <Link
                     key={project.id}
-                    href={`/projects/${project.id}`}
+                    href={`/projects/${project.slug}`}
                     className="group p-6 rounded-2xl bg-neutral-100 dark:bg-neutral-900/30 border border-neutral-200 dark:border-white/5 hover:bg-neutral-200 dark:hover:bg-neutral-900/80 transition-all"
                   >
                     <span className="text-[10px] font-medium tracking-[0.2em] text-neutral-500 dark:text-neutral-400 uppercase border border-neutral-300 dark:border-white/10 px-3 py-1 rounded-full">

@@ -85,6 +85,7 @@ export default function BubbleMenu({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ email: string } | null>(user || null);
 
   const overlayRef = useRef<HTMLElement>(null);
   const bubblesRef = useRef<HTMLAnchorElement[]>([]);
@@ -102,8 +103,22 @@ export default function BubbleMenu({
   }, []);
 
   useEffect(() => {
-    const updated = [...baseItems];
     if (user) {
+      setCurrentUser(user);
+    } else {
+      import('@/app/actions/auth').then(({ checkSessionAction }) => {
+        checkSessionAction().then((session) => {
+          if (session) {
+            setCurrentUser(session);
+          }
+        });
+      });
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const updated = [...baseItems];
+    if (currentUser) {
       updated.push({
         label: 'dashboard',
         href: '/dashboard',
@@ -128,7 +143,7 @@ export default function BubbleMenu({
       });
     }
     setMenuItems(updated);
-  }, [user, items]);
+  }, [currentUser, items]);
 
   const containerClassName = [
     'bubble-menu',
@@ -155,7 +170,12 @@ export default function BubbleMenu({
       e.preventDefault();
       setIsMenuOpen(false);
       setShowOverlay(false);
-      await logoutAction?.();
+      if (logoutAction) {
+        await logoutAction();
+      } else {
+        const { logoutAction: serverLogout } = await import('@/app/actions/auth');
+        await serverLogout();
+      }
       window.location.href = '/';
     } else {
       setIsMenuOpen(false);

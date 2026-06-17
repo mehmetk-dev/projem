@@ -14,9 +14,6 @@ interface Props {
   projects: T.Project[];
   isAdmin: boolean;
   blogs: T.Blog[];
-  weather: T.WeatherData | null;
-  githubEvents: T.GitHubEvent[] | null;
-  spotifyData: T.SpotifyData | null;
   hiddenTabs: string[];
 }
 
@@ -49,9 +46,6 @@ export default function OverviewWrapper(props: Props) {
       projects={props.projects}
       isAdmin={props.isAdmin}
       blogs={props.blogs}
-      weather={props.weather}
-      githubEvents={props.githubEvents}
-      spotifyData={props.spotifyData}
       onTab={handleTab}
       visibleTabIds={visibleTabIds}
     />

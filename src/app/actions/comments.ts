@@ -7,6 +7,7 @@ import { requireAdmin } from '@/lib/auth';
 import { rateLimitCheck, getClientIP, formatRateLimitError } from '@/lib/rate-limit';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import { cache } from 'react';
 
 export interface CommentActionState {
   error?: string;
@@ -21,14 +22,14 @@ const commentSchema = z.object({
   content: z.string().min(1, 'Yorum gereklidir.').max(3000, 'Yorum en fazla 3000 karakter olabilir.').trim(),
 });
 
-export async function getApprovedComments(blogId: number) {
+export const getApprovedComments = cache(async (blogId: number) => {
   return db
     .select()
     .from(comments)
     .where(and(eq(comments.blogId, blogId), eq(comments.approved, true)))
     .orderBy(desc(comments.createdAt))
     .all();
-}
+});
 
 export async function getAllComments() {
   await requireAdmin();

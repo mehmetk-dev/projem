@@ -1,26 +1,31 @@
-import { getProjectById } from '@/app/actions/projects';
-import Image from 'next/image';
+import { getProjectBySlug, getPublishedProjects } from '@/app/actions/projects';
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getCurrentUser, logout } from '@/lib/auth';
 import BubbleMenu from '@/components/BubbleMenu';
 import { getProjectImages } from '@/lib/utils';
 import ProjectGallery from '@/components/ProjectGallery';
 
+export const revalidate = 3600;
+
 interface ProjectDetailPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateStaticParams() {
+  try {
+    const list = await getPublishedProjects();
+    return list.map((project) => ({
+      slug: project.slug,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: ProjectDetailPageProps): Promise<Metadata> {
-  const { id } = await params;
-  const projectId = Number(id);
-  
-  if (isNaN(projectId)) {
-    return { title: 'Bulunamadı | Mehmet Kerem' };
-  }
-
-  const project = await getProjectById(projectId);
+  const { slug } = await params;
+  const project = await getProjectBySlug(slug);
 
   if (!project) {
     return { title: 'Bulunamadı | Mehmet Kerem' };
@@ -33,33 +38,19 @@ export async function generateMetadata({ params }: ProjectDetailPageProps): Prom
 }
 
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
-  const { id } = await params;
-  const projectId = Number(id);
+  const { slug } = await params;
 
-  if (isNaN(projectId)) {
-    notFound();
-  }
-
-  const [project, user] = await Promise.all([
-    getProjectById(projectId),
-    getCurrentUser(),
-  ]);
+  const project = await getProjectBySlug(slug);
 
   if (!project) {
     notFound();
-  }
-
-  async function handleLogout() {
-    'use server';
-    await logout();
-    redirect('/');
   }
 
   const images = getProjectImages(project.image);
 
   return (
     <div className="min-h-screen bg-black text-white font-sans">
-      <BubbleMenu logo="M. Kerem" user={user ? { email: user.email } : null} logoutAction={handleLogout} />
+      <BubbleMenu logo="M. Kerem" />
 
       <main className="container mx-auto px-6 lg:px-12 pt-28 pb-16">
         <article className="max-w-3xl mx-auto">

@@ -61,26 +61,9 @@ export default function ContactSection() {
           </div>
 
           <div className="bg-neutral-900/20 backdrop-blur-xl border border-white/10 p-6 sm:p-10 md:p-16 rounded-2xl sm:rounded-[3rem] animate-on-scroll">
-            <style>{`
-              @keyframes catWag {
-                0%, 100% { transform: translateY(0) rotate(0deg); }
-                50% { transform: translateY(-8px) rotate(3deg); }
-              }
-              .animate-cat-wag {
-                animation: catWag 2.5s ease-in-out infinite;
-                transform-origin: bottom center;
-              }
-              @keyframes fadeIn {
-                from { opacity: 0; transform: scale(0.95); }
-                to { opacity: 1; transform: scale(1); }
-              }
-              .animate-fade-in {
-                animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-              }
-            `}</style>
             <h3 className="text-3xl font-bold tracking-tight mb-12">Mesaj Bırak</h3>
             {submitSuccess ? (
-              <div className="flex flex-col items-center justify-center text-center py-6 animate-fade-in">
+              <div className="flex flex-col items-center justify-center text-center py-6 animate-contact-fade-in">
                 <div className="relative mb-6">
                   {/* Floating Hearts/Sparkles */}
                   <div className="absolute -top-1 -left-1 w-4 h-4 text-rose-500 animate-ping opacity-75">♥</div>

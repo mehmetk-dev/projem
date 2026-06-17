@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { pageViews } from '@/db/schema';
 import { sql, gte } from 'drizzle-orm';
 import { requireAuth } from '@/lib/auth';
+import { cache } from 'react';
 
 export async function trackPageView(page: string, sessionId?: string) {
   try {
@@ -17,7 +18,7 @@ export async function trackPageView(page: string, sessionId?: string) {
   }
 }
 
-export async function getAnalytics() {
+export const getAnalytics = cache(async () => {
   await requireAuth();
 
   const now = new Date();
@@ -72,4 +73,4 @@ export async function getAnalytics() {
     topPages,
     chartData,
   };
-}
+});

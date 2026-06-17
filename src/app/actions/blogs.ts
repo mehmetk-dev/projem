@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { saveUploadedImage } from '@/lib/server/uploads';
 import { userSafeMessage } from '@/lib/server/app-error';
+import { cache } from 'react';
 
 export interface BlogActionState {
   error?: string;
@@ -48,11 +49,11 @@ const blogSchema = z.object({
   published: z.coerce.boolean().default(false),
 });
 
-export async function getPublishedBlogs({
+export const getPublishedBlogs = cache(async ({
   category,
   limit = 20,
   offset = 0,
-}: { category?: string; limit?: number; offset?: number } = {}) {
+}: { category?: string; limit?: number; offset?: number } = {}) => {
   try {
     let query = db.select().from(blogs).where(eq(blogs.published, true)).orderBy(desc(blogs.publishedAt));
 
@@ -65,18 +66,17 @@ export async function getPublishedBlogs({
     console.error('getPublishedBlogs error:', error);
     return [];
   }
-}
+});
 
-export async function getBlogBySlug(slug: string) {
+export const getBlogBySlug = cache(async (slug: string) => {
   const blog = await db.select().from(blogs).where(eq(blogs.slug, slug)).get();
   if (!blog) return null;
   if (!blog.published) {
-    // Only allow viewing unpublished if owner
     const session = await getSession();
     if (!session || session.userId !== blog.userId) return null;
   }
   return blog;
-}
+});
 
 export async function getMyBlogs() {
   const { userId } = await requireAdmin();

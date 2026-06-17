@@ -271,3 +271,22 @@ export async function resetPasswordAction(
 
   redirect('/login');
 }
+
+export async function checkSessionAction() {
+  try {
+    const { getCurrentUser } = await import('@/lib/auth');
+    const user = await getCurrentUser();
+    if (!user) return null;
+    return { email: user.email };
+  } catch {
+    return null;
+  }
+}
+
+export async function logoutAction() {
+  try {
+    const { logout } = await import('@/lib/auth');
+    await logout();
+  } catch {}
+  redirect('/');
+}

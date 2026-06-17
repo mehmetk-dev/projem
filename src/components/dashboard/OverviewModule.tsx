@@ -2,9 +2,7 @@
 
 import * as T from './types';
 import { Panel, Empty } from './ui';
-import WeatherWidget from './WeatherWidget';
-import GitHubWidget from './GitHubWidget';
-import SpotifyWidget from './SpotifyWidget';
+import { DashboardWidgetsRow } from './DashboardWidgetsRow';
 
 interface Props {
   notes: T.Note[];
@@ -16,9 +14,6 @@ interface Props {
   blogs: T.Blog[];
   onTab: (t: T.TabId) => void;
   visibleTabIds: T.TabId[];
-  weather: T.WeatherData | null;
-  githubEvents: T.GitHubEvent[] | null;
-  spotifyData: T.SpotifyData | null;
 }
 
 export default function OverviewModule({
@@ -31,9 +26,6 @@ export default function OverviewModule({
   blogs,
   onTab,
   visibleTabIds,
-  weather,
-  githubEvents,
-  spotifyData,
 }: Props) {
   const isVisible = (tabId: T.TabId) => visibleTabIds.includes(tabId);
   const recentNotes = [...notes]
@@ -82,11 +74,7 @@ export default function OverviewModule({
         </div>
       )}
 
-      <div className="grid lg:grid-cols-3 gap-4 mb-6">
-        <WeatherWidget weather={weather} />
-        <GitHubWidget events={githubEvents} />
-        <SpotifyWidget data={spotifyData} onConfigure={() => onTab('spotify')} />
-      </div>
+      <DashboardWidgetsRow onTab={onTab} />
 
       <div className="grid lg:grid-cols-3 gap-4">
         {isVisible('notes') && (

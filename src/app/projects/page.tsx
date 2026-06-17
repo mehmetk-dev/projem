@@ -1,13 +1,11 @@
 import { getPublishedProjects } from '@/app/actions/projects';
-import { getCurrentUser, logout } from '@/lib/auth';
 import ImageWithFallback from '@/components/ImageWithFallback';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import BubbleMenu from '@/components/BubbleMenu';
 import { getProjectImages } from '@/lib/utils';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: 'Projeler | Mehmet Kerem',
@@ -21,21 +19,11 @@ export const metadata: Metadata = {
 };
 
 export default async function ProjectsListPage() {
-  const [projectList, user] = await Promise.all([
-    getPublishedProjects(),
-    getCurrentUser(),
-  ]);
-  const canManageProjects = user?.role === 'admin';
-
-  async function handleLogout() {
-    'use server';
-    await logout();
-    redirect('/');
-  }
+  const projectList = await getPublishedProjects();
 
   return (
     <div className="min-h-screen bg-black text-white font-sans">
-      <BubbleMenu logo="M. Kerem" user={user ? { email: user.email } : null} logoutAction={handleLogout} />
+      <BubbleMenu logo="M. Kerem" />
 
       <main className="container mx-auto px-6 lg:px-12 pt-28 pb-16">
         <div className="max-w-5xl mx-auto">
@@ -46,14 +34,6 @@ export default async function ProjectsListPage() {
                 Teknoloji ve tasarımı bir araya getirdiğim çalışmalarım.
               </p>
             </div>
-            {canManageProjects && (
-              <Link
-                href="/dashboard/projects?new=1"
-                className="inline-flex w-fit items-center justify-center rounded-full bg-white px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-black transition-colors hover:bg-neutral-200"
-              >
-                Proje Ekle
-              </Link>
-            )}
           </div>
 
           {projectList.length === 0 ? (
@@ -77,8 +57,10 @@ export default async function ProjectsListPage() {
                           src={mainImage}
                           alt={project.title}
                           fill
+                          sizes="(max-width: 768px) 100vw, 50vw"
                           className="object-cover transition-transform duration-[1.5s] group-hover:scale-105"
                           fallbackSrc="/placeholder.svg"
+                          loading="lazy"
                         />
                       ) : (
                         <div className="w-full h-full bg-neutral-900 flex items-center justify-center text-neutral-600 text-xs">
@@ -108,7 +90,7 @@ export default async function ProjectsListPage() {
                         </a>
                       ) : (
                         <Link
-                          href={`/projects/${project.id}`}
+                          href={`/projects/${project.slug}`}
                           className="text-xs uppercase tracking-wider bg-white text-black px-6 py-2.5 rounded-full font-medium hover:bg-neutral-200 transition-colors"
                         >
                           Detaylar

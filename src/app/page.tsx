@@ -8,22 +8,19 @@ import { getPublishedBlogs } from '@/app/actions/blogs';
 import PortfolioClient from '@/components/PortfolioClient';
 import './portfolio.css';
 
+export const revalidate = 3600;
+
 export default async function HomePage() {
-  const session = await getSession();
+  const [session, projects, blogs] = await Promise.all([
+    getSession(),
+    getPublishedProjects().catch(() => []),
+    getPublishedBlogs({ limit: 3 }).catch(() => []),
+  ]);
 
   let user = null;
   if (session?.userId) {
     user = await db.select().from(users).where(eq(users.id, session.userId)).get();
   }
-
-  let projects: Awaited<ReturnType<typeof getPublishedProjects>> = [];
-  let blogs: Awaited<ReturnType<typeof getPublishedBlogs>> = [];
-  try {
-    projects = await getPublishedProjects();
-  } catch { /* table may not exist yet */ }
-  try {
-    blogs = await getPublishedBlogs({ limit: 3 });
-  } catch { /* table may not exist yet */ }
 
   async function handleLogout() {
     'use server';

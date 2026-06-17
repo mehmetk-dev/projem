@@ -5,6 +5,7 @@ import { getProjectImages } from '@/lib/utils';
 interface Project {
   id: number;
   title: string;
+  slug: string;
   description: string;
   image: string;
   link: string | null;
@@ -43,7 +44,7 @@ export default function WorkSection({ projects }: WorkSectionProps) {
               const CardTag = project.link ? 'a' : Link;
               const cardProps = project.link
                 ? { href: project.link, target: '_blank', rel: 'noopener noreferrer' }
-                : { href: `/projects/${project.id}` };
+                : { href: `/projects/${project.slug}` };
 
               const images = getProjectImages(project.image);
               const mainImage = images[0] || '/placeholder.svg';
@@ -62,8 +63,10 @@ export default function WorkSection({ projects }: WorkSectionProps) {
                       src={mainImage}
                       alt={project.title}
                       fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       className="object-cover transition-transform duration-[1.5s] group-hover:scale-110"
                       hideOnError
+                      loading="lazy"
                     />
                   </div>
                 <div className="absolute inset-0 z-20 flex flex-col justify-end p-8 bg-gradient-to-t from-black via-black/80 to-transparent opacity-90 group-hover:opacity-100 transition-opacity">

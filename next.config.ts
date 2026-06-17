@@ -3,7 +3,11 @@ import type { NextConfig } from "next";
 function remoteImagePatternFromUrl(value: string | undefined) {
   if (!value) return null;
   try {
-    const url = new URL(value);
+    let raw = value.trim();
+    if (!raw.startsWith('http://') && !raw.startsWith('https://')) {
+      raw = 'https://' + raw;
+    }
+    const url = new URL(raw);
     return {
       protocol: url.protocol.replace(':', '') as 'http' | 'https',
       hostname: url.hostname,
@@ -18,6 +22,7 @@ function remoteImagePatternFromUrl(value: string | undefined) {
 const remoteImagePatterns = [
   remoteImagePatternFromUrl(process.env.R2_ENDPOINT),
   remoteImagePatternFromUrl(process.env.R2_PUBLIC_URL),
+  { protocol: 'https' as const, hostname: 'media.mehmetkerem.com', pathname: '/**' },
   { protocol: 'https' as const, hostname: 'i.scdn.co', pathname: '/**' },
 ].filter((pattern): pattern is NonNullable<typeof pattern> => Boolean(pattern));
 

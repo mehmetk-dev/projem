@@ -7,6 +7,7 @@ import { getCurrentUser, requireAdmin } from '@/lib/auth';
 import { rateLimitCheck, getClientIP, formatRateLimitError } from '@/lib/rate-limit';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import { cache } from 'react';
 import { sendContactEmail } from '@/lib/mail';
 
 export interface MessageActionState {
@@ -70,16 +71,16 @@ export async function submitContactAction(
   }
 }
 
-export async function getMessages() {
+export const getMessages = cache(async () => {
   await requireAdmin();
   return db.select().from(messages).orderBy(desc(messages.createdAt)).all();
-}
+});
 
-export async function getUnreadMessageCount() {
+export const getUnreadMessageCount = cache(async () => {
   await requireAdmin();
   const row = await db.select({ value: count() }).from(messages).where(eq(messages.read, false)).get();
   return row?.value ?? 0;
-}
+});
 
 export async function markMessageReadAction(formData: FormData): Promise<MessageActionState> {
   await requireAdmin();

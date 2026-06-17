@@ -9,6 +9,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { saveUploadedImage } from '@/lib/server/uploads';
 import { userSafeMessage } from '@/lib/server/app-error';
+import { cache } from 'react';
 
 // --- Types ---
 export interface NoteActionState {
@@ -36,7 +37,7 @@ async function requireUser() {
 
 // --- Actions ---
 
-export async function getNotes() {
+export const getNotes = cache(async () => {
   const userId = await requireUser();
 
   const userNotes = await db
@@ -47,7 +48,7 @@ export async function getNotes() {
     .all();
 
   return userNotes;
-}
+});
 
 export async function createNoteAction(
   _prevState: NoteActionState | null,

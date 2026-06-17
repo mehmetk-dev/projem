@@ -1,18 +1,28 @@
-import { getBlogBySlug } from '@/app/actions/blogs';
+import { getBlogBySlug, getPublishedBlogs } from '@/app/actions/blogs';
 import { getApprovedComments } from '@/app/actions/comments';
 import CommentsSection from '@/components/blog/CommentsSection';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getCurrentUser, logout } from '@/lib/auth';
 import BubbleMenu from '@/components/BubbleMenu';
+
+export const revalidate = 3600;
 
 interface BlogDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export const dynamic = 'force-dynamic';
+export async function generateStaticParams() {
+  try {
+    const list = await getPublishedBlogs();
+    return list.map((post) => ({
+      slug: post.slug,
+    }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({ params }: BlogDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -55,10 +65,7 @@ export async function generateMetadata({ params }: BlogDetailPageProps): Promise
 export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   const { slug } = await params;
   
-  const [post, user] = await Promise.all([
-    getBlogBySlug(slug),
-    getCurrentUser(),
-  ]);
+  const post = await getBlogBySlug(slug);
 
   if (!post) {
     notFound();
@@ -66,15 +73,9 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
 
   const approvedComments = await getApprovedComments(post.id);
 
-  async function handleLogout() {
-    'use server';
-    await logout();
-    redirect('/');
-  }
-
   return (
     <div className="min-h-screen bg-black text-white font-sans">
-      <BubbleMenu logo="M. Kerem" user={user ? { email: user.email } : null} logoutAction={handleLogout} />
+      <BubbleMenu logo="M. Kerem" />
 
       <main className="container mx-auto px-6 lg:px-12 pt-20 pb-16">
         <article className="max-w-3xl mx-auto">
@@ -95,7 +96,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
 
           {post.coverImage && (
             <div className="mb-8 rounded-2xl overflow-hidden border border-white/5 relative h-64 md:h-80">
-              <Image src={post.coverImage} alt={post.title} fill className="object-cover" />
+              <Image src={post.coverImage} alt={post.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 720px" priority />
             </div>
           )}
 

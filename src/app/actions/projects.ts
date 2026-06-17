@@ -8,6 +8,33 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { saveUploadedImage } from '@/lib/server/uploads';
 import { userSafeMessage } from '@/lib/server/app-error';
+import { cache } from 'react';
+
+function slugify(text: string): string {
+  const charMap: Record<string, string> = {
+    'ç':'c', 'Ç':'c', 'ğ':'g', 'Ğ':'g', 'ı':'i', 'İ':'i',
+    'ö':'o', 'Ö':'o', 'ş':'s', 'Ş':'s', 'ü':'u', 'Ü':'u',
+  };
+  return text
+    .replace(/[çÇğĞıİöÖşŞüÜ]/g, (c) => charMap[c] || c)
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-+/g, '-');
+}
+
+async function generateUniqueProjectSlug(baseSlug: string): Promise<string> {
+  let slug = baseSlug || 'proje';
+  let counter = 1;
+  while (true) {
+    const existing = await db.select({ id: projects.id }).from(projects).where(eq(projects.slug, slug)).get();
+    if (!existing) return slug;
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+}
 
 export interface ProjectActionState {
   error?: string;
@@ -25,7 +52,7 @@ const projectSchema = z.object({
   published: z.coerce.boolean().default(true),
 });
 
-export async function getPublishedProjects() {
+export const getPublishedProjects = cache(async () => {
   try {
     return db
       .select()
@@ -37,9 +64,22 @@ export async function getPublishedProjects() {
     console.error('getPublishedProjects error:', error);
     return [];
   }
-}
+});
 
-export async function getProjectById(id: number) {
+export const getProjectBySlug = cache(async (slug: string) => {
+  try {
+    return db
+      .select()
+      .from(projects)
+      .where(eq(projects.slug, slug))
+      .get();
+  } catch (error) {
+    console.error('getProjectBySlug error:', error);
+    return null;
+  }
+});
+
+export const getProjectById = cache(async (id: number) => {
   try {
     return db
       .select()
@@ -50,7 +90,7 @@ export async function getProjectById(id: number) {
     console.error('getProjectById error:', error);
     return null;
   }
-}
+});
 
 export async function getMyProjects() {
   const { userId } = await requireAdmin();
@@ -62,41 +102,67 @@ export async function getMyProjects() {
     .all();
 }
 
-export async function createProjectAction(
-  _prevState: ProjectActionState | null,
-  formData: FormData
-): Promise<ProjectActionState> {
-  const { userId } = await requireAdmin();
-  const imageUrls: string[] = [];
-
-  // Get existing images from the hidden 'image' input (which will be JSON-serialized)
-  const imageField = String(formData.get('image') || '').trim();
-  if (imageField) {
-    if (imageField.startsWith('[') && imageField.endsWith(']')) {
-      try {
-        const parsed = JSON.parse(imageField);
-        if (Array.isArray(parsed)) {
-          imageUrls.push(...parsed.filter(Boolean));
-        }
-      } catch {}
-    } else {
-      imageUrls.push(imageField);
-    }
-  }
-
-  // Handle multiple file uploads
+async function processProjectImages(formData: FormData): Promise<{ imageUrls?: string[]; error?: string }> {
+  const orderField = String(formData.get('imagesOrder') || '').trim();
   const imageFiles = formData.getAll('imageFiles');
+
+  // 1. Upload all new image files
+  const uploadedUrls: string[] = [];
   for (const file of imageFiles) {
     if (file instanceof File && file.size > 0) {
       try {
         const path = await saveUploadedImage(file, 'proje');
-        imageUrls.push(path);
+        uploadedUrls.push(path);
       } catch (error) {
         return { error: userSafeMessage(error, 'Görsel yüklenemedi.') };
       }
     }
   }
 
+  // 2. Reconstruct the ordered URLs list
+  const imageUrls: string[] = [];
+  if (orderField) {
+    try {
+      const order = JSON.parse(orderField);
+      if (Array.isArray(order)) {
+        for (const item of order) {
+          if (typeof item === 'string') {
+            if (item.startsWith('local:')) {
+              const localIdx = parseInt(item.substring(6), 10);
+              const uploadedUrl = uploadedUrls[localIdx];
+              if (uploadedUrl) {
+                imageUrls.push(uploadedUrl);
+              }
+            } else {
+              imageUrls.push(item);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Failed to parse imagesOrder:', e);
+    }
+  }
+
+  // Fallback to R2 uploaded urls directly if order parsing failed or empty
+  if (imageUrls.length === 0) {
+    imageUrls.push(...uploadedUrls);
+  }
+
+  return { imageUrls };
+}
+
+export async function createProjectAction(
+  _prevState: ProjectActionState | null,
+  formData: FormData
+): Promise<ProjectActionState> {
+  const { userId } = await requireAdmin();
+
+  const processResult = await processProjectImages(formData);
+  if (processResult.error) {
+    return { error: processResult.error };
+  }
+  const imageUrls = processResult.imageUrls || [];
   const finalImage = imageUrls.length > 0 ? JSON.stringify(imageUrls) : '/placeholder.svg';
 
   const result = projectSchema.safeParse({
@@ -114,7 +180,8 @@ export async function createProjectAction(
   }
 
   try {
-    const [project] = await db.insert(projects).values({ userId, ...result.data }).returning();
+    const slug = await generateUniqueProjectSlug(slugify(result.data.title));
+    const [project] = await db.insert(projects).values({ userId, slug, ...result.data }).returning();
     revalidatePath('/');
     revalidatePath('/projects');
     return { success: 'Proje eklendi.', data: project };
@@ -132,36 +199,11 @@ export async function updateProjectAction(
   const projectId = Number(formData.get('projectId'));
   if (!projectId || isNaN(projectId)) return { error: 'Geçersiz ID.' };
 
-  const imageUrls: string[] = [];
-
-  // Get existing images from the hidden 'image' input
-  const imageField = String(formData.get('image') || '').trim();
-  if (imageField) {
-    if (imageField.startsWith('[') && imageField.endsWith(']')) {
-      try {
-        const parsed = JSON.parse(imageField);
-        if (Array.isArray(parsed)) {
-          imageUrls.push(...parsed.filter(Boolean));
-        }
-      } catch {}
-    } else {
-      imageUrls.push(imageField);
-    }
+  const processResult = await processProjectImages(formData);
+  if (processResult.error) {
+    return { error: processResult.error };
   }
-
-  // Handle multiple file uploads
-  const imageFiles = formData.getAll('imageFiles');
-  for (const file of imageFiles) {
-    if (file instanceof File && file.size > 0) {
-      try {
-        const path = await saveUploadedImage(file, 'proje');
-        imageUrls.push(path);
-      } catch (error) {
-        return { error: userSafeMessage(error, 'Görsel yüklenemedi.') };
-      }
-    }
-  }
-
+  const imageUrls = processResult.imageUrls || [];
   const finalImage = imageUrls.length > 0 ? JSON.stringify(imageUrls) : '/placeholder.svg';
 
   const result = projectSchema.safeParse({
@@ -182,10 +224,14 @@ export async function updateProjectAction(
     const existing = await db.select().from(projects).where(and(eq(projects.id, projectId), eq(projects.userId, userId))).get();
     if (!existing) return { error: 'Proje bulunamadı.' };
 
-    const [project] = await db.update(projects).set({ ...result.data, updatedAt: new Date().toISOString() }).where(and(eq(projects.id, projectId), eq(projects.userId, userId))).returning();
+    const newSlug = result.data.title !== existing.title
+      ? await generateUniqueProjectSlug(slugify(result.data.title))
+      : existing.slug;
+
+    const [project] = await db.update(projects).set({ slug: newSlug, ...result.data, updatedAt: new Date().toISOString() }).where(and(eq(projects.id, projectId), eq(projects.userId, userId))).returning();
     revalidatePath('/');
     revalidatePath('/projects');
-    revalidatePath(`/projects/${projectId}`);
+    revalidatePath(`/projects/${project.slug}`);
     return { success: 'Proje güncellendi.', data: project };
   } catch (error) {
     console.error('Update Project Error:', error);
@@ -199,10 +245,11 @@ export async function deleteProjectAction(formData: FormData): Promise<ProjectAc
   if (!projectId || isNaN(projectId)) return { error: 'Geçersiz ID.' };
 
   try {
+    const project = await db.select({ slug: projects.slug }).from(projects).where(and(eq(projects.id, projectId), eq(projects.userId, userId))).get();
     await db.delete(projects).where(and(eq(projects.id, projectId), eq(projects.userId, userId)));
     revalidatePath('/');
     revalidatePath('/projects');
-    revalidatePath(`/projects/${projectId}`);
+    if (project) revalidatePath(`/projects/${project.slug}`);
     return { success: 'Proje silindi.' };
   } catch (error) {
     console.error('Delete Project Error:', error);

@@ -22,18 +22,25 @@ type ProjectFormState = {
   published: boolean;
 };
 
+type ImageItem =
+  | { type: 'existing'; url: string }
+  | { type: 'local'; id: string; file: File; previewUrl: string };
+
 export default function ProjectsModule({ projects: initialProjects, toastFn, initialMode = 'list' }: Props) {
   const [projects, setProjects] = useState(initialProjects);
   const [mode, setMode] = useState<'list' | 'form'>(initialMode);
   const [edit, setEdit] = useState<T.Project | null>(null);
   const [f, setF] = useState<ProjectFormState>({ title: '', description: '', link: '', category: 'Genel', displayOrder: 0, published: true });
-  const [imagesList, setImagesList] = useState<string[]>([]);
+  const [images, setImages] = useState<ImageItem[]>([]);
   const [busy, setBusy] = useState(false);
 
   const reset = () => {
     setEdit(null);
     setF({ title: '', description: '', link: '', category: 'Genel', displayOrder: 0, published: true });
-    setImagesList([]);
+    images.forEach((img) => {
+      if (img.type === 'local') URL.revokeObjectURL(img.previewUrl);
+    });
+    setImages([]);
     setMode('list');
   };
 
@@ -47,8 +54,37 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
       displayOrder: p.displayOrder,
       published: p.published,
     });
-    setImagesList(getProjectImages(p.image));
+    setImages(getProjectImages(p.image).map(url => ({ type: 'existing', url })));
     setMode('form');
+  };
+
+  const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
+    const newItems = files.map(file => ({
+      type: 'local' as const,
+      id: Math.random().toString(36).substring(2, 9),
+      file,
+      previewUrl: URL.createObjectURL(file)
+    }));
+    setImages(prev => [...prev, ...newItems]);
+    e.target.value = ''; // Reset input
+  };
+
+  const removeImage = (index: number) => {
+    const item = images[index];
+    if (item.type === 'local') {
+      URL.revokeObjectURL(item.previewUrl);
+    }
+    setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const setCover = (index: number) => {
+    setImages(prev => {
+      const next = [...prev];
+      const [target] = next.splice(index, 1);
+      return [target, ...next];
+    });
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -56,6 +92,25 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
     try {
       const fd = new FormData(e.currentTarget as HTMLFormElement);
       if (edit) fd.append('projectId', String(edit.id));
+
+      const localFiles: File[] = [];
+      const order: string[] = [];
+
+      images.forEach(img => {
+        if (img.type === 'existing') {
+          order.push(img.url);
+        } else {
+          order.push(`local:${localFiles.length}`);
+          localFiles.push(img.file);
+        }
+      });
+
+      localFiles.forEach(file => {
+        fd.append('imageFiles', file);
+      });
+
+      fd.append('imagesOrder', JSON.stringify(order));
+
       const res = await (edit ? updateProjectAction : createProjectAction)(null, fd);
       if (res.error || !res.data) { toastFn(res.error || 'Hata', false); return; }
       const project = res.data;
@@ -81,40 +136,69 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
       </div>
 
       {mode === 'form' && (
-        <form onSubmit={submit} className="bg-neutral-900/40 border border-white/10 rounded-2xl p-5 space-y-3 animate-in fade-in">
+        <form onSubmit={submit} className="bg-neutral-900/40 border border-white/10 rounded-2xl p-5 space-y-4 animate-in fade-in">
           <div className="flex justify-between items-center"><h2 className="font-bold text-sm">{edit ? 'Projeyi Düzenle' : 'Yeni Proje'}</h2><Btn variant="ghost" onClick={reset}>İptal</Btn></div>
           <input name="title" value={f.title} onChange={(e) => setF((s) => ({ ...s, title: e.target.value }))} placeholder="Proje Adı" required className="w-full bg-transparent border-b border-white/10 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-white/30" />
           <textarea name="description" value={f.description} onChange={(e) => setF((s) => ({ ...s, description: e.target.value }))} placeholder="Açıklama" rows={2} className="w-full bg-transparent border-b border-white/10 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-white/30 resize-none" />
           
-          <input type="hidden" name="image" value={JSON.stringify(imagesList)} />
-          
           <div className="space-y-2">
-            <label className="block text-xs text-neutral-500">Proje Görselleri</label>
-            {imagesList.length > 0 && (
-              <div className="flex flex-wrap gap-2 p-2 rounded-xl bg-neutral-950/40 border border-white/5">
-                {imagesList.map((imgUrl, idx) => (
-                  <div key={idx} className="relative group w-20 h-20 rounded-lg overflow-hidden border border-white/10 bg-neutral-900 shrink-0">
-                    <img src={imgUrl} alt="Proje görseli" className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => setImagesList(prev => prev.filter((_, i) => i !== idx))}
-                      className="absolute inset-0 bg-rose-950/80 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[10px] text-rose-200 font-bold transition-opacity"
-                    >
-                      Kaldır
-                    </button>
-                  </div>
-                ))}
+            <label className="block text-xs text-neutral-500 font-medium">Proje Görselleri (Sürükleyip Bırakabilir & Kapak Seçebilirsiniz)</label>
+            {images.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 p-3 rounded-2xl bg-neutral-950/50 border border-white/5">
+                {images.map((img, idx) => {
+                  const isCover = idx === 0;
+                  const src = img.type === 'existing' ? img.url : img.previewUrl;
+                  return (
+                    <div key={img.type === 'existing' ? img.url : img.id} className="relative group aspect-square rounded-xl overflow-hidden border border-white/10 bg-neutral-900 shrink-0 flex flex-col justify-between">
+                      <img src={src} alt="Proje görseli" className="w-full h-full object-cover absolute inset-0 z-0" />
+                      
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col justify-between p-2 transition-opacity z-10">
+                        <div className="flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => removeImage(idx)}
+                            className="bg-rose-950/80 hover:bg-rose-900 border border-rose-500/20 text-[10px] text-rose-200 px-2 py-1 rounded-lg cursor-pointer"
+                          >
+                            Kaldır
+                          </button>
+                        </div>
+                        
+                        {!isCover && (
+                          <button
+                            type="button"
+                            onClick={() => setCover(idx)}
+                            className="w-full bg-white text-black font-bold text-[9px] py-1.5 rounded-lg text-center hover:bg-neutral-200 cursor-pointer"
+                          >
+                            Kapak Yap
+                          </button>
+                        )}
+                      </div>
+
+                      {isCover && (
+                        <div className="absolute top-2 left-2 bg-emerald-500/90 border border-emerald-400/20 text-[9px] text-white px-2 py-0.5 rounded-md font-mono z-10">
+                          Kapak
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
             
-            <input
-              name="imageFiles"
-              type="file"
-              accept="image/*"
-              multiple
-              className="w-full text-xs text-neutral-400 file:bg-neutral-800 file:text-white file:border-0 file:px-3 file:py-1.5 file:rounded-lg file:mr-3 cursor-pointer hover:file:bg-neutral-700 transition-all"
-            />
-            <p className="text-[10px] text-neutral-500">Birden fazla görsel seçip yükleyebilirsiniz.</p>
+            <div className="flex items-center justify-center border-2 border-dashed border-white/10 rounded-2xl p-6 hover:border-white/20 transition-all cursor-pointer relative bg-neutral-900/20">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFilesSelected}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <div className="text-center space-y-1">
+                <div className="text-neutral-400 flex justify-center mb-1 scale-150"><PlusIcon /></div>
+                <p className="text-xs text-neutral-300 font-medium">Görsel Eklemek İçin Tıklayın veya Sürükleyin</p>
+                <p className="text-[10px] text-neutral-500">Birden fazla görsel seçebilirsiniz. İlk görsel kapak fotoğrafı olacaktır.</p>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
