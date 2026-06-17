@@ -5,6 +5,8 @@ import { notFound, redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getCurrentUser, logout } from '@/lib/auth';
 import BubbleMenu from '@/components/BubbleMenu';
+import { getProjectImages } from '@/lib/utils';
+import ProjectGallery from '@/components/ProjectGallery';
 
 interface ProjectDetailPageProps {
   params: Promise<{ id: string }>;
@@ -53,6 +55,8 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     redirect('/');
   }
 
+  const images = getProjectImages(project.image);
+
   return (
     <div className="min-h-screen bg-black text-white font-sans">
       <BubbleMenu logo="M. Kerem" user={user ? { email: user.email } : null} logoutAction={handleLogout} />
@@ -65,11 +69,9 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             </span>
           </div>
 
-          {project.image && (
-            <div className="mb-8 rounded-2xl overflow-hidden border border-white/5 relative h-64 md:h-96">
-              <Image src={project.image} alt={project.title} fill className="object-cover" />
-            </div>
-          )}
+          <div className="mb-8">
+            <ProjectGallery images={images} title={project.title} />
+          </div>
 
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-8">{project.title}</h1>
 

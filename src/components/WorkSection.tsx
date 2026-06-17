@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import ImageWithFallback from './ImageWithFallback';
+import { getProjectImages } from '@/lib/utils';
 
 interface Project {
   id: number;
@@ -44,24 +45,27 @@ export default function WorkSection({ projects }: WorkSectionProps) {
                 ? { href: project.link, target: '_blank', rel: 'noopener noreferrer' }
                 : { href: `/projects/${project.id}` };
 
+              const images = getProjectImages(project.image);
+              const mainImage = images[0] || '/placeholder.svg';
+
               return (
-              <CardTag
-                key={project.id}
-                {...cardProps}
-                className={`group relative rounded-[2rem] overflow-hidden bg-neutral-950 border border-white/5 hover:border-white/20 transition-all duration-700 animate-on-scroll cursor-pointer ${
-                  index === 1 ? 'lg:translate-y-16' : index === 2 ? 'md:translate-x-1/2 lg:translate-x-0 lg:translate-y-32' : ''
-                }`}
-              >
-                <div className="aspect-[4/5] overflow-hidden relative">
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-700 z-10" />
-                  <ImageWithFallback
-                    src={project.image}
-                    alt={project.title}
-                    fill
-                    className="object-cover transition-transform duration-[1.5s] group-hover:scale-110"
-                    hideOnError
-                  />
-                </div>
+                <CardTag
+                  key={project.id}
+                  {...cardProps}
+                  className={`group relative rounded-[2rem] overflow-hidden bg-neutral-950 border border-white/5 hover:border-white/20 transition-all duration-700 animate-on-scroll cursor-pointer ${
+                    index === 1 ? 'lg:translate-y-16' : index === 2 ? 'md:translate-x-1/2 lg:translate-x-0 lg:translate-y-32' : ''
+                  }`}
+                >
+                  <div className="aspect-[4/5] overflow-hidden relative">
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-700 z-10" />
+                    <ImageWithFallback
+                      src={mainImage}
+                      alt={project.title}
+                      fill
+                      className="object-cover transition-transform duration-[1.5s] group-hover:scale-110"
+                      hideOnError
+                    />
+                  </div>
                 <div className="absolute inset-0 z-20 flex flex-col justify-end p-8 bg-gradient-to-t from-black via-black/80 to-transparent opacity-90 group-hover:opacity-100 transition-opacity">
                   <span className="text-[10px] font-mono tracking-[0.3em] text-neutral-400 uppercase mb-4 block">
                     {project.category}

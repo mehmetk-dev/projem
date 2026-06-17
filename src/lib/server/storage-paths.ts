@@ -49,10 +49,14 @@ export function buildPublicStorageUrl(options: {
   objectKey: string;
   publicBaseUrl?: string;
 }): string {
-  const publicBase = options.publicBaseUrl?.trim();
+  let publicBase = options.publicBaseUrl?.trim();
   const objectPath = encodeObjectPath(trimBoundarySlashes(options.objectKey));
   if (!publicBase) {
     return `/api/media/${objectPath}`;
+  }
+
+  if (!publicBase.startsWith('http://') && !publicBase.startsWith('https://')) {
+    publicBase = 'https://' + publicBase;
   }
 
   const base = trimTrailingSlashes(publicBase);

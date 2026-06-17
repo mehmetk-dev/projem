@@ -1,10 +1,11 @@
 import { getPublishedProjects } from '@/app/actions/projects';
 import { getCurrentUser, logout } from '@/lib/auth';
-import Image from 'next/image';
+import ImageWithFallback from '@/components/ImageWithFallback';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import BubbleMenu from '@/components/BubbleMenu';
+import { getProjectImages } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,26 +62,30 @@ export default async function ProjectsListPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {projectList.map((project) => (
-                <article
-                  key={project.id}
-                  className="group relative rounded-[2rem] overflow-hidden bg-neutral-900/30 border border-white/5 hover:border-white/20 transition-all duration-500"
-                >
-                  <div className="aspect-[16/10] overflow-hidden relative">
-                    <div className="absolute inset-0 bg-black/30 group-hover:bg-transparent transition-colors duration-500 z-10" />
-                    {project.image ? (
-                      <Image
-                        src={project.image}
-                        alt={project.title}
-                        fill
-                        className="object-cover transition-transform duration-[1.5s] group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-neutral-900 flex items-center justify-center text-neutral-600 text-xs">
-                        Görsel Yok
-                      </div>
-                    )}
-                  </div>
+              {projectList.map((project) => {
+                const images = getProjectImages(project.image);
+                const mainImage = images[0] || '/placeholder.svg';
+                return (
+                  <article
+                    key={project.id}
+                    className="group relative rounded-[2rem] overflow-hidden bg-neutral-900/30 border border-white/5 hover:border-white/20 transition-all duration-500"
+                  >
+                    <div className="aspect-[16/10] overflow-hidden relative">
+                      <div className="absolute inset-0 bg-black/30 group-hover:bg-transparent transition-colors duration-500 z-10" />
+                      {mainImage ? (
+                        <ImageWithFallback
+                          src={mainImage}
+                          alt={project.title}
+                          fill
+                          className="object-cover transition-transform duration-[1.5s] group-hover:scale-105"
+                          fallbackSrc="/placeholder.svg"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-neutral-900 flex items-center justify-center text-neutral-600 text-xs">
+                          Görsel Yok
+                        </div>
+                      )}
+                    </div>
                   <div className="p-8">
                     <span className="text-[10px] font-mono tracking-[0.3em] text-neutral-400 uppercase mb-3 block">
                       {project.category}
@@ -112,8 +117,9 @@ export default async function ProjectsListPage() {
                     </div>
                   </div>
                 </article>
-              ))}
-            </div>
+              );
+            })}
+          </div>
           )}
         </div>
       </main>

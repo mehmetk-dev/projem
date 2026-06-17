@@ -67,21 +67,42 @@ export async function createProjectAction(
   formData: FormData
 ): Promise<ProjectActionState> {
   const { userId } = await requireAdmin();
-  let imagePath = String(formData.get('image') || '').trim() || undefined;
-  const imageFile = formData.get('imageFile');
+  const imageUrls: string[] = [];
 
-  if (imageFile instanceof File && imageFile.size > 0) {
-    try {
-      imagePath = await saveUploadedImage(imageFile, 'proje');
-    } catch (error) {
-      return { error: userSafeMessage(error, 'Görsel yüklenemedi.') };
+  // Get existing images from the hidden 'image' input (which will be JSON-serialized)
+  const imageField = String(formData.get('image') || '').trim();
+  if (imageField) {
+    if (imageField.startsWith('[') && imageField.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(imageField);
+        if (Array.isArray(parsed)) {
+          imageUrls.push(...parsed.filter(Boolean));
+        }
+      } catch {}
+    } else {
+      imageUrls.push(imageField);
     }
   }
+
+  // Handle multiple file uploads
+  const imageFiles = formData.getAll('imageFiles');
+  for (const file of imageFiles) {
+    if (file instanceof File && file.size > 0) {
+      try {
+        const path = await saveUploadedImage(file, 'proje');
+        imageUrls.push(path);
+      } catch (error) {
+        return { error: userSafeMessage(error, 'Görsel yüklenemedi.') };
+      }
+    }
+  }
+
+  const finalImage = imageUrls.length > 0 ? JSON.stringify(imageUrls) : '/placeholder.svg';
 
   const result = projectSchema.safeParse({
     title: formData.get('title'),
     description: formData.get('description') || undefined,
-    image: imagePath,
+    image: finalImage,
     link: formData.get('link') || undefined,
     category: formData.get('category') || 'Genel',
     displayOrder: Number(formData.get('displayOrder') || 0),
@@ -108,23 +129,45 @@ export async function updateProjectAction(
   formData: FormData
 ): Promise<ProjectActionState> {
   const { userId } = await requireAdmin();
-  let imagePath = String(formData.get('image') || '').trim() || undefined;
-  const imageFile = formData.get('imageFile');
-
-  if (imageFile instanceof File && imageFile.size > 0) {
-    try {
-      imagePath = await saveUploadedImage(imageFile, 'proje');
-    } catch (error) {
-      return { error: userSafeMessage(error, 'Görsel yüklenemedi.') };
-    }
-  }
   const projectId = Number(formData.get('projectId'));
   if (!projectId || isNaN(projectId)) return { error: 'Geçersiz ID.' };
+
+  const imageUrls: string[] = [];
+
+  // Get existing images from the hidden 'image' input
+  const imageField = String(formData.get('image') || '').trim();
+  if (imageField) {
+    if (imageField.startsWith('[') && imageField.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(imageField);
+        if (Array.isArray(parsed)) {
+          imageUrls.push(...parsed.filter(Boolean));
+        }
+      } catch {}
+    } else {
+      imageUrls.push(imageField);
+    }
+  }
+
+  // Handle multiple file uploads
+  const imageFiles = formData.getAll('imageFiles');
+  for (const file of imageFiles) {
+    if (file instanceof File && file.size > 0) {
+      try {
+        const path = await saveUploadedImage(file, 'proje');
+        imageUrls.push(path);
+      } catch (error) {
+        return { error: userSafeMessage(error, 'Görsel yüklenemedi.') };
+      }
+    }
+  }
+
+  const finalImage = imageUrls.length > 0 ? JSON.stringify(imageUrls) : '/placeholder.svg';
 
   const result = projectSchema.safeParse({
     title: formData.get('title'),
     description: formData.get('description') || undefined,
-    image: imagePath,
+    image: finalImage,
     link: formData.get('link') || undefined,
     category: formData.get('category') || 'Genel',
     displayOrder: Number(formData.get('displayOrder') || 0),
