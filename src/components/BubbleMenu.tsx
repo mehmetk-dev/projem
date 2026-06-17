@@ -306,8 +306,8 @@ export default function BubbleMenu({
               'absolute top-full left-6 right-6 mt-4 p-6',
               'bg-neutral-950/95 border border-white/10 rounded-[2rem] shadow-2xl backdrop-blur-2xl',
               'flex-col gap-3',
-              // Desktop: absolute within nav, centered, no background, no flow impact
-              'md:top-1/2 md:-translate-y-1/2 md:left-0 md:right-0 md:mx-auto md:w-fit',
+              // Desktop: static in flow, centered via flex parent
+              'md:static md:translate-y-0 md:w-auto md:mx-0',
               'md:mt-0 md:p-0 md:bg-transparent md:border-0 md:rounded-none md:shadow-none md:backdrop-blur-none',
               'md:flex-row md:flex-wrap gap-x-2 gap-y-3',
               'z-[1002]'

@@ -448,18 +448,18 @@ class Media {
     
     let heightFactor = 1050;
     let widthFactor = 820;
-    let paddingVal = 3.2;
+    let paddingVal = 4.5;
 
     if (this.screen.width < 640) {
       // Mobile
       heightFactor = 650;
       widthFactor = 480;
-      paddingVal = 1.8;
+      paddingVal = 2.5;
     } else if (this.screen.width < 1024) {
       // Tablet
       heightFactor = 850;
       widthFactor = 680;
-      paddingVal = 2.4;
+      paddingVal = 3.2;
     }
 
     this.plane.scale.y = (this.viewport.height * (heightFactor * this.scale)) / this.screen.height;
