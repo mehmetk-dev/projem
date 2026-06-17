@@ -92,6 +92,8 @@ self.addEventListener('fetch', (event) => {
             });
           }
           return networkResponse;
+        }).catch(() => {
+          return caches.match(event.request);
         });
       })
     );
