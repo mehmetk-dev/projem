@@ -34,16 +34,22 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setBusy(true);
-    const fd = new FormData(e.currentTarget as HTMLFormElement);
-    if (edit) fd.append('projectId', String(edit.id));
-    const res = await (edit ? updateProjectAction : createProjectAction)(null, fd);
-    setBusy(false);
-    if (res.error || !res.data) { toastFn(res.error || 'Hata', false); return; }
-    const project = res.data;
-    if (edit) { setProjects((prev) => prev.map((p) => p.id === edit.id ? project : p)); }
-    else { setProjects((prev) => [...prev, project]); }
-    toastFn(res.success || 'Başarılı', true);
-    reset();
+    try {
+      const fd = new FormData(e.currentTarget as HTMLFormElement);
+      if (edit) fd.append('projectId', String(edit.id));
+      const res = await (edit ? updateProjectAction : createProjectAction)(null, fd);
+      if (res.error || !res.data) { toastFn(res.error || 'Hata', false); return; }
+      const project = res.data;
+      if (edit) { setProjects((prev) => prev.map((p) => p.id === edit.id ? project : p)); }
+      else { setProjects((prev) => [...prev, project]); }
+      toastFn(res.success || 'Başarılı', true);
+      reset();
+    } catch (error) {
+      console.error('Submit project error:', error);
+      toastFn('İşlem başarısız oldu.', false);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const del = async (id: number) => { if (!confirm('Silinsin mi?')) return; setProjects((prev) => prev.filter((p) => p.id !== id)); const fd = new FormData(); fd.append('projectId', String(id)); const res = await deleteProjectAction(fd); if (res.error) { toastFn(res.error, false); setProjects(initialProjects); } };

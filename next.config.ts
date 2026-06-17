@@ -24,6 +24,9 @@ const remoteImagePatterns = [
 const nextConfig: NextConfig = {
   experimental: {
     viewTransition: true,
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
   },
   images: {
     remotePatterns: remoteImagePatterns,
