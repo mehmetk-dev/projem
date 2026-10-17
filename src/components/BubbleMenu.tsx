@@ -1,11 +1,10 @@
 'use client';
 
 import type { CSSProperties, ReactNode } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
 import Link from 'next/link';
-import SpotifyNowPlaying from './SpotifyNowPlaying';
 
 type MenuItem = {
   label: string;
@@ -84,23 +83,14 @@ export default function BubbleMenu({
 }: BubbleMenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
   const overlayRef = useRef<HTMLElement>(null);
   const bubblesRef = useRef<HTMLAnchorElement[]>([]);
   const labelRefs = useRef<HTMLSpanElement[]>([]);
 
   const baseItems = items?.length ? items : DEFAULT_ITEMS;
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
 
-  useEffect(() => {
-    const query = window.matchMedia('(min-width: 1024px)');
-    const update = () => setIsDesktop(query.matches);
-    update();
-    query.addEventListener('change', update);
-    return () => query.removeEventListener('change', update);
-  }, []);
-
-  useEffect(() => {
+  // Oturum durumuna göre giriş/çıkış öğeleri eklenir; state yerine render sırasında hesaplanır
+  const menuItems = useMemo(() => {
     const updated = [...baseItems];
     if (user) {
       updated.push({
@@ -126,8 +116,8 @@ export default function BubbleMenu({
         hoverStyles: { bgGradient: 'linear-gradient(to right, #2563eb, #1e40af)', textColor: '#ffffff' }
       });
     }
-    setMenuItems(updated);
-  }, [user, items, baseItems]);
+    return updated;
+  }, [user, baseItems]);
 
   const containerClassName = [
     'bubble-menu',
@@ -160,7 +150,7 @@ export default function BubbleMenu({
         const { logoutAction: serverLogout } = await import('@/app/actions/auth');
         await serverLogout();
       }
-      window.location.href = '/';
+      window.location.assign('/');
     } else {
       setIsMenuOpen(false);
       setShowOverlay(false);

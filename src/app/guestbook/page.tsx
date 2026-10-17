@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { getApprovedGuestbookEntries } from '@/app/actions/guestbook';
 import GuestbookForm from '@/components/guestbook/GuestbookForm';
 import type { Metadata } from 'next';

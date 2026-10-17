@@ -177,6 +177,8 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
                   const src = img.type === 'existing' ? img.url : img.previewUrl;
                   return (
                     <div key={img.type === 'existing' ? img.url : img.id} className="relative group aspect-square rounded-xl overflow-hidden border border-white/10 bg-neutral-900 shrink-0 flex flex-col justify-between">
+                      {/* Yeni yüklenen dosyalar blob: önizleme URL'si; next/image bunları optimize edemez */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={src} alt="Proje görseli" className="w-full h-full object-cover absolute inset-0 z-0" />
                       
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col justify-between p-2 transition-opacity z-10">

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useTransition } from 'react';
 import * as T from './types';
 import { Card } from './ui';
-import { createConversationAction, deleteConversationAction, renameConversationAction, createMessageAction, getMessages, getAllUserContext, updateChatSettingsAction } from '@/app/actions/chat';
+import { createConversationAction, deleteConversationAction, renameConversationAction, createMessageAction, getMessages, updateChatSettingsAction } from '@/app/actions/chat';
 import { Volume2, VolumeX, Mic, Copy } from 'lucide-react';
 
 interface SpeechRecognitionEventLike {
