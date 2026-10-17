@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mk-portfolio-v2';
+const CACHE_NAME = 'mk-portfolio-v3';
 const STATIC_ASSETS = [
   '/',
   '/blog',
@@ -43,6 +43,19 @@ self.addEventListener('fetch', (event) => {
 
   // Bypass for Next.js hot-reloading (development)
   if (url.pathname.includes('/_next/webpack-hmr') || url.pathname.includes('webpack')) {
+    return;
+  }
+
+  // Next.js sayfa verisi (RSC) ve dahili istekler her zaman ağdan gelmeli; önbellekten verilirse içerik eskir.
+  // Yalnızca içerik hash'li statik dosyalar ve optimize görseller önbelleklenir.
+  if (
+    url.searchParams.has('_rsc') ||
+    event.request.headers.get('RSC') ||
+    event.request.headers.get('Next-Router-Prefetch') ||
+    (url.pathname.startsWith('/_next/') &&
+      !url.pathname.startsWith('/_next/static/') &&
+      !url.pathname.startsWith('/_next/image'))
+  ) {
     return;
   }
 

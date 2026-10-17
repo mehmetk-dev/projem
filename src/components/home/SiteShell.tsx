@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from 'next/font/google';
 import SiteHeader from './SiteHeader';
 import HomeFooter from './HomeFooter';
 import ScrollAnimations from '../ScrollAnimations';
+import HashScroll from './HashScroll';
 import type { HomeSocialLink } from './types';
 import '@/app/portfolio.css';
 
@@ -23,6 +24,7 @@ export default function SiteShell({ socialLinks, children }: { socialLinks: Home
       className={`home-theme ${geist.variable} ${geistMono.variable} ${instrumentSerif.variable} min-h-screen antialiased selection:bg-accent selection:text-white overflow-x-clip`}
     >
       <ScrollAnimations />
+      <HashScroll />
       <SiteHeader />
       <main>{children}</main>
       <HomeFooter socialLinks={socialLinks} />

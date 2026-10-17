@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Referans tema ve araç klasörleri uygulamanın parçası değil; taranırsa CSS gereksiz büyür */
+@source not "../../portfolio_theme";
+@source not "../../.agents";
+@source not "../../.codex";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme {

@@ -1,36 +1,115 @@
 import Link from 'next/link';
+import { ArrowUp, ArrowUpRight } from 'lucide-react';
+import BrandMark from './BrandMark';
 import type { HomeSocialLink } from './types';
+
+const EMAIL = 'mehmetkerem2109@gmail.com';
 
 const FOOTER_NAV = [
   { href: '/projects', label: 'Projeler' },
   { href: '/#services', label: 'Hizmetler' },
+  { href: '/#process', label: 'Süreç' },
   { href: '/blog', label: 'Blog' },
   { href: '/#contact', label: 'İletişim' },
 ];
 
+const columnTitle = 'font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted';
+const columnLink = 'text-[15px] text-ink-soft transition-colors hover:text-ink';
+
 export default function HomeFooter({ socialLinks }: { socialLinks: HomeSocialLink[] }) {
   return (
-    <footer className="py-10">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 text-sm text-ink-muted md:flex-row md:items-center md:justify-between md:px-8">
-        <div>© {new Date().getFullYear()} Mehmet Kerem · Full-Stack Web Geliştirici</div>
-        <nav className="flex flex-wrap gap-x-6 gap-y-2" aria-label="Alt menü">
-          {FOOTER_NAV.map((item) => (
-            <Link key={item.href} href={item.href} className="transition-colors hover:text-ink">
-              {item.label}
-            </Link>
-          ))}
-          {socialLinks.map((link) => (
-            <a
-              key={link.url}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-colors hover:text-ink"
+    <footer className="relative overflow-hidden">
+      <div className="mx-auto max-w-6xl px-5 md:px-8">
+        <div className="grid gap-12 pt-20 pb-14 md:grid-cols-12 md:gap-8 md:pt-24">
+          <div className="md:col-span-5">
+            <BrandMark />
+            <p className="mt-6 max-w-xs text-[15px] leading-relaxed text-ink-soft">
+              Markalar ve girişimler için hızlı, erişilebilir ve özenle tasarlanmış web deneyimleri.
+            </p>
+            <Link
+              href="/#contact"
+              className="group mt-7 inline-flex items-center gap-1.5 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-accent"
             >
-              {link.platform}
-            </a>
-          ))}
-        </nav>
+              Proje başlatalım
+              <ArrowUpRight size={15} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
+          </div>
+
+          <nav className="md:col-span-2" aria-label="Alt menü">
+            <h2 className={columnTitle}>Menü</h2>
+            <ul className="mt-5 space-y-3">
+              {FOOTER_NAV.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className={columnLink}>
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {socialLinks.length > 0 && (
+            <div className="md:col-span-2">
+              <h2 className={columnTitle}>Sosyal</h2>
+              <ul className="mt-5 space-y-3">
+                {socialLinks.map((link) => (
+                  <li key={link.url}>
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`group inline-flex items-center gap-1 ${columnLink}`}
+                    >
+                      {link.platform}
+                      <ArrowUpRight
+                        size={13}
+                        className="-translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
+                        aria-hidden="true"
+                      />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="md:col-span-3">
+            <h2 className={columnTitle}>İletişim</h2>
+            <ul className="mt-5 space-y-3 text-[15px] text-ink-soft">
+              <li>
+                <a href={`mailto:${EMAIL}`} className="break-all transition-colors hover:text-accent">
+                  {EMAIL}
+                </a>
+              </li>
+              <li>İstanbul, Türkiye</li>
+              <li className="inline-flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
+                Yeni projelere açık
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-6xl px-5 md:px-8" aria-hidden="true">
+        <p className="select-none whitespace-nowrap text-center text-[clamp(3.5rem,15vw,13rem)] font-semibold leading-[0.8] tracking-[-0.06em] text-ink">
+          Mehmet <span className="font-serif-display text-accent">Kerem</span>
+        </p>
+      </div>
+
+      <div className="mx-auto max-w-6xl px-5 md:px-8">
+        <div className="mt-10 flex flex-col gap-4 border-t border-line py-6 text-[13px] text-ink-muted sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} Mehmet Kerem. Tüm hakları saklıdır.</p>
+          <a
+            href="#top"
+            className="group inline-flex w-fit items-center gap-2.5 transition-colors hover:text-ink"
+          >
+            Başa dön
+            <span className="grid h-9 w-9 place-items-center rounded-full border border-line bg-surface text-ink transition-colors group-hover:border-ink group-hover:bg-ink group-hover:text-paper">
+              <ArrowUp size={15} className="transition-transform group-hover:-translate-y-0.5" />
+            </span>
+          </a>
+        </div>
       </div>
     </footer>
   );

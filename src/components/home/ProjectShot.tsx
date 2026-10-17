@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { Maximize2, X } from 'lucide-react';
 
@@ -34,30 +35,31 @@ export default function ProjectShot({ src, alt, host, priority }: ProjectShotPro
         type="button"
         onClick={() => setOpen(true)}
         aria-label={`${alt} — büyüt`}
-        className="group block w-full cursor-zoom-in rounded-[24px] bg-gradient-to-br from-surface-2 to-accent-soft p-3 text-left transition-transform duration-500 ease-out hover:-translate-y-1 md:p-5"
+        className="group block w-full cursor-zoom-in rounded-[18px] bg-gradient-to-br from-surface-2 to-accent-soft p-2 text-left transition-transform duration-500 ease-out hover:-translate-y-1 md:rounded-[24px] md:p-5"
       >
         <span className="block overflow-hidden rounded-xl border border-line bg-surface shadow-[0_30px_70px_-30px_rgba(12,10,9,0.35)]">
-          <span className="flex items-center gap-2 border-b border-line px-4 py-2.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
-            <span className="ml-3 truncate rounded-md bg-surface-2 px-3 py-0.5 font-mono text-[11px] text-ink-muted">
+          <span className="flex items-center gap-1.5 border-b border-line px-3 py-2 md:gap-2 md:px-4 md:py-2.5">
+            <span className="h-2 w-2 rounded-full bg-[#ff5f57] md:h-2.5 md:w-2.5" />
+            <span className="h-2 w-2 rounded-full bg-[#febc2e] md:h-2.5 md:w-2.5" />
+            <span className="h-2 w-2 rounded-full bg-[#28c840] md:h-2.5 md:w-2.5" />
+            <span className="ml-2 truncate rounded-md md:ml-3 bg-surface-2 px-3 py-0.5 font-mono text-[11px] text-ink-muted">
               {host}
             </span>
             <span className="ml-auto inline-flex items-center gap-1.5 text-[12px] text-ink-muted opacity-0 transition-opacity group-hover:opacity-100">
               <Maximize2 size={13} /> Büyüt
             </span>
           </span>
-          {/* Ekran görüntülerinin oranı farklı olduğu için kırpmadan, doğal boyutta gösteriliyor */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={src}
-            alt={alt}
-            loading={priority ? 'eager' : 'lazy'}
-            fetchPriority={priority ? 'high' : 'auto'}
-            decoding="async"
-            className="block h-auto w-full bg-surface-2"
-          />
+          {/* Sabit 16:10 kutu: görsel yüklenmeden yer ayrılır, metin kaymaz. Tamamı büyütülünce görünür */}
+          <span className="relative block aspect-[16/10] bg-surface-2">
+            <Image
+              src={src}
+              alt={alt}
+              fill
+              sizes="(max-width: 768px) 100vw, 1100px"
+              priority={priority}
+              className="object-cover object-top"
+            />
+          </span>
         </span>
       </button>
 

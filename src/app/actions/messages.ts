@@ -19,6 +19,12 @@ const contactSchema = z.object({
   name: z.string().min(1, 'Ad gereklidir.').max(100).trim(),
   email: z.string().email('Geçerli e-posta giriniz.').trim().toLowerCase(),
   subject: z.string().max(200).trim().optional(),
+  phone: z
+    .string()
+    .trim()
+    .max(30)
+    .regex(/^[0-9+()\s-]*$/, 'Geçerli bir telefon numarası giriniz.')
+    .optional(),
   content: z.string().min(1, 'Mesaj gereklidir.').max(5000).trim(),
 });
 
@@ -48,6 +54,7 @@ export async function submitContactAction(
     name: formData.get('name'),
     email: formData.get('email'),
     subject: formData.get('subject') || undefined,
+    phone: formData.get('phone') || undefined,
     content: formData.get('content'),
   });
 
@@ -55,11 +62,15 @@ export async function submitContactAction(
     return { error: result.error.errors.map((e) => e.message).join(' ') };
   }
 
+  // messages tablosunda telefon kolonu yok; numara mesajın başına eklenir, panelde ve e-postada görünür
+  const { phone, ...fields } = result.data;
+  const data = { ...fields, content: phone ? `Telefon: ${phone}\n\n${fields.content}` : fields.content };
+
   try {
-    await db.insert(messages).values(result.data);
+    await db.insert(messages).values(data);
     
     // Send email notification asynchronously
-    sendContactEmail(result.data.name, result.data.email, result.data.content).catch((err) => {
+    sendContactEmail(data.name, data.email, data.content).catch((err) => {
       console.error('Failed to trigger email notification:', err);
     });
 
