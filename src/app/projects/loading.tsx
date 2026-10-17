@@ -1,23 +1,21 @@
+import '@/app/portfolio.css';
+
 export default function ProjectsLoading() {
   return (
-    <div className="min-h-screen bg-black text-white font-sans">
-      <div className="h-20" />
-      <main className="container mx-auto px-6 lg:px-12 pt-28 pb-16">
-        <div className="max-w-5xl mx-auto">
-          <div className="h-12 w-48 bg-neutral-900 rounded-lg animate-pulse mb-4" />
-          <div className="h-5 w-96 bg-neutral-900 rounded animate-pulse mb-12" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="rounded-[2rem] overflow-hidden bg-neutral-900/30 border border-white/5">
-                <div className="aspect-[16/10] bg-neutral-900 animate-pulse" />
-                <div className="p-8 space-y-3">
-                  <div className="h-3 w-16 bg-neutral-800 rounded animate-pulse" />
-                  <div className="h-7 w-3/4 bg-neutral-800 rounded animate-pulse" />
-                  <div className="h-4 w-full bg-neutral-900 rounded animate-pulse" />
-                </div>
-              </div>
-            ))}
-          </div>
+    <div className="home-theme min-h-screen">
+      <div className="h-16 border-b border-line" />
+      <main className="mx-auto max-w-6xl px-5 pt-16 pb-16 md:px-8 md:pt-24">
+        <div className="h-4 w-24 animate-pulse rounded bg-surface-2" />
+        <div className="mt-4 h-14 w-64 animate-pulse rounded-lg bg-surface-2" />
+        <div className="mt-5 h-5 w-full max-w-xl animate-pulse rounded bg-surface-2" />
+        <div className="mt-16 grid gap-x-8 gap-y-14 md:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i}>
+              <div className="aspect-[16/11] animate-pulse rounded-[20px] bg-surface-2" />
+              <div className="mt-6 h-3 w-24 animate-pulse rounded bg-surface-2" />
+              <div className="mt-3 h-7 w-2/3 animate-pulse rounded bg-surface-2" />
+            </div>
+          ))}
         </div>
       </main>
     </div>

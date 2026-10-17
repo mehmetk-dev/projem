@@ -43,6 +43,12 @@ const nextConfig: NextConfig = {
         destination: '/api/media/:path*',
         permanent: true,
       },
+      {
+        // "Fog" projesi "Can Antika" olarak yeniden adlandırıldı
+        source: '/projects/fog',
+        destination: '/projects/can-antika',
+        permanent: true,
+      },
     ];
   },
   async headers() {

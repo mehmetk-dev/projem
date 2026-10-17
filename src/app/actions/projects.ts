@@ -48,9 +48,38 @@ const projectSchema = z.object({
   image: z.string().trim().optional(),
   link: z.string().trim().optional(),
   category: z.string().min(1).trim().default('Genel'),
+  summary: z.string().max(300, 'Özet en fazla 300 karakter olabilir.').trim().default(''),
+  client: z.string().max(120).trim().default(''),
+  role: z.string().max(120).trim().default(''),
+  year: z.number().int().min(1990).max(2100).nullable().default(null),
+  stack: z.string().max(500).trim().default(''),
+  featured: z.coerce.boolean().default(false),
   displayOrder: z.coerce.number().int().default(0),
   published: z.coerce.boolean().default(true),
 });
+
+function readProjectFields(formData: FormData, image: string) {
+  const year = Number(formData.get('year'));
+  return {
+    title: formData.get('title'),
+    description: formData.get('description') || undefined,
+    image,
+    link: formData.get('link') || undefined,
+    category: formData.get('category') || 'Genel',
+    summary: String(formData.get('summary') || ''),
+    client: String(formData.get('client') || ''),
+    role: String(formData.get('role') || ''),
+    year: Number.isInteger(year) && year > 0 ? year : null,
+    stack: String(formData.get('stack') || '')
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .join(', '),
+    featured: formData.get('featured') === 'true',
+    displayOrder: Number(formData.get('displayOrder') || 0),
+    published: formData.get('published') === 'true',
+  };
+}
 
 export const getPublishedProjects = cache(async () => {
   try {
@@ -165,15 +194,7 @@ export async function createProjectAction(
   const imageUrls = processResult.imageUrls || [];
   const finalImage = imageUrls.length > 0 ? JSON.stringify(imageUrls) : '/placeholder.svg';
 
-  const result = projectSchema.safeParse({
-    title: formData.get('title'),
-    description: formData.get('description') || undefined,
-    image: finalImage,
-    link: formData.get('link') || undefined,
-    category: formData.get('category') || 'Genel',
-    displayOrder: Number(formData.get('displayOrder') || 0),
-    published: formData.get('published') === 'true',
-  });
+  const result = projectSchema.safeParse(readProjectFields(formData, finalImage));
 
   if (!result.success) {
     return { error: result.error.errors.map((e) => e.message).join(' ') };
@@ -206,15 +227,7 @@ export async function updateProjectAction(
   const imageUrls = processResult.imageUrls || [];
   const finalImage = imageUrls.length > 0 ? JSON.stringify(imageUrls) : '/placeholder.svg';
 
-  const result = projectSchema.safeParse({
-    title: formData.get('title'),
-    description: formData.get('description') || undefined,
-    image: finalImage,
-    link: formData.get('link') || undefined,
-    category: formData.get('category') || 'Genel',
-    displayOrder: Number(formData.get('displayOrder') || 0),
-    published: formData.get('published') === 'true',
-  });
+  const result = projectSchema.safeParse(readProjectFields(formData, finalImage));
 
   if (!result.success) {
     return { error: result.error.errors.map((e) => e.message).join(' ') };

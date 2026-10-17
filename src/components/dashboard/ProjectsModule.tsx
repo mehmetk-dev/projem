@@ -18,9 +18,23 @@ type ProjectFormState = {
   description: string;
   link: string;
   category: string;
+  summary: string;
+  client: string;
+  role: string;
+  year: string;
+  stack: string;
+  featured: boolean;
   displayOrder: number;
   published: boolean;
 };
+
+const EMPTY_FORM: ProjectFormState = {
+  title: '', description: '', link: '', category: 'Genel',
+  summary: '', client: '', role: '', year: '', stack: '', featured: false,
+  displayOrder: 0, published: true,
+};
+
+const fieldClass = 'w-full bg-transparent border-b border-white/10 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-white/30';
 
 type ImageItem =
   | { type: 'existing'; url: string }
@@ -30,13 +44,13 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
   const [projects, setProjects] = useState(initialProjects);
   const [mode, setMode] = useState<'list' | 'form'>(initialMode);
   const [edit, setEdit] = useState<T.Project | null>(null);
-  const [f, setF] = useState<ProjectFormState>({ title: '', description: '', link: '', category: 'Genel', displayOrder: 0, published: true });
+  const [f, setF] = useState<ProjectFormState>(EMPTY_FORM);
   const [images, setImages] = useState<ImageItem[]>([]);
   const [busy, setBusy] = useState(false);
 
   const reset = () => {
     setEdit(null);
-    setF({ title: '', description: '', link: '', category: 'Genel', displayOrder: 0, published: true });
+    setF(EMPTY_FORM);
     images.forEach((img) => {
       if (img.type === 'local') URL.revokeObjectURL(img.previewUrl);
     });
@@ -51,6 +65,12 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
       description: p.description,
       link: p.link || '',
       category: p.category,
+      summary: p.summary || '',
+      client: p.client || '',
+      role: p.role || '',
+      year: p.year ? String(p.year) : '',
+      stack: p.stack || '',
+      featured: !!p.featured,
       displayOrder: p.displayOrder,
       published: p.published,
     });
@@ -139,7 +159,14 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
         <form onSubmit={submit} className="bg-neutral-900/40 border border-white/10 rounded-2xl p-5 space-y-4 animate-in fade-in">
           <div className="flex justify-between items-center"><h2 className="font-bold text-sm">{edit ? 'Projeyi Düzenle' : 'Yeni Proje'}</h2><Btn variant="ghost" onClick={reset}>İptal</Btn></div>
           <input name="title" value={f.title} onChange={(e) => setF((s) => ({ ...s, title: e.target.value }))} placeholder="Proje Adı" required className="w-full bg-transparent border-b border-white/10 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-white/30" />
-          <textarea name="description" value={f.description} onChange={(e) => setF((s) => ({ ...s, description: e.target.value }))} placeholder="Açıklama" rows={2} className="w-full bg-transparent border-b border-white/10 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-white/30 resize-none" />
+          <input name="summary" value={f.summary} onChange={(e) => setF((s) => ({ ...s, summary: e.target.value }))} maxLength={300} placeholder="Kısa özet — kartlarda görünen tek cümle (ör. “Antika mağazası için hızlı, SEO dostu e-ticaret vitrini.”)" className={fieldClass} />
+          <textarea name="description" value={f.description} onChange={(e) => setF((s) => ({ ...s, description: e.target.value }))} placeholder={'Proje hakkında — detay sayfasında görünür. Önerilen akış:\nİhtiyaç: Müşterinin sorunu neydi?\nÇözüm: Ne geliştirdin, nasıl?\nSonuç: Ne kazanıldı?'} rows={6} className={`${fieldClass} resize-y`} />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <input name="client" value={f.client} onChange={(e) => setF((s) => ({ ...s, client: e.target.value }))} placeholder="Müşteri / Marka" className={fieldClass} />
+            <input name="role" value={f.role} onChange={(e) => setF((s) => ({ ...s, role: e.target.value }))} placeholder="Rolün (ör. Tasarım & Geliştirme)" className={fieldClass} />
+            <input name="year" type="number" min={1990} max={2100} value={f.year} onChange={(e) => setF((s) => ({ ...s, year: e.target.value }))} placeholder="Yıl" className={fieldClass} />
+          </div>
+          <input name="stack" value={f.stack} onChange={(e) => setF((s) => ({ ...s, stack: e.target.value }))} placeholder="Teknolojiler, virgülle ayır (ör. Next.js, Tailwind CSS, Turso)" className={fieldClass} />
           
           <div className="space-y-2">
             <label className="block text-xs text-neutral-500 font-medium">Proje Görselleri (Sürükleyip Bırakabilir & Kapak Seçebilirsiniz)</label>
@@ -207,7 +234,10 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
           </div>
           <div className="grid grid-cols-2 gap-3">
             <input name="displayOrder" type="number" value={f.displayOrder} onChange={(e) => setF((s) => ({ ...s, displayOrder: Number(e.target.value) }))} placeholder="Sıra" className="w-full bg-transparent border-b border-white/10 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-white/30" />
-            <label className="flex items-center gap-2 text-sm text-neutral-400 cursor-pointer"><input type="checkbox" name="published" value="true" checked={f.published} onChange={(e) => setF((s) => ({ ...s, published: e.target.checked }))} className="accent-white" /> Yayında</label>
+            <div className="flex items-center gap-5">
+              <label className="flex items-center gap-2 text-sm text-neutral-400 cursor-pointer"><input type="checkbox" name="published" value="true" checked={f.published} onChange={(e) => setF((s) => ({ ...s, published: e.target.checked }))} className="accent-white" /> Yayında</label>
+              <label className="flex items-center gap-2 text-sm text-neutral-400 cursor-pointer" title="Ana sayfada büyük kart olarak gösterilir (en fazla 3)"><input type="checkbox" name="featured" value="true" checked={f.featured} onChange={(e) => setF((s) => ({ ...s, featured: e.target.checked }))} className="accent-white" /> Öne çıkan</label>
+            </div>
           </div>
           <button type="submit" disabled={busy} className="bg-white text-black px-4 py-2 rounded-full text-sm font-bold hover:bg-neutral-200 disabled:opacity-50">{busy ? 'Kaydediliyor...' : edit ? 'Güncelle' : 'Oluştur'}</button>
         </form>
@@ -222,8 +252,8 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
               <Image src={pThumbnail} alt={p.title} width={48} height={48} className="w-12 h-12 rounded-lg object-cover shrink-0 bg-neutral-800" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }} />
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm">{p.title}</p>
-                <p className="text-[11px] text-neutral-500 mt-0.5">{p.category} • Sıra {p.displayOrder} {p.published ? '' : '• Gizli'} ({pImages.length} Görsel)</p>
-                <p className="text-[11px] text-neutral-600 mt-1 line-clamp-2">{p.description}</p>
+                <p className="text-[11px] text-neutral-500 mt-0.5">{p.category} • Sıra {p.displayOrder} {p.featured ? '• Öne çıkan' : ''} {p.published ? '' : '• Gizli'} ({pImages.length} Görsel)</p>
+                <p className="text-[11px] text-neutral-600 mt-1 line-clamp-2">{p.summary || p.description}</p>
               </div>
               <div className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button onClick={() => openEdit(p)} className="text-[10px] text-neutral-400 hover:text-white px-2 py-1 rounded border border-white/10">Düzenle</button>

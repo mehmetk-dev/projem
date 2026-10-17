@@ -1,23 +1,97 @@
 @custom-variant dark (&:is(.dark *));
 
-/* Animation for fade-in blur effect — only when JS is available */
+/* ═══════════════════════════════════════
+   Ana sayfa teması (açık, kurumsal)
+   ═══════════════════════════════════════ */
+
+.home-theme {
+  --paper: #fafaf9;
+  --surface: #ffffff;
+  --surface-2: #f3f3f1;
+  --ink: #0c0a09;
+  --ink-soft: #44403c;
+  --ink-muted: #78716c;
+  --line: #e7e5e4;
+  --accent: #2563eb;
+  --accent-strong: #1d4ed8;
+  --accent-soft: #eff6ff;
+
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-geist), var(--font-system-sans);
+}
+
+.home-theme .font-mono {
+  font-family: var(--font-geist-mono), var(--font-system-mono);
+}
+
+/* Başlıklarda vurgu kelimeleri için italik serif */
+.home-theme .font-serif-display {
+  font-family: var(--font-instrument), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+html:has(.home-theme) {
+  scroll-behavior: smooth;
+  background: #fafaf9;
+}
+
+/* Hero giriş animasyonu — JS gerektirmez, sadece opacity + transform */
+.home-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: home-reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: var(--d, 0s);
+}
+
+@keyframes home-reveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hero arka planı: nokta grid'i, kenarlara doğru kaybolur */
+.home-dot-grid {
+  background-image: radial-gradient(circle at 1px 1px, rgba(12, 10, 9, 0.12) 1px, transparent 0);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
+}
+
+/* Yuvarlak CTA'daki dönen yazı */
+.home-spin {
+  animation: home-spin 16s linear infinite;
+}
+
+@keyframes home-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Teknoloji şeridi kenar solması */
+.home-fade-x {
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+
+/* Fade-in on scroll — only when JS is available */
 .js-animations .animate-on-scroll {
   opacity: 0;
-  filter: blur(10px);
-  transform: translateY(30px);
-  transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(24px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .animate-on-scroll.animate-in {
   opacity: 1;
-  filter: blur(0px);
   transform: translateY(0);
 }
 
 /* Staggered animation delays for cards */
-.grid > *:nth-child(1) { transition-delay: 0.1s; }
-.grid > *:nth-child(2) { transition-delay: 0.2s; }
-.grid > *:nth-child(3) { transition-delay: 0.3s; }
+.grid > .animate-on-scroll:nth-child(2) { transition-delay: 0.08s; }
+.grid > .animate-on-scroll:nth-child(3) { transition-delay: 0.16s; }
+.grid > .animate-on-scroll:nth-child(4) { transition-delay: 0.24s; }
 
 /* Added letter-by-letter blur animation styles */
 .letter-blur {
@@ -215,6 +289,19 @@
 
   .typing-cursor,
   .spotify-eq span {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-reveal {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
+  .home-marquee,
+  .home-spin {
     animation: none;
   }
 }

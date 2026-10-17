@@ -6,12 +6,12 @@ import { I18nProvider } from "@/lib/i18n";
 import { ServiceWorker } from "@/components/ServiceWorker";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-const ogImageUrl = `${siteUrl}/api/og?title=${encodeURIComponent('Mehmet Kerem')}&description=${encodeURIComponent('Yazılım Geliştirici')}`;
+const ogImageUrl = `${siteUrl}/api/og?title=${encodeURIComponent('Mehmet Kerem')}&description=${encodeURIComponent('Full-Stack Web Geliştirici')}`;
 
 export const metadata: Metadata = {
-  title: "Mehmet Kerem | Yazılım Geliştirici",
-  description: "Tasarım ve mühendisliği birleştirerek kusursuz dijital deneyimler yaratıyorum. Modern teknolojiler ile geleceğin ürünlerini inşa ediyorum.",
-  keywords: ["Mehmet Kerem", "Yazılım Geliştirici", "React", "Next.js", "TypeScript"],
+  title: "Mehmet Kerem | Full-Stack Web Geliştirici",
+  description: "Ajanslar ve markalar için kurumsal web siteleri ve özel web uygulamaları geliştiriyorum. Next.js, React ve TypeScript ile hızlı, erişilebilir ve bakımı kolay ürünler.",
+  keywords: ["Mehmet Kerem", "Full-Stack Geliştirici", "Freelance Web Geliştirici", "Kurumsal Web Sitesi", "React", "Next.js", "TypeScript"],
   authors: [{ name: "Mehmet Kerem" }],
   manifest: '/manifest.json',
   alternates: {
@@ -20,16 +20,16 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Mehmet Kerem | Yazılım Geliştirici",
-    description: "Tasarım ve mühendisliği birleştirerek kusursuz dijital deneyimler yaratıyorum.",
+    title: "Mehmet Kerem | Full-Stack Web Geliştirici",
+    description: "Ajanslar ve markalar için hızlı, erişilebilir ve bakımı kolay web siteleri ve uygulamalar geliştiriyorum.",
     type: "website",
     locale: "tr_TR",
     images: [ogImageUrl],
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Mehmet Kerem | Yazılım Geliştirici",
-    description: "Tasarım ve mühendisliği birleştirerek kusursuz dijital deneyimler yaratıyorum.",
+    title: "Mehmet Kerem | Full-Stack Web Geliştirici",
+    description: "Ajanslar ve markalar için hızlı, erişilebilir ve bakımı kolay web siteleri ve uygulamalar geliştiriyorum.",
     images: [ogImageUrl],
   },
 };

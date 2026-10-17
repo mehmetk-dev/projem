@@ -57,6 +57,13 @@
       "when": 1781640300000,
       "tag": "0007_direct_messages",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1781640600000,
+      "tag": "0008_project_case_study",
+      "breakpoints": true
     }
   ]
 }

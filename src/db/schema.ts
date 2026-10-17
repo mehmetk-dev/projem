@@ -129,6 +129,13 @@ export const projects = sqliteTable('projects', {
   image: text('image').notNull().default('/placeholder.svg'),
   link: text('link'),
   category: text('category').notNull().default('Genel'),
+  // Vaka çalışması alanları
+  summary: text('summary').notNull().default(''),
+  client: text('client').notNull().default(''),
+  role: text('role').notNull().default(''),
+  year: integer('year'),
+  stack: text('stack').notNull().default(''), // virgülle ayrılmış teknoloji listesi
+  featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
   displayOrder: integer('display_order').notNull().default(0),
   published: integer('published', { mode: 'boolean' }).notNull().default(true),
   createdAt: text('created_at')

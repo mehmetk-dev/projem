@@ -20,6 +20,20 @@
   }
 }
 
+/* Ana sayfa renk token'ları — değerleri portfolio.css içindeki .home-theme tanımlar */
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

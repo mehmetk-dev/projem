@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mk-portfolio-v1';
+const CACHE_NAME = 'mk-portfolio-v2';
 const STATIC_ASSETS = [
   '/',
   '/blog',
@@ -37,6 +37,9 @@ self.addEventListener('fetch', (event) => {
 
   // Bypass service worker for non-http/https protocols (e.g. chrome-extension)
   if (!url.protocol.startsWith('http')) return;
+
+  // Bypass cross-origin requests (CDN images etc.); let the browser handle them directly
+  if (url.origin !== self.location.origin) return;
 
   // Bypass for Next.js hot-reloading (development)
   if (url.pathname.includes('/_next/webpack-hmr') || url.pathname.includes('webpack')) {
@@ -93,7 +96,7 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         }).catch(() => {
-          return caches.match(event.request);
+          return caches.match(event.request).then((cached) => cached || Response.error());
         });
       })
     );

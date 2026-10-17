@@ -1,39 +1,29 @@
-'use client';
-
-import dynamic from 'next/dynamic';
-import BubbleMenu from './BubbleMenu';
-import HeroSection from './HeroSection';
-import MarqueeBanner from './MarqueeBanner';
-import Footer from './Footer';
-import ScrollAnimations from './ScrollAnimations';
-
-// Lazy-load below-the-fold sections to reduce initial JS parse/eval
-const FeaturesSection = dynamic(() => import('./FeaturesSection'), { ssr: false });
-const WorkSection = dynamic(() => import('./WorkSection'));
-const BlogSection = dynamic(() => import('./BlogSection'));
-const ContactSection = dynamic(() => import('./ContactSection'), { ssr: false });
+import SiteShell from './home/SiteShell';
+import HomeHero from './home/HomeHero';
+import TechStrip from './home/TechStrip';
+import FeaturedWork from './home/FeaturedWork';
+import ServicesSection from './home/ServicesSection';
+import ProcessSection from './home/ProcessSection';
+import LatestPosts from './home/LatestPosts';
+import ContactCta from './home/ContactCta';
+import type { HomeBlog, HomeProject, HomeSocialLink } from './home/types';
 
 interface PortfolioClientProps {
-  user: { email: string } | null;
-  logoutAction: () => Promise<void>;
-  projects: { id: number; title: string; slug: string; description: string; image: string; link: string | null; category: string }[];
-  blogs: { id: number; title: string; slug: string; excerpt: string | null; content: string; category: string; publishedAt: string | null }[];
+  projects: HomeProject[];
+  blogs: HomeBlog[];
+  socialLinks: HomeSocialLink[];
 }
 
-export default function PortfolioClient({ user, logoutAction, projects, blogs }: PortfolioClientProps) {
+export default function PortfolioClient({ projects, blogs, socialLinks }: PortfolioClientProps) {
   return (
-    <div className="bg-black text-white selection:bg-white selection:text-black font-sans overflow-x-hidden">
-      <ScrollAnimations />
-      <BubbleMenu logo="M. Kerem" user={user} logoutAction={logoutAction} />
-      <main>
-        <HeroSection />
-        <MarqueeBanner />
-        <FeaturesSection />
-        <WorkSection projects={projects} />
-        <BlogSection blogs={blogs} />
-        <ContactSection />
-      </main>
-      <Footer />
-    </div>
+    <SiteShell socialLinks={socialLinks}>
+      <HomeHero socialLinks={socialLinks} />
+      <TechStrip />
+      <FeaturedWork projects={projects} />
+      <ServicesSection />
+      <ProcessSection />
+      <LatestPosts blogs={blogs} />
+      <ContactCta />
+    </SiteShell>
   );
 }
