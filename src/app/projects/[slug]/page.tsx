@@ -315,7 +315,8 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
       </article>
 
       <CtaBand
-        title="Benzer bir projeniz mi var?"
+        title="Benzer bir projeniz"
+        accent="mi var?"
         text="İhtiyacınızı birkaç cümleyle anlatın, nasıl bir yol izleyebileceğimizi birlikte konuşalım."
       />
     </SiteShell>

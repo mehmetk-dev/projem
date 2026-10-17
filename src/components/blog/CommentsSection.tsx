@@ -35,21 +35,21 @@ export default function CommentsSection({ blogId, comments }: Props) {
   }, [state]);
 
   return (
-    <div className="mt-16 pt-12 border-t border-neutral-200 dark:border-white/10">
+    <div className="mt-16 border-t border-line pt-10">
       <div className="flex items-center gap-2 mb-8">
-        <MessageCircle size={20} className="text-neutral-500 dark:text-neutral-400" />
-        <h2 className="text-xl font-bold tracking-tight">Yorumlar ({comments.length})</h2>
+        <MessageCircle size={20} className="text-accent" />
+        <h2 className="text-xl font-semibold tracking-tight text-ink">Yorumlar ({comments.length})</h2>
       </div>
 
       <form
         id="comment-form"
         action={formAction}
-        className="mb-12 p-6 md:p-8 rounded-2xl bg-neutral-100 dark:bg-neutral-900/30 border border-neutral-200 dark:border-white/5 space-y-5"
+        className="mb-10 space-y-5 rounded-2xl border border-line bg-surface p-5 md:p-7"
       >
         <input type="hidden" name="blogId" value={blogId} />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <div>
-            <label htmlFor="comment-name" className="block text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-2">
+            <label htmlFor="comment-name" className="mb-2 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted">
               İsim
             </label>
             <input
@@ -58,12 +58,12 @@ export default function CommentsSection({ blogId, comments }: Props) {
               type="text"
               required
               maxLength={100}
-              className="w-full bg-neutral-200 dark:bg-neutral-950 border border-neutral-300 dark:border-white/10 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-400 dark:focus:border-white/30 transition-colors"
+              className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-ink placeholder:text-ink-muted/70 outline-none transition-colors focus:border-accent"
               placeholder="Adınız"
             />
           </div>
           <div>
-            <label htmlFor="comment-email" className="block text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-2">
+            <label htmlFor="comment-email" className="mb-2 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted">
               E-posta
             </label>
             <input
@@ -72,13 +72,13 @@ export default function CommentsSection({ blogId, comments }: Props) {
               type="email"
               required
               maxLength={200}
-              className="w-full bg-neutral-200 dark:bg-neutral-950 border border-neutral-300 dark:border-white/10 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-400 dark:focus:border-white/30 transition-colors"
+              className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-ink placeholder:text-ink-muted/70 outline-none transition-colors focus:border-accent"
               placeholder="ornek@mail.com"
             />
           </div>
         </div>
         <div>
-          <label htmlFor="comment-content" className="block text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-2">
+          <label htmlFor="comment-content" className="mb-2 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted">
             Yorum
           </label>
           <textarea
@@ -87,41 +87,41 @@ export default function CommentsSection({ blogId, comments }: Props) {
             required
             maxLength={3000}
             rows={4}
-            className="w-full bg-neutral-200 dark:bg-neutral-950 border border-neutral-300 dark:border-white/10 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-400 dark:focus:border-white/30 transition-colors resize-none"
+            className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-ink placeholder:text-ink-muted/70 outline-none transition-colors focus:border-accent resize-none"
             placeholder="Düşüncelerinizi paylaşın..."
           />
         </div>
         <button
           type="submit"
           disabled={isPending}
-          className="bg-neutral-900 text-white dark:bg-white dark:text-black px-8 py-3.5 rounded-full font-medium hover:scale-105 transition-transform duration-300 disabled:opacity-50 disabled:hover:scale-100"
+          className="rounded-full bg-ink px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-accent disabled:opacity-50"
         >
           {isPending ? 'Gönderiliyor...' : 'Yorum Gönder'}
         </button>
-        <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+        <p className="text-[12px] text-ink-muted">
           Yorumunuz onaylandıktan sonra yayınlanacaktır.
         </p>
       </form>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {comments.length === 0 ? (
-          <div className="text-center py-8 border border-neutral-200 dark:border-white/5 rounded-2xl">
-            <p className="text-neutral-500 dark:text-neutral-400 text-sm">Henüz yorum yok. İlk yorumu siz yapın!</p>
+          <div className="rounded-2xl border border-dashed border-line py-8 text-center">
+            <p className="text-sm text-ink-muted">Henüz yorum yok. İlk yorumu siz yapın!</p>
           </div>
         ) : (
           comments.map((comment) => (
             <div
               key={comment.id}
-              className="p-6 rounded-2xl bg-neutral-100 dark:bg-neutral-900/30 border border-neutral-200 dark:border-white/5"
+              className="rounded-2xl border border-line bg-surface p-5"
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-neutral-300 dark:bg-white/10 flex items-center justify-center text-xs font-bold text-neutral-700 dark:text-white">
+                  <div className="grid h-8 w-8 place-items-center rounded-full bg-accent-soft text-xs font-semibold text-accent">
                     {comment.name.charAt(0).toUpperCase()}
                   </div>
-                  <span className="font-semibold text-neutral-900 dark:text-white">{comment.name}</span>
+                  <span className="font-semibold text-ink">{comment.name}</span>
                 </div>
-                <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                <span className="text-[12px] text-ink-muted">
                   {new Date(comment.createdAt).toLocaleDateString('tr-TR', {
                     day: 'numeric',
                     month: 'long',
@@ -129,7 +129,7 @@ export default function CommentsSection({ blogId, comments }: Props) {
                   })}
                 </span>
               </div>
-              <p className="text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed whitespace-pre-wrap">{comment.content}</p>
+              <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-ink-soft">{comment.content}</p>
             </div>
           ))
         )}

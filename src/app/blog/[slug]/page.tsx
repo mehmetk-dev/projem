@@ -1,11 +1,15 @@
-import { getBlogBySlug, getPublishedBlogs } from '@/app/actions/blogs';
-import { getApprovedComments } from '@/app/actions/comments';
-import CommentsSection from '@/components/blog/CommentsSection';
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import BubbleMenu from '@/components/BubbleMenu';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { getBlogBySlug, getPublishedBlogs } from '@/app/actions/blogs';
+import { getApprovedComments } from '@/app/actions/comments';
+import { getSocialLinks } from '@/app/actions/social';
+import CommentsSection from '@/components/blog/CommentsSection';
+import SiteShell from '@/components/home/SiteShell';
+import CtaBand from '@/components/home/CtaBand';
+import ImageWithFallback from '@/components/ImageWithFallback';
+import { contentBlocks, formatPostDate, postExcerpt, readingMinutes } from '@/components/blog/post-utils';
 
 export const revalidate = 3600;
 
@@ -64,85 +68,162 @@ export async function generateMetadata({ params }: BlogDetailPageProps): Promise
 
 export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   const { slug } = await params;
-  
+
   const post = await getBlogBySlug(slug);
 
   if (!post) {
     notFound();
   }
 
-  const approvedComments = await getApprovedComments(post.id);
+  const [approvedComments, allPosts, socialLinks] = await Promise.all([
+    getApprovedComments(post.id),
+    getPublishedBlogs().catch(() => []),
+    getSocialLinks().catch(() => []),
+  ]);
+  const morePosts = allPosts.filter((item) => item.id !== post.id).slice(0, 2);
+  const tags = post.tags
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean);
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans">
-      <BubbleMenu logo="M. Kerem" />
+    <SiteShell socialLinks={socialLinks.map(({ platform, url }) => ({ platform, url }))}>
+      <article className="pt-24 pb-20 md:pt-36 md:pb-28">
+        <div className="mx-auto max-w-3xl px-5 md:px-8">
+          <Link
+            href="/blog"
+            className="group inline-flex items-center gap-2 text-sm text-ink-muted transition-colors hover:text-ink"
+          >
+            <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-0.5" />
+            Tüm yazılar
+          </Link>
 
-      <main className="container mx-auto px-6 lg:px-12 pt-20 pb-16">
-        <article className="max-w-3xl mx-auto">
-          <div className="flex items-center gap-4 mb-6">
-            <span className="px-4 py-1.5 rounded-full border border-white/10 text-[10px] font-medium tracking-[0.2em] text-neutral-400 uppercase">
-              {post.category}
-            </span>
-            <span className="text-[12px] font-mono text-neutral-600">
-              {post.publishedAt
-                ? new Date(post.publishedAt).toLocaleDateString('tr-TR', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })
-                : ''}
-            </span>
+          <div className="home-reveal mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-ink-muted md:mt-8">
+            <span className="rounded-md bg-accent-soft px-2 py-0.5 font-medium text-accent">{post.category}</span>
+            {post.publishedAt && <time dateTime={post.publishedAt}>{formatPostDate(post.publishedAt)}</time>}
+            <span aria-hidden="true">·</span>
+            <span>{readingMinutes(post.content)} dk okuma</span>
           </div>
 
-          {post.coverImage && (
-            <div className="mb-8 rounded-2xl overflow-hidden border border-white/5 relative h-64 md:h-80">
-              <Image src={post.coverImage} alt={post.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 720px" priority />
-            </div>
-          )}
-
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-8">{post.title}</h1>
+          <h1 className="home-reveal mt-4 text-[2.2rem] font-semibold leading-[1.08] tracking-[-0.035em] text-ink md:text-6xl">
+            {post.title}
+          </h1>
 
           {post.excerpt && (
-            <p className="text-xl text-neutral-400 font-light leading-relaxed mb-10 border-l-2 border-white/20 pl-6 italic">
-              {post.excerpt}
-            </p>
+            <p className="home-reveal mt-5 text-lg leading-relaxed text-ink-soft md:text-xl">{post.excerpt}</p>
           )}
+        </div>
 
-          <div className="prose prose-invert prose-lg max-w-none text-neutral-300 leading-relaxed whitespace-pre-wrap">
-            {post.content}
+        {post.coverImage && (
+          <div className="home-reveal mx-auto mt-10 max-w-5xl px-5 md:mt-14 md:px-8">
+            <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-line bg-surface-2 md:rounded-3xl">
+              <ImageWithFallback
+                src={post.coverImage}
+                alt={post.title}
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, 1024px"
+                className="object-cover"
+                hideOnError
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="mx-auto mt-10 max-w-3xl px-5 md:mt-14 md:px-8">
+          <div className="space-y-6 text-[17px] leading-[1.8] text-ink-soft md:text-lg">
+            {contentBlocks(post.content).map((block, index) => {
+              switch (block.type) {
+                case 'heading':
+                  return block.level === 2 ? (
+                    <h2 key={index} className="!mt-12 text-2xl font-semibold tracking-[-0.02em] text-ink md:text-3xl">
+                      {block.text}
+                    </h2>
+                  ) : (
+                    <h3 key={index} className="!mt-10 text-xl font-semibold tracking-[-0.01em] text-ink">
+                      {block.text}
+                    </h3>
+                  );
+                case 'quote':
+                  return (
+                    <blockquote
+                      key={index}
+                      className="whitespace-pre-wrap border-l-2 border-accent pl-5 font-serif-display text-xl text-ink md:text-2xl"
+                    >
+                      {block.text}
+                    </blockquote>
+                  );
+                case 'code':
+                  return (
+                    <pre
+                      key={index}
+                      className="overflow-x-auto rounded-2xl bg-ink p-5 font-mono text-[14px] leading-relaxed text-white/90"
+                    >
+                      <code>{block.text}</code>
+                    </pre>
+                  );
+                case 'list':
+                  return (
+                    <ul key={index} className="list-disc space-y-2 pl-6 marker:text-accent">
+                      {block.items.map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  );
+                default:
+                  return (
+                    <p key={index} className="whitespace-pre-wrap">
+                      {block.text}
+                    </p>
+                  );
+              }
+            })}
           </div>
 
-          {post.tags && (
-            <div className="flex flex-wrap gap-2 mt-12 pt-8 border-t border-white/10">
-              {post.tags.split(',').map((tag) => (
-                <span key={tag} className="text-[11px] text-neutral-500 bg-white/5 px-3 py-1.5 rounded-full">
-                  #{tag.trim()}
+          {tags.length > 0 && (
+            <div className="mt-12 flex flex-wrap gap-2 border-t border-line pt-8">
+              {tags.map((tag) => (
+                <span key={tag} className="rounded-full bg-surface-2 px-3 py-1 text-[13px] text-ink-soft">
+                  #{tag}
                 </span>
               ))}
             </div>
           )}
 
-          <div className="mt-16">
-            <Link
-              href="/blog"
-              className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-white transition-colors"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
-              Tüm Yazılara Dön
-            </Link>
-          </div>
-
           <CommentsSection blogId={post.id} comments={approvedComments} />
-        </article>
-      </main>
 
-      <footer className="border-t border-neutral-200 dark:border-white/10 py-10">
-        <div className="container mx-auto px-6 text-center text-[11px] font-mono tracking-[0.1em] text-neutral-600 uppercase">
-          © 2026 Mehmet Kerem. Tüm hakları saklıdır.
+          {morePosts.length > 0 && (
+            <section className="mt-16 border-t border-line pt-10">
+              <h2 className="font-mono text-[12px] uppercase tracking-[0.14em] text-ink-muted">Diğer yazılar</h2>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                {morePosts.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`/blog/${item.slug}`}
+                    className="group flex flex-col rounded-2xl border border-line bg-surface p-5 transition-colors hover:border-ink/20"
+                  >
+                    <span className="text-[13px] text-ink-muted">{item.category}</span>
+                    <span className="mt-2 font-semibold leading-snug text-ink transition-colors group-hover:text-accent">
+                      {item.title}
+                    </span>
+                    <span className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-soft">{postExcerpt(item, 110)}</span>
+                    <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-ink">
+                      Oku
+                      <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
-      </footer>
-    </div>
+      </article>
+
+      <CtaBand
+        title="Bir projeniz"
+        accent="mi var?"
+        text="Benzer bir ihtiyacınız varsa kısaca anlatın, birlikte en uygun çözümü bulalım."
+      />
+    </SiteShell>
   );
 }

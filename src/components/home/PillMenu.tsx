@@ -6,12 +6,14 @@ import { ArrowUpRight } from 'lucide-react';
 import BrandMark from './BrandMark';
 
 const ITEMS = [
-  // tilt: açılırken başladığı ve üzerine gelince hafifçe eğildiği açı; durağan hâlde hepsi düz durur
-  { label: 'projeler', href: '/projects', tilt: 3, hoverBg: 'linear-gradient(to right, #059669, #0d9488)' },
-  { label: 'hizmetler', href: '/#services', tilt: -3, hoverBg: 'linear-gradient(to right, #2563eb, #1e40af)' },
-  { label: 'süreç', href: '/#process', tilt: 3, hoverBg: 'linear-gradient(to right, #d97706, #ea580c)' },
-  { label: 'blog', href: '/blog', tilt: -3, hoverBg: 'linear-gradient(to right, #9333ea, #db2777)' },
-  { label: 'iletişim', href: '/#contact', tilt: 3, hoverBg: 'linear-gradient(to right, #e11d48, #dc2626)' },
+  // tilt: açılırken başladığı ve üzerine gelince eğildiği açı (masaüstünde durağan hâlde düz durur)
+  // shift: mobilde balonun yatay kayması (px); eğimle birlikte asimetrik, dağınık bir dizilim verir
+  { label: 'projeler', href: '/projects', tilt: 3, shift: -34, hoverBg: 'linear-gradient(to right, #059669, #0d9488)' },
+  { label: 'hizmetler', href: '/#services', tilt: -3, shift: 30, hoverBg: 'linear-gradient(to right, #2563eb, #1e40af)' },
+  { label: 'süreç', href: '/#process', tilt: 3, shift: -14, hoverBg: 'linear-gradient(to right, #d97706, #ea580c)' },
+  { label: 'hakkımda', href: '/hakkimda', tilt: -3, shift: 36, hoverBg: 'linear-gradient(to right, #0891b2, #0e7490)' },
+  { label: 'blog', href: '/blog', tilt: 3, shift: -22, hoverBg: 'linear-gradient(to right, #9333ea, #db2777)' },
+  { label: 'iletişim', href: '/#contact', tilt: -3, shift: 28, hoverBg: 'linear-gradient(to right, #e11d48, #dc2626)' },
 ];
 
 const EASE_IN = 'back.out(1.5)';
@@ -65,12 +67,15 @@ export default function PillMenu() {
       const backdrop = backdropRef.current;
       if (!bubbles.length) return;
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+      // Mobilde balonlar açıldıktan sonra da eğik kalır; son öğe (CTA) hafifçe ters eğilir
+      const restRotation = (i: number) => (isDesktop ? 0 : (ITEMS[i]?.tilt ?? -1.5) * 2);
 
       gsap.killTweensOf([...bubbles, ...labels, backdrop]);
 
       if (open) {
         if (reduceMotion) {
-          gsap.set(bubbles, { scale: 1, rotation: 0 });
+          bubbles.forEach((bubble, i) => gsap.set(bubble, { scale: 1, rotation: restRotation(i) }));
           gsap.set(labels, { y: 0, autoAlpha: 1 });
           gsap.set(backdrop, { autoAlpha: 1 });
           return;
@@ -82,7 +87,7 @@ export default function PillMenu() {
         gsap.set(labels, { y: 12, autoAlpha: 0 });
         bubbles.forEach((bubble, i) => {
           const tl = gsap.timeline({ delay: i * STAGGER });
-          tl.to(bubble, { scale: 1, rotation: 0, duration: DURATION, ease: EASE_IN });
+          tl.to(bubble, { scale: 1, rotation: restRotation(i), duration: DURATION, ease: EASE_IN });
           tl.to(labels[i], { y: 0, autoAlpha: 1, duration: DURATION, ease: 'power3.out' }, `-=${DURATION * 0.9}`);
         });
       } else if (rendered) {
@@ -129,13 +134,14 @@ export default function PillMenu() {
 
       <ul
         id="pill-menu-items"
-        className="fixed inset-x-4 top-24 flex flex-col gap-3 md:inset-x-8 lg:static lg:flex-row lg:flex-nowrap lg:items-center lg:gap-2"
+        className="fixed inset-x-4 top-28 flex flex-col items-center gap-5 md:inset-x-8 lg:static lg:flex-row lg:flex-nowrap lg:gap-2"
       >
         {rendered &&
           ITEMS.map((item, idx) => (
             <li
               key={item.href}
-              className="pointer-events-auto"
+              className="pointer-events-auto ml-[var(--shift)] lg:ml-0"
+              style={{ '--shift': `${item.shift * 2}px` } as CSSProperties}
               ref={(el) => {
                 if (el) bubbleRefs.current[idx] = el;
               }}
@@ -144,7 +150,7 @@ export default function PillMenu() {
                 href={item.href}
                 onClick={close}
                 tabIndex={open ? 0 : -1}
-                className="group flex h-16 w-full items-center justify-between whitespace-nowrap rounded-full border border-line bg-surface px-7 text-2xl font-semibold text-ink shadow-[0_4px_14px_rgba(12,10,9,0.08)] transition-[scale,rotate,background,color,border-color,box-shadow] duration-300 hover:scale-[1.04] hover:rotate-[var(--tilt)] hover:border-transparent hover:text-white hover:shadow-[0_12px_28px_rgba(12,10,9,0.22)] hover:[background:var(--hover-bg)] active:scale-95 lg:inline-flex lg:h-12 lg:w-auto lg:px-6 lg:text-[16px] lg:hover:scale-[1.08]"
+                className="group inline-flex h-16 items-center gap-3 whitespace-nowrap rounded-full border border-line bg-surface px-8 text-2xl font-semibold text-ink shadow-[0_4px_14px_rgba(12,10,9,0.08)] transition-[scale,rotate,background,color,border-color,box-shadow] duration-300 hover:scale-[1.04] hover:rotate-[var(--tilt)] hover:border-transparent hover:text-white hover:shadow-[0_12px_28px_rgba(12,10,9,0.22)] hover:[background:var(--hover-bg)] active:scale-95 lg:h-12 lg:gap-0 lg:px-6 lg:text-[16px] lg:hover:scale-[1.08]"
                 style={{ '--hover-bg': item.hoverBg, '--tilt': `${item.tilt}deg` } as CSSProperties}
               >
                 <span
@@ -156,7 +162,7 @@ export default function PillMenu() {
                   {item.label}
                 </span>
                 <span
-                  className="h-3 w-3 rounded-full transition-opacity group-hover:opacity-0 lg:hidden"
+                  className="h-2.5 w-2.5 rounded-full transition-opacity group-hover:opacity-0 lg:hidden"
                   style={{ background: item.hoverBg }}
                   aria-hidden="true"
                 />
@@ -165,7 +171,7 @@ export default function PillMenu() {
           ))}
         {rendered && (
           <li
-            className="pointer-events-auto mt-2 lg:hidden"
+            className="pointer-events-auto mt-3 lg:hidden"
             ref={(el) => {
               if (el) bubbleRefs.current[ITEMS.length] = el;
             }}
@@ -174,7 +180,7 @@ export default function PillMenu() {
               href="/#contact"
               onClick={close}
               tabIndex={open ? 0 : -1}
-              className="flex h-16 w-full items-center justify-center gap-2 rounded-full bg-ink text-lg font-medium text-paper shadow-[0_10px_28px_-10px_rgba(12,10,9,0.5)] transition-colors active:bg-accent"
+              className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-ink px-7 text-lg font-medium text-paper shadow-[0_10px_28px_-10px_rgba(12,10,9,0.5)] transition-colors active:bg-accent"
             >
               <span
                 className="inline-flex items-center gap-2"

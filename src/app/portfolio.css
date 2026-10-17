@@ -305,3 +305,32 @@ html:has(.home-theme) {
     animation: none;
   }
 }
+
+
+/* Hakkımda kolajındaki ortak çalışma imleçleri */
+.workbench-cursor-a {
+  animation: workbench-cursor-a 9s ease-in-out infinite;
+}
+
+.workbench-cursor-b {
+  animation: workbench-cursor-b 11s ease-in-out infinite;
+}
+
+@keyframes workbench-cursor-a {
+  0%, 100% { transform: translate(0, 0); }
+  30% { transform: translate(-6cqw, -4cqw); }
+  60% { transform: translate(3cqw, -9cqw); }
+}
+
+@keyframes workbench-cursor-b {
+  0%, 100% { transform: translate(0, 0); }
+  40% { transform: translate(8cqw, 6cqw); }
+  70% { transform: translate(14cqw, -2cqw); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workbench-cursor-a,
+  .workbench-cursor-b {
+    animation: none;
+  }
+}

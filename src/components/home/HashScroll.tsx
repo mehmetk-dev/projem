@@ -2,6 +2,9 @@
 
 import { useEffect } from 'react';
 
+// Sabit menünün kapladığı yükseklik + biraz nefes payı
+const HEADER_OFFSET = 96;
+
 const scrollToHash = (hash: string) => {
   const id = decodeURIComponent(hash.replace(/^#/, ''));
   if (!id || id === 'top') {
@@ -10,7 +13,10 @@ const scrollToHash = (hash: string) => {
   }
   const target = document.getElementById(id);
   if (!target) return false;
-  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Bölümün üst iç boşluğu atlanır; içerik sabit menünün hemen altına gelir
+  const paddingTop = parseFloat(getComputedStyle(target).paddingTop) || 0;
+  const top = target.getBoundingClientRect().top + window.scrollY + paddingTop - HEADER_OFFSET;
+  window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
   return true;
 };
 

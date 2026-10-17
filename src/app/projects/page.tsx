@@ -49,7 +49,8 @@ export default async function ProjectsListPage() {
       </section>
 
       <CtaBand
-        title="Sıradaki proje sizinki olabilir."
+        title="Sıradaki proje"
+        accent="sizinki olabilir."
         text="Benzer bir işe mi ihtiyacınız var? Kapsamı birlikte netleştirelim, size özel bir yol haritası çıkarayım."
       />
     </SiteShell>

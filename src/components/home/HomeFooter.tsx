@@ -9,6 +9,7 @@ const FOOTER_NAV = [
   { href: '/projects', label: 'Projeler' },
   { href: '/#services', label: 'Hizmetler' },
   { href: '/#process', label: 'Süreç' },
+  { href: '/hakkimda', label: 'Hakkımda' },
   { href: '/blog', label: 'Blog' },
   { href: '/#contact', label: 'İletişim' },
 ];
