@@ -46,6 +46,14 @@ html:has(.home-theme) {
   animation-delay: var(--d, 0s);
 }
 
+/* Komut paleti açılışı */
+@keyframes home-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+
 @keyframes home-reveal {
   to {
     opacity: 1;

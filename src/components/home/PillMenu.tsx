@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Search } from 'lucide-react';
 import BrandMark from './BrandMark';
+import { OPEN_PALETTE_EVENT, useModKey } from './CommandPalette';
 
 const ITEMS = [
   // tilt: açılırken başladığı ve üzerine gelince eğildiği açı (masaüstünde durağan hâlde düz durur)
@@ -30,6 +31,7 @@ const loadGsap = () =>
 // Logo + toggle; açılınca balon butonlar masaüstünde ortada tek satırda, mobilde alt alta belirir
 export default function PillMenu() {
   const [open, setOpen] = useState(false);
+  const modKey = useModKey();
   const [rendered, setRendered] = useState(false);
   const navRef = useRef<HTMLElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -196,31 +198,48 @@ export default function PillMenu() {
         )}
       </ul>
 
-      <button
-        type="button"
-        onClick={toggle}
-        aria-label={open ? 'Menüyü kapat' : 'Menüyü aç'}
-        aria-expanded={open}
-        aria-controls="pill-menu-items"
-        className={`pointer-events-auto relative grid h-12 w-12 place-items-center justify-self-end rounded-full border transition-all duration-300 hover:scale-105 active:scale-95 ${
-          open
-            ? 'border-line bg-surface text-ink shadow-[0_8px_24px_-12px_rgba(12,10,9,0.25)]'
-            : 'border-ink bg-ink text-paper shadow-[0_10px_28px_-10px_rgba(12,10,9,0.5)] hover:bg-accent hover:border-accent'
-        }`}
-      >
-        <span className="relative block h-3 w-5">
-          <span
-            className={`absolute left-0 top-0 block h-0.5 w-5 rounded-full bg-current transition-transform duration-300 ${
-              open ? 'translate-y-[5px] rotate-45' : ''
-            }`}
-          />
-          <span
-            className={`absolute bottom-0 left-0 block h-0.5 w-5 rounded-full bg-current transition-transform duration-300 ${
-              open ? '-translate-y-[5px] -rotate-45' : ''
-            }`}
-          />
-        </span>
-      </button>
+      <div className="pointer-events-auto relative flex items-center gap-2 justify-self-end">
+        {!open && (
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event(OPEN_PALETTE_EVENT))}
+            aria-label="Sitede ara"
+            aria-keyshortcuts="Control+K Meta+K"
+            className="group inline-flex h-12 items-center gap-2 rounded-full border border-line bg-surface/85 px-4 text-ink-soft shadow-[0_8px_24px_-14px_rgba(12,10,9,0.3)] backdrop-blur-md transition-colors hover:text-ink"
+          >
+            <Search size={17} />
+            <span className="hidden text-[14px] font-medium md:inline">Ara</span>
+            <kbd className="hidden rounded-md border border-line bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-ink-muted md:inline">
+              {modKey} K
+            </kbd>
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={open ? 'Menüyü kapat' : 'Menüyü aç'}
+          aria-expanded={open}
+          aria-controls="pill-menu-items"
+          className={`relative grid h-12 w-12 place-items-center rounded-full border transition-all duration-300 hover:scale-105 active:scale-95 ${
+            open
+              ? 'border-line bg-surface text-ink shadow-[0_8px_24px_-12px_rgba(12,10,9,0.25)]'
+              : 'border-ink bg-ink text-paper shadow-[0_10px_28px_-10px_rgba(12,10,9,0.5)] hover:bg-accent hover:border-accent'
+          }`}
+        >
+          <span className="relative block h-3 w-5">
+            <span
+              className={`absolute left-0 top-0 block h-0.5 w-5 rounded-full bg-current transition-transform duration-300 ${
+                open ? 'translate-y-[5px] rotate-45' : ''
+              }`}
+            />
+            <span
+              className={`absolute bottom-0 left-0 block h-0.5 w-5 rounded-full bg-current transition-transform duration-300 ${
+                open ? '-translate-y-[5px] -rotate-45' : ''
+              }`}
+            />
+          </span>
+        </button>
+      </div>
     </nav>
   );
 }
