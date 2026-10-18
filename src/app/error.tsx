@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { RotateCcw, TriangleAlert } from 'lucide-react';
+import BrandMark from '@/components/home/BrandMark';
+import { homeFontVariables } from '@/components/home/fonts';
+import '@/app/portfolio.css';
 
 export default function RootError({
   error,
@@ -27,36 +31,39 @@ export default function RootError({
   }, [pathname, initialPathname, unstable_retry]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white flex items-center justify-center p-8">
-      <div className="max-w-md w-full text-center space-y-6">
-        <div className="w-16 h-16 mx-auto rounded-full bg-rose-500/10 flex items-center justify-center">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-rose-500">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M15 9l-6 6M9 9l6 6" />
-          </svg>
-        </div>
-        <div>
-          <h2 className="text-xl font-bold">Bir şeyler ters gitti</h2>
-          <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-2">
-            Beklenmeyen bir hata oluştu.
-          </p>
-        </div>
-        <div className="flex gap-3 justify-center">
+    <div className={`home-theme ${homeFontVariables} flex min-h-screen flex-col antialiased`}>
+      <header className="mx-auto w-full max-w-6xl px-5 pt-6 md:px-8">
+        <BrandMark />
+      </header>
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center px-5 py-20 text-center">
+        <span className="grid h-14 w-14 place-items-center rounded-2xl bg-rose-50 text-rose-600">
+          <TriangleAlert size={24} aria-hidden="true" />
+        </span>
+        <h1 className="mt-6 text-3xl font-semibold tracking-[-0.03em] text-ink">
+          Bir şeyler <span className="font-serif-display text-accent">ters gitti.</span>
+        </h1>
+        <p className="mt-3 leading-relaxed text-ink-soft">
+          Sayfa yüklenirken beklenmeyen bir hata oluştu. Tekrar denemek çoğu zaman sorunu çözer.
+        </p>
+        {error.digest && <p className="mt-3 font-mono text-[12px] text-ink-muted">Hata kodu: {error.digest}</p>}
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
           <button
+            type="button"
             onClick={() => unstable_retry()}
-            className="px-4 py-2 bg-neutral-100 dark:bg-white/10 hover:bg-neutral-200 dark:hover:bg-white/15 rounded-lg text-sm font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-accent"
           >
-            Tekrar Dene
+            <RotateCcw size={15} aria-hidden="true" />
+            Tekrar dene
           </button>
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
             href="/"
-            className="px-4 py-2 bg-neutral-50 dark:bg-white/5 hover:bg-neutral-100 dark:hover:bg-white/10 rounded-lg text-sm font-medium transition-colors"
+            className="inline-flex items-center rounded-full border border-line bg-surface px-5 py-2.5 text-sm font-medium text-ink transition-colors hover:border-ink/30"
           >
-            Ana Sayfa
+            Ana sayfa
           </a>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

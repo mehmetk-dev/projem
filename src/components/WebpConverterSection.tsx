@@ -198,184 +198,186 @@ export default function WebpConverterSection() {
   const convertedCount = images.filter((img) => img.status === 'success').length;
 
   return (
-    <section className="py-20 border-t border-white/5 bg-neutral-950 relative overflow-hidden">
-      {/* Background decorations */}
-      <div className="absolute top-1/2 left-1/4 w-80 h-80 bg-white/[0.01] rounded-full blur-[100px] -translate-y-1/2" />
-      <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-white/[0.02] rounded-full blur-[120px]" />
-
-      <div className="max-w-4xl mx-auto px-4 relative z-10">
-        <div className="text-center mb-12 animate-on-scroll">
-          <h2 className="text-3xl font-bold tracking-tight text-white md:text-4xl">WebP Dönüştürücü</h2>
-          <p className="mt-3 text-neutral-400 text-sm max-w-lg mx-auto">
-            PNG ve JPG görsellerinizi anında modern WebP formatına çevirin. Tamamen tarayıcınızda çalışır, resimleriniz hiçbir sunucuya yüklenmez.
-          </p>
+    <div className="space-y-6 rounded-2xl border border-line bg-surface p-6 sm:p-8">
+      {/* Drag & Drop Area */}
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label="Görsel seç veya buraya sürükleyip bırak"
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+        onClick={selectFiles}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            selectFiles();
+          }
+        }}
+        className={`flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 text-center transition-colors outline-none focus-visible:border-accent ${
+          isDragOver ? 'border-accent bg-accent-soft' : 'border-line bg-surface hover:border-ink/30'
+        }`}
+      >
+        <label htmlFor="webp-file-input" className="sr-only">
+          Dönüştürülecek görselleri seçin (PNG, JPG)
+        </label>
+        <input
+          id="webp-file-input"
+          type="file"
+          ref={fileInputRef}
+          onChange={onFileChange}
+          onClick={(e) => e.stopPropagation()}
+          accept="image/png, image/jpeg, image/jpg"
+          multiple
+          tabIndex={-1}
+          className="hidden"
+        />
+        <div className="mb-3 rounded-xl border border-line bg-surface-2 p-3 text-ink-muted">
+          <Upload size={22} className={isDragOver ? 'text-accent' : ''} aria-hidden="true" />
         </div>
+        <p className="text-sm font-semibold text-ink">Görselleri sürükleyip bırakın</p>
+        <p className="mt-1 text-xs text-ink-muted">veya dosyalarınızdan seçmek için tıklayın (PNG, JPG)</p>
+      </div>
 
-        <div className="rounded-3xl border border-white/10 bg-neutral-900/30 backdrop-blur-md p-6 sm:p-8 space-y-6">
-          {/* Drag & Drop Area */}
-          <div
-            onDragOver={onDragOver}
-            onDragLeave={onDragLeave}
-            onDrop={onDrop}
-            onClick={selectFiles}
-            className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[180px] ${
-              isDragOver
-                ? 'border-white bg-white/5 scale-[0.99]'
-                : 'border-white/10 bg-black/10 hover:border-white/20'
-            }`}
-          >
+      {/* Quality Settings */}
+      {images.length > 0 && (
+        <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-line bg-surface-2 p-4 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.14em] text-ink-muted">
+            <Sliders size={14} aria-hidden="true" />
+            <label htmlFor="webp-quality">Sıkıştırma Kalitesi</label>
+          </div>
+          <div className="flex w-full items-center gap-4 sm:w-auto">
             <input
-              type="file"
-              ref={fileInputRef}
-              onChange={onFileChange}
-              accept="image/png, image/jpeg, image/jpg"
-              multiple
-              className="hidden"
+              id="webp-quality"
+              type="range"
+              min="0.1"
+              max="1.0"
+              step="0.05"
+              value={quality}
+              onChange={(e) => setQuality(parseFloat(e.target.value))}
+              disabled={convertingAll}
+              className="w-full accent-[var(--accent)] sm:w-48"
             />
-            <div className="p-3 bg-white/5 rounded-xl border border-white/5 mb-3 text-neutral-400">
-              <Upload size={22} className={isDragOver ? 'text-white' : ''} />
-            </div>
-            <p className="text-sm font-semibold text-white">Görselleri sürükleyip bırakın</p>
-            <p className="text-xs text-neutral-500 mt-1">veya dosyalarınızdan seçmek için tıklayın (PNG, JPG)</p>
+            <span className="shrink-0 text-sm font-semibold text-ink">%{Math.round(quality * 100)}</span>
+          </div>
+        </div>
+      )}
+
+      {/* List of files */}
+      {images.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[12px] uppercase tracking-[0.14em] text-ink-muted">
+              Resimler ({images.length})
+            </span>
+            <button
+              onClick={clearAll}
+              className="flex items-center gap-1 text-xs font-medium text-rose-600 hover:text-rose-700"
+            >
+              Temizle
+            </button>
           </div>
 
-          {/* Quality Settings */}
-          {images.length > 0 && (
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
-              <div className="flex items-center gap-2 text-neutral-400 text-xs uppercase tracking-wider font-bold">
-                <Sliders size={14} />
-                <span>Sıkıştırma Kalitesi</span>
-              </div>
-              <div className="flex items-center gap-4 w-full sm:w-auto">
-                <input
-                  type="range"
-                  min="0.1"
-                  max="1.0"
-                  step="0.05"
-                  value={quality}
-                  onChange={(e) => setQuality(parseFloat(e.target.value))}
-                  disabled={convertingAll}
-                  className="w-full sm:w-48 accent-white"
-                />
-                <span className="text-sm font-bold text-white shrink-0">%{Math.round(quality * 100)}</span>
-              </div>
-            </div>
-          )}
+          <div className="dashboard-sidebar-scroll max-h-[300px] space-y-2 overflow-y-auto pr-1">
+            {images.map((img) => {
+              const hasSavings = img.status === 'success' && img.webpSize;
+              const savings = hasSavings
+                ? Math.round(((img.originalSize - img.webpSize!) / img.originalSize) * 100)
+                : 0;
 
-          {/* List of files */}
-          {images.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">
-                  Resimler ({images.length})
-                </span>
-                <button
-                  onClick={clearAll}
-                  className="text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1"
+              return (
+                <div
+                  key={img.id}
+                  className="flex flex-col justify-between gap-3 rounded-xl border border-line bg-paper p-3 sm:flex-row sm:items-center"
                 >
-                  Temizle
-                </button>
-              </div>
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2 text-ink-muted">
+                      <ImageIcon size={18} aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold text-ink" title={img.originalName}>
+                        {img.originalName}
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-ink-muted">{formatSize(img.originalSize)}</p>
+                    </div>
+                  </div>
 
-              <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 dashboard-sidebar-scroll">
-                {images.map((img) => {
-                  const hasSavings = img.status === 'success' && img.webpSize;
-                  const savings = hasSavings
-                    ? Math.round(((img.originalSize - img.webpSize!) / img.originalSize) * 100)
-                    : 0;
-
-                  return (
-                    <div
-                      key={img.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl border border-white/5 bg-black/20"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center shrink-0 text-neutral-400">
-                          <ImageIcon size={18} />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-semibold text-white truncate" title={img.originalName}>
-                            {img.originalName}
-                          </p>
-                          <p className="text-[10px] text-neutral-500 mt-0.5">{formatSize(img.originalSize)}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between sm:justify-end gap-4">
-                        {img.status === 'idle' && (
-                          <span className="text-[10px] text-neutral-500 uppercase">Dönüştürülmeye Hazır</span>
-                        )}
-                        {img.status === 'converting' && (
-                          <span className="text-[10px] text-neutral-400 animate-pulse uppercase">Çevriliyor...</span>
-                        )}
-                        {img.status === 'error' && (
-                          <span className="text-[10px] text-rose-400 uppercase" title={img.errorMsg}>Hata</span>
-                        )}
-                        {img.status === 'success' && img.webpSize && (
-                          <div className="flex items-center gap-3 text-right">
-                            <div>
-                              <div className="flex items-center gap-1.5 justify-end">
-                                <span className="text-[10px] text-neutral-500 line-through">
-                                  {formatSize(img.originalSize)}
-                                </span>
-                                <ArrowRight size={10} className="text-neutral-600" />
-                                <span className="text-xs font-bold text-emerald-400">
-                                  {formatSize(img.webpSize)}
-                                </span>
-                              </div>
-                              {savings > 0 && (
-                                <p className="text-[9px] text-emerald-500/80 mt-0.5">%{savings} Alan Tasarrufu</p>
-                              )}
-                            </div>
-                            <button
-                              onClick={() => downloadSingle(img)}
-                              className="p-1.5 rounded-lg border border-white/10 hover:border-white/20 text-white transition-colors bg-white/5"
-                              title="WebP İndir"
-                            >
-                              <Download size={12} />
-                            </button>
+                  <div className="flex items-center justify-between gap-4 sm:justify-end">
+                    {img.status === 'idle' && (
+                      <span className="text-[11px] uppercase text-ink-muted">Dönüştürülmeye Hazır</span>
+                    )}
+                    {img.status === 'converting' && (
+                      <span className="animate-pulse text-[11px] uppercase text-ink-soft">Çevriliyor...</span>
+                    )}
+                    {img.status === 'error' && (
+                      <span className="text-[11px] uppercase text-rose-600" title={img.errorMsg}>Hata</span>
+                    )}
+                    {img.status === 'success' && img.webpSize && (
+                      <div className="flex items-center gap-3 text-right">
+                        <div>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <span className="text-[11px] text-ink-muted line-through">
+                              {formatSize(img.originalSize)}
+                            </span>
+                            <ArrowRight size={10} className="text-ink-muted" aria-hidden="true" />
+                            <span className="text-xs font-semibold text-emerald-600">
+                              {formatSize(img.webpSize)}
+                            </span>
                           </div>
-                        )}
-
+                          {savings > 0 && (
+                            <p className="mt-0.5 text-[10px] text-emerald-600">%{savings} Alan Tasarrufu</p>
+                          )}
+                        </div>
                         <button
-                          onClick={() => removeImage(img.id)}
-                          disabled={convertingAll}
-                          className="text-neutral-500 hover:text-rose-400 p-1.5 transition-colors"
+                          onClick={() => downloadSingle(img)}
+                          className="rounded-lg border border-line bg-surface p-1.5 text-ink transition-colors hover:border-ink/30"
+                          title="WebP İndir"
+                          aria-label={`${img.originalName} dosyasını WebP olarak indir`}
                         >
-                          <Trash2 size={13} />
+                          <Download size={12} aria-hidden="true" />
                         </button>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+                    )}
 
-          {/* Action buttons */}
-          {images.length > 0 && (
-            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-white/5">
-              <button
-                onClick={convertAll}
-                disabled={convertingAll || images.every((img) => img.status === 'success')}
-                className="flex-1 rounded-xl bg-white text-black py-2.5 text-sm font-bold hover:bg-neutral-200 disabled:opacity-50 transition-colors"
-              >
-                {convertingAll ? 'Dönüştürülüyor...' : 'WebP Yap'}
-              </button>
+                    <button
+                      onClick={() => removeImage(img.id)}
+                      disabled={convertingAll}
+                      className="p-1.5 text-ink-muted transition-colors hover:text-rose-600 disabled:opacity-50"
+                      title="Kaldır"
+                      aria-label={`${img.originalName} dosyasını listeden kaldır`}
+                    >
+                      <Trash2 size={13} aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
-              {convertedCount > 0 && (
-                <button
-                  onClick={downloadAll}
-                  className="rounded-xl border border-white/15 hover:border-white/25 text-white py-2.5 px-6 text-sm font-bold bg-white/5 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Download size={14} />
-                  <span>Tümünü İndir ({convertedCount})</span>
-                </button>
-              )}
-            </div>
+      {/* Action buttons */}
+      {images.length > 0 && (
+        <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row">
+          <button
+            onClick={convertAll}
+            disabled={convertingAll || images.every((img) => img.status === 'success')}
+            className="flex-1 rounded-full bg-ink py-2.5 text-sm font-medium text-paper transition-colors hover:bg-accent disabled:opacity-50 disabled:hover:bg-ink"
+          >
+            {convertingAll ? 'Dönüştürülüyor...' : 'WebP Yap'}
+          </button>
+
+          {convertedCount > 0 && (
+            <button
+              onClick={downloadAll}
+              className="flex items-center justify-center gap-2 rounded-full border border-line bg-surface px-6 py-2.5 text-sm font-medium text-ink transition-colors hover:border-ink/30"
+            >
+              <Download size={14} aria-hidden="true" />
+              <span>Tümünü İndir ({convertedCount})</span>
+            </button>
           )}
         </div>
-      </div>
-    </section>
+      )}
+    </div>
   );
 }

@@ -1,9 +1,14 @@
 'use client';
 
 import { useActionState } from 'react';
+import Link from 'next/link';
 import { submitGuestbookAction } from '@/app/actions/guestbook';
 import { toast } from 'sonner';
 import { useEffect } from 'react';
+
+const fieldLabel = 'mb-2 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted';
+const fieldInput =
+  'w-full rounded-xl border border-line bg-paper px-4 py-3 text-ink placeholder:text-ink-muted/70 outline-none transition-colors focus:border-accent';
 
 export default function GuestbookForm() {
   const [state, formAction, isPending] = useActionState(submitGuestbookAction, null);
@@ -23,25 +28,17 @@ export default function GuestbookForm() {
     <form
       id="guestbook-form"
       action={formAction}
-      className="mb-16 p-6 md:p-8 rounded-[2rem] bg-neutral-100 dark:bg-neutral-900/30 border border-neutral-200 dark:border-white/5 space-y-5"
+      className="space-y-5 rounded-2xl border border-line bg-surface p-5 md:p-7"
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <div>
-          <label htmlFor="name" className="block text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-2">
+          <label htmlFor="name" className={fieldLabel}>
             İsim
           </label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            required
-            maxLength={100}
-            className="w-full bg-neutral-200 dark:bg-neutral-950 border border-neutral-300 dark:border-white/10 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-400 dark:focus:border-white/30 transition-colors"
-            placeholder="Adınız"
-          />
+          <input id="name" name="name" type="text" required maxLength={100} className={fieldInput} placeholder="Adınız" />
         </div>
         <div>
-          <label htmlFor="email" className="block text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-2">
+          <label htmlFor="email" className={fieldLabel}>
             E-posta
           </label>
           <input
@@ -50,13 +47,13 @@ export default function GuestbookForm() {
             type="email"
             required
             maxLength={200}
-            className="w-full bg-neutral-200 dark:bg-neutral-950 border border-neutral-300 dark:border-white/10 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-400 dark:focus:border-white/30 transition-colors"
+            className={fieldInput}
             placeholder="ornek@mail.com"
           />
         </div>
       </div>
       <div>
-        <label htmlFor="message" className="block text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-2">
+        <label htmlFor="message" className={fieldLabel}>
           Mesaj
         </label>
         <textarea
@@ -65,19 +62,23 @@ export default function GuestbookForm() {
           required
           maxLength={2000}
           rows={4}
-          className="w-full bg-neutral-200 dark:bg-neutral-950 border border-neutral-300 dark:border-white/10 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-400 dark:focus:border-white/30 transition-colors resize-none"
+          className={`${fieldInput} resize-none`}
           placeholder="Bir şeyler yazın..."
         />
       </div>
       <button
         type="submit"
         disabled={isPending}
-        className="bg-neutral-900 text-white dark:bg-white dark:text-black px-8 py-3.5 rounded-full font-medium hover:scale-105 transition-transform duration-300 disabled:opacity-50 disabled:hover:scale-100"
+        className="rounded-full bg-ink px-6 py-3 text-sm font-medium text-paper transition-colors hover:bg-accent disabled:opacity-50"
       >
         {isPending ? 'Gönderiliyor...' : 'Gönder'}
       </button>
-      <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-        Mesajınız onaylandıktan sonra yayınlanacaktır.
+      <p className="text-[12px] leading-relaxed text-ink-muted">
+        Mesajınız onaylandıktan sonra adınızla birlikte yayınlanır; e-posta adresiniz gösterilmez. Ayrıntılar için{' '}
+        <Link href="/gizlilik" className="underline underline-offset-2 transition-colors hover:text-ink">
+          Gizlilik Politikası
+        </Link>
+        .
       </p>
     </form>
   );

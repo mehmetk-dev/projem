@@ -1,13 +1,17 @@
 import Link from 'next/link';
-import { searchContent } from '@/app/actions/search';
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
-import { getCurrentUser, logout } from '@/lib/auth';
-import BubbleMenu from '@/components/BubbleMenu';
+import { ArrowRight, Search } from 'lucide-react';
+import { searchContent } from '@/app/actions/search';
+import { getSocialLinks } from '@/app/actions/social';
+import SiteShell from '@/components/home/SiteShell';
+import { postExcerpt } from '@/components/blog/post-utils';
+import { projectTeaser } from '@/components/home/project-utils';
 
 export const metadata: Metadata = {
   title: 'Ara | Mehmet Kerem',
   description: 'Blog yazıları ve projelerde ara.',
+  // Sonuç sayfaları arama motorlarında listelenmez
+  robots: { index: false, follow: true },
 };
 
 export const dynamic = 'force-dynamic';
@@ -16,115 +20,138 @@ interface SearchPageProps {
   searchParams: Promise<{ q?: string }>;
 }
 
+interface ResultItem {
+  key: string;
+  href: string;
+  category: string;
+  title: string;
+  text: string;
+}
+
 export default async function SearchPage({ searchParams }: SearchPageProps) {
-  const [params, user] = await Promise.all([
-    searchParams,
-    getCurrentUser(),
-  ]);
-  const query = params.q || '';
-  const result = query.trim().length >= 2 ? await searchContent(query) : { blogs: [], projects: [] };
+  const [params, socialLinks] = await Promise.all([searchParams, getSocialLinks().catch(() => [])]);
+  const query = (params.q || '').trim();
+  const result = query.length >= 2 ? await searchContent(query) : { blogs: [], projects: [] };
   const total = result.blogs.length + result.projects.length;
 
-  async function handleLogout() {
-    'use server';
-    await logout();
-    redirect('/');
-  }
+  const groups: { title: string; items: ResultItem[] }[] = [
+    {
+      title: 'Blog yazıları',
+      items: result.blogs.map((post) => ({
+        key: `blog-${post.id}`,
+        href: `/blog/${post.slug}`,
+        category: post.category,
+        title: post.title,
+        text: postExcerpt(post, 200),
+      })),
+    },
+    {
+      title: 'Projeler',
+      items: result.projects.map((project) => ({
+        key: `project-${project.id}`,
+        href: `/projects/${project.slug}`,
+        category: project.category,
+        title: project.title,
+        text: projectTeaser(project),
+      })),
+    },
+  ].filter((group) => group.items.length > 0);
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
-      <BubbleMenu logo="M. Kerem" user={user ? { email: user.email } : null} logoutAction={handleLogout} />
+    <SiteShell socialLinks={socialLinks.map(({ platform, url }) => ({ platform, url }))}>
+      <section className="relative overflow-hidden pt-28 pb-20 md:pt-40 md:pb-28">
+        <div className="home-dot-grid pointer-events-none absolute inset-x-0 top-0 h-[420px]" aria-hidden="true" />
+        <div className="relative mx-auto max-w-3xl px-5 md:px-8">
+          <p className="home-reveal font-mono text-[13px] uppercase tracking-[0.14em] text-accent">Arama</p>
+          <h1 className="home-reveal mt-3 text-[2.6rem] font-semibold leading-[1.05] tracking-[-0.035em] text-ink md:text-6xl">
+            Ne <span className="font-serif-display text-accent">arıyorsunuz?</span>
+          </h1>
 
-      <main className="container mx-auto px-6 lg:px-12 pt-20 pb-16">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Arama</h1>
-          <form action="/search" method="GET" className="mb-12">
-            <div className="relative">
+          <form action="/search" method="GET" role="search" className="home-reveal mt-8 md:mt-10">
+            <label htmlFor="search-q" className="sr-only">
+              Blog yazısı veya proje ara
+            </label>
+            <div className="flex items-center gap-2 rounded-full border border-line bg-surface p-1.5 pl-5 shadow-[0_12px_32px_-24px_rgba(12,10,9,0.35)] transition-colors focus-within:border-accent">
+              <Search size={18} className="shrink-0 text-ink-muted" aria-hidden="true" />
               <input
+                id="search-q"
                 name="q"
-                type="text"
+                type="search"
                 defaultValue={query}
+                minLength={2}
+                autoFocus={!query}
                 placeholder="Blog yazısı veya proje ara..."
-                className="w-full bg-neutral-100 dark:bg-neutral-900/50 border border-neutral-300 dark:border-white/10 rounded-2xl px-6 py-4 text-neutral-900 dark:text-white placeholder:text-neutral-500 dark:placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 dark:focus:border-white/30 transition-colors text-lg"
+                className="min-w-0 flex-1 bg-transparent py-2.5 text-[16px] text-ink placeholder:text-ink-muted/70 outline-none"
               />
               <button
                 type="submit"
-                className="absolute right-3 top-1/2 -translate-y-1/2 bg-neutral-900 text-white dark:bg-white dark:text-black px-4 py-2 rounded-xl text-sm font-medium hover:scale-105 transition-transform"
+                className="shrink-0 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-accent"
               >
                 Ara
               </button>
             </div>
           </form>
 
-          {query.trim().length > 0 && (
-            <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-8">
-              <span className="text-neutral-900 dark:text-white font-medium">&quot;{query}&quot;</span> için {total} sonuç bulundu.
+          {query.length > 0 && query.length < 2 && (
+            <p className="mt-6 text-sm text-ink-muted">Aramak için en az 2 karakter yazın.</p>
+          )}
+
+          {query.length >= 2 && (
+            <p className="mt-6 text-sm text-ink-muted" aria-live="polite">
+              <span className="font-medium text-ink">&quot;{query}&quot;</span> için {total} sonuç bulundu.
             </p>
           )}
 
-          {result.blogs.length > 0 && (
-            <div className="mb-12">
-              <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400 mb-6">Blog Yazıları</h2>
-              <div className="flex flex-col gap-4">
-                {result.blogs.map((post) => (
-                  <Link
-                    key={post.id}
-                    href={`/blog/${post.slug}`}
-                    className="group p-6 rounded-2xl bg-neutral-100 dark:bg-neutral-900/30 border border-neutral-200 dark:border-white/5 hover:bg-neutral-200 dark:hover:bg-neutral-900/80 transition-all"
-                  >
-                    <span className="text-[10px] font-medium tracking-[0.2em] text-neutral-500 dark:text-neutral-400 uppercase border border-neutral-300 dark:border-white/10 px-3 py-1 rounded-full">
-                      {post.category}
-                    </span>
-                    <h3 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white mt-4 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors">
-                      {post.title}
-                    </h3>
-                    <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-2 line-clamp-2">
-                      {post.excerpt || post.content.slice(0, 200).replace(/[#*`]/g, '') + '...'}
-                    </p>
-                  </Link>
+          {groups.map((group) => (
+            <div key={group.title} className="mt-12">
+              <h2 className="font-mono text-[12px] uppercase tracking-[0.14em] text-ink-muted">
+                {group.title} · {group.items.length}
+              </h2>
+              <ul className="mt-5 space-y-4">
+                {group.items.map((item) => (
+                  <li key={item.key}>
+                    <Link
+                      href={item.href}
+                      className="group flex flex-col rounded-2xl border border-line bg-surface p-5 transition-[border-color,box-shadow] duration-300 hover:border-ink/15 hover:shadow-[0_18px_40px_-24px_rgba(12,10,9,0.3)] md:p-6"
+                    >
+                      <span className="w-fit rounded-md bg-accent-soft px-2 py-0.5 text-[13px] font-medium text-accent">
+                        {item.category}
+                      </span>
+                      <span className="mt-3 text-xl font-semibold leading-snug tracking-tight text-ink transition-colors group-hover:text-accent">
+                        {item.title}
+                      </span>
+                      {item.text && (
+                        <span className="mt-2 line-clamp-2 text-[15px] leading-relaxed text-ink-soft">{item.text}</span>
+                      )}
+                      <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-ink">
+                        İncele
+                        <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+                      </span>
+                    </Link>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
-          )}
+          ))}
 
-          {result.projects.length > 0 && (
-            <div>
-              <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400 mb-6">Projeler</h2>
-              <div className="flex flex-col gap-4">
-                {result.projects.map((project) => (
-                  <Link
-                    key={project.id}
-                    href={`/projects/${project.slug}`}
-                    className="group p-6 rounded-2xl bg-neutral-100 dark:bg-neutral-900/30 border border-neutral-200 dark:border-white/5 hover:bg-neutral-200 dark:hover:bg-neutral-900/80 transition-all"
-                  >
-                    <span className="text-[10px] font-medium tracking-[0.2em] text-neutral-500 dark:text-neutral-400 uppercase border border-neutral-300 dark:border-white/10 px-3 py-1 rounded-full">
-                      {project.category}
-                    </span>
-                    <h3 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white mt-4 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors">
-                      {project.title}
-                    </h3>
-                    <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-2 line-clamp-2">
-                      {project.description}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {query.trim().length >= 2 && total === 0 && (
-            <div className="text-center py-24">
-              <p className="text-neutral-500 dark:text-neutral-400 text-sm">Arama kriterlerinize uygun sonuç bulunamadı.</p>
+          {query.length >= 2 && total === 0 && (
+            <div className="mt-10 rounded-2xl border border-dashed border-line px-6 py-14 text-center">
+              <p className="text-ink-soft">Aramanıza uygun sonuç bulunamadı.</p>
+              <p className="mt-2 text-sm text-ink-muted">
+                Farklı bir kelime deneyin ya da{' '}
+                <Link href="/projects" className="underline underline-offset-2 hover:text-ink">
+                  projelere
+                </Link>{' '}
+                ve{' '}
+                <Link href="/blog" className="underline underline-offset-2 hover:text-ink">
+                  yazılara
+                </Link>{' '}
+                göz atın.
+              </p>
             </div>
           )}
         </div>
-      </main>
-
-      <footer className="border-t border-neutral-200 dark:border-white/10 py-10">
-        <div className="container mx-auto px-6 text-center text-[11px] font-mono tracking-[0.1em] text-neutral-500 dark:text-neutral-400 uppercase">
-          © 2026 Mehmet Kerem. Tüm hakları saklıdır.
-        </div>
-      </footer>
-    </div>
+      </section>
+    </SiteShell>
   );
 }

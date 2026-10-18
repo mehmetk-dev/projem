@@ -19,14 +19,14 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       title="Yeni Şifre Belirle."
       subtitle="Güvenliğin için şifreni sıfırlıyoruz."
     >
-      <form action={formAction} className="space-y-8">
+      <form action={formAction} className="space-y-6">
         <input type="hidden" name="token" value={token} />
 
         <div className="space-y-6">
           <div className="group">
             <label
               htmlFor="password"
-              className="text-xs uppercase tracking-widest text-neutral-500 group-focus-within:text-white transition-colors"
+              className="mb-2 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted"
             >
               Yeni Şifre
             </label>
@@ -34,26 +34,27 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
               id="password"
               name="password"
               type="password"
+              autoComplete="new-password"
               required
-              className="w-full bg-transparent border-b border-neutral-800 py-3 text-white placeholder-neutral-700 focus:outline-none focus:border-white transition-colors"
+              className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-ink placeholder:text-ink-muted/70 outline-none transition-colors focus:border-accent"
               placeholder="En az 8 karakter, büyük/küçük harf, rakam ve özel karakter"
             />
           </div>
         </div>
 
-        {state?.error && <div className="text-red-500 text-sm">{state.error}</div>}
+        {state?.error && <div className="text-sm text-rose-600">{state.error}</div>}
 
         {state?.success && (
-          <div className="text-white text-sm bg-white/10 p-4 rounded-xl border border-white/20">
+          <div className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-600">
             {state.success}
           </div>
         )}
 
-        <div className="pt-4">
+        <div>
           <button
             type="submit"
             disabled={isPending}
-            className="w-full bg-white text-black py-4 rounded-full font-medium tracking-wide hover:bg-neutral-200 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full rounded-full bg-ink py-3.5 text-sm font-medium text-paper transition-colors hover:bg-accent active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isPending ? 'Güncelleniyor...' : 'Şifreyi Güncelle'}
           </button>
@@ -71,13 +72,13 @@ export function InvalidTokenState() {
       title="Geçersiz Bağlantı."
       subtitle="Bu şifre sıfırlama bağlantısı geçersiz, süresi dolmuş veya daha önce kullanılmış."
     >
-      <div className="text-red-500 text-sm">
+      <div className="text-sm text-rose-600">
         Geçersiz veya eksik şifre sıfırlama tokenı. Lütfen yeni bir şifre sıfırlama talebinde bulunun.
       </div>
-      <div className="pt-4">
+      <div>
         <Link
           href="/forgot-password"
-          className="w-full block text-center bg-white text-black py-4 rounded-full font-medium tracking-wide hover:bg-neutral-200 transition-all"
+          className="block w-full rounded-full bg-ink py-3.5 text-center text-sm font-medium text-paper transition-colors hover:bg-accent"
         >
           Yeni Bağlantı İste
         </Link>

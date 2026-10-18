@@ -14,20 +14,20 @@ export default function ForgotPasswordPage() {
       title="Şifre Sıfırlama."
       subtitle="Sorun değil. E-posta adresini gir, sana hesabına tekrar erişmen için bir bağlantı gönderelim."
     >
-      <form action={formAction} className="space-y-8">
+      <form action={formAction} className="space-y-6">
         <div className="space-y-6">
-          <FormField label="E-Posta" name="email" type="email" placeholder="ornek@mail.com" />
+          <FormField label="E-Posta" name="email" type="email" autoComplete="email" placeholder="ornek@mail.com" />
         </div>
 
-        {state?.error && <div className="text-red-500 text-sm">{state.error}</div>}
+        {state?.error && <div className="text-sm text-rose-600">{state.error}</div>}
 
         {state?.success && (
-          <div className="text-white text-sm bg-white/10 p-4 rounded-xl border border-white/20">
+          <div className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-600">
             {state.success}
           </div>
         )}
 
-        <div className="pt-4">
+        <div>
           <SubmitButton
             isPending={isPending}
             disabled={!!state?.success}
@@ -44,18 +44,20 @@ function FormField({
   label,
   name,
   type,
+  autoComplete,
   placeholder,
 }: {
   label: string;
   name: string;
   type: string;
+  autoComplete: string;
   placeholder: string;
 }) {
   return (
     <div className="group">
       <label
         htmlFor={name}
-        className="text-xs uppercase tracking-widest text-neutral-500 group-focus-within:text-white transition-colors"
+        className="mb-2 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted"
       >
         {label}
       </label>
@@ -63,8 +65,9 @@ function FormField({
         id={name}
         name={name}
         type={type}
+        autoComplete={autoComplete}
         required
-        className="w-full bg-transparent border-b border-neutral-800 py-3 text-white placeholder-neutral-700 focus:outline-none focus:border-white transition-colors"
+        className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-ink placeholder:text-ink-muted/70 outline-none transition-colors focus:border-accent"
         placeholder={placeholder}
       />
     </div>
@@ -86,7 +89,7 @@ function SubmitButton({
     <button
       type="submit"
       disabled={isPending || disabled}
-      className="w-full bg-white text-black py-4 rounded-full font-medium tracking-wide hover:bg-neutral-200 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full rounded-full bg-ink py-3.5 text-sm font-medium text-paper transition-colors hover:bg-accent active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {isPending ? pendingLabel : label}
     </button>

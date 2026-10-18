@@ -1,68 +1,91 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { ArrowRight, Search } from 'lucide-react';
+import { getSocialLinks } from '@/app/actions/social';
+import SiteShell from '@/components/home/SiteShell';
 
 export const metadata: Metadata = {
   title: 'Sayfa Bulunamadı | Mehmet Kerem',
   description: 'Aradığınız sayfa mevcut değil veya taşınmış olabilir.',
 };
 
-export default function NotFoundPage() {
-  return (
-    <div className="min-h-screen bg-background text-foreground font-sans flex flex-col items-center justify-center px-6 relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neutral-200/40 dark:bg-neutral-800/40 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-neutral-200/40 dark:bg-neutral-800/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-      </div>
+const SHORTCUTS = [
+  { href: '/projects', label: 'Projeler' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/hakkimda', label: 'Hakkımda' },
+  { href: '/#contact', label: 'İletişim' },
+];
 
-      <div className="relative z-10 text-center">
-        {/* Glitch effect on 404 */}
-        <div className="relative mb-8 group">
-          <h1
-            className="text-[8rem] md:text-[12rem] font-black tracking-tighter leading-none text-transparent bg-clip-text bg-gradient-to-b from-neutral-800 to-neutral-900 dark:from-white dark:to-neutral-500 select-none"
-          >
-            404
-          </h1>
-          <div
-            className="absolute inset-0 text-[8rem] md:text-[12rem] font-black tracking-tighter leading-none text-transparent bg-clip-text bg-gradient-to-b from-neutral-800 to-neutral-900 dark:from-white dark:to-neutral-500 opacity-0 group-hover:opacity-30 translate-x-[2px] translate-y-[2px] select-none pointer-events-none transition-opacity duration-75"
+export default async function NotFoundPage() {
+  const socialLinks = await getSocialLinks().catch(() => []);
+
+  return (
+    <SiteShell socialLinks={socialLinks.map(({ platform, url }) => ({ platform, url }))}>
+      <section className="relative overflow-hidden pt-32 pb-24 md:pt-44 md:pb-32">
+        <div className="home-dot-grid pointer-events-none absolute inset-x-0 top-0 h-[480px]" aria-hidden="true" />
+        <div className="relative mx-auto max-w-3xl px-5 text-center md:px-8">
+          <p className="home-reveal font-mono text-[13px] uppercase tracking-[0.14em] text-accent">Hata 404</p>
+          <p
+            className="home-reveal mt-4 select-none text-[clamp(7rem,26vw,15rem)] font-semibold leading-[0.8] tracking-[-0.07em] text-ink"
             aria-hidden="true"
           >
-            404
+            4<span className="font-serif-display text-accent">0</span>4
+          </p>
+          <h1 className="home-reveal mt-8 text-3xl font-semibold tracking-[-0.03em] text-ink md:text-4xl">
+            Bu sayfa <span className="font-serif-display text-accent">bulunamadı.</span>
+          </h1>
+          <p className="home-reveal mx-auto mt-4 max-w-md text-[17px] leading-relaxed text-ink-soft">
+            Aradığınız sayfa kaldırılmış, taşınmış ya da hiç var olmamış olabilir. Aşağıdan aramayı deneyin ya da bir
+            kısayolla devam edin.
+          </p>
+
+          <form
+            action="/search"
+            method="GET"
+            role="search"
+            className="home-reveal mx-auto mt-9 flex max-w-md items-center gap-2 rounded-full border border-line bg-surface p-1.5 pl-5 transition-colors focus-within:border-accent"
+            style={{ '--d': '0.08s' } as React.CSSProperties}
+          >
+            <Search size={18} className="shrink-0 text-ink-muted" aria-hidden="true" />
+            <label htmlFor="notfound-q" className="sr-only">
+              Sitede ara
+            </label>
+            <input
+              id="notfound-q"
+              name="q"
+              type="search"
+              minLength={2}
+              placeholder="Sitede ara..."
+              className="min-w-0 flex-1 bg-transparent py-2 text-[15px] text-ink placeholder:text-ink-muted/70 outline-none"
+            />
+            <button
+              type="submit"
+              className="shrink-0 rounded-full bg-ink px-5 py-2 text-sm font-medium text-paper transition-colors hover:bg-accent"
+            >
+              Ara
+            </button>
+          </form>
+
+          <div className="home-reveal mt-8 flex flex-wrap justify-center gap-3" style={{ '--d': '0.12s' } as React.CSSProperties}>
+            <Link
+              href="/"
+              className="group inline-flex items-center gap-1.5 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-accent"
+            >
+              Ana sayfaya dön
+              <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+            </Link>
+            {SHORTCUTS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="inline-flex items-center rounded-full border border-line bg-surface px-5 py-2.5 text-sm font-medium text-ink transition-colors hover:border-ink/30"
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
         </div>
-
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">
-          Sayfa Bulunamadı
-        </h2>
-        <p className="text-neutral-500 dark:text-neutral-400 text-lg max-w-md mx-auto mb-10 leading-relaxed">
-          Aradığınız sayfa mevcut değil veya başka bir adres taşınmış olabilir. Ana sayfaya dönüp keşfe devam edebilirsiniz.
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link
-            href="/"
-            className="bg-neutral-900 text-white dark:bg-white dark:text-black px-8 py-3.5 rounded-full font-medium hover:scale-105 transition-transform duration-300"
-          >
-            Ana Sayfaya Dön
-          </Link>
-          <Link
-            href="/blog"
-            className="px-8 py-3.5 rounded-full font-medium border border-neutral-200 dark:border-white/10 hover:border-neutral-400 dark:hover:border-white/30 hover:bg-neutral-100 dark:hover:bg-white/5 transition-all text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white"
-          >
-            Blog&apos;a Git
-          </Link>
-        </div>
-      </div>
-
-      {/* Grid pattern overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.03]"
-        style={{
-          backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`,
-          backgroundSize: '50px 50px',
-          color: 'var(--foreground)',
-        }}
-      />
-    </div>
+      </section>
+    </SiteShell>
   );
 }
