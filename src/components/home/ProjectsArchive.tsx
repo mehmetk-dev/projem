@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useMemo, useState, ViewTransition, type CSSProperties } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import BrowserFrame from './BrowserFrame';
-import { projectCover, projectHost, projectStack, projectTeaser } from './project-utils';
+import { projectCover, projectCoverTransition, projectHost, projectStack, projectTeaser } from './project-utils';
 import type { HomeProject } from './types';
 
 const ALL = 'Tümü';
@@ -71,16 +71,18 @@ function ProjectCard({ project, index }: { project: HomeProject; index: number }
   return (
     <article className="home-reveal" style={{ '--d': `${Math.min(index, 6) * 0.06}s` } as CSSProperties}>
       <Link href={`/projects/${project.slug}`} className="group block">
-        <div className="rounded-[20px] bg-gradient-to-br from-surface-2 to-accent-soft p-3 transition-transform duration-500 ease-out group-hover:-translate-y-1">
-          <BrowserFrame
-            src={projectCover(project)}
-            alt={project.title}
-            host={projectHost(project)}
-            sizes="(max-width: 768px) 100vw, 560px"
-            priority={index < 2}
-            imageClassName="transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-          />
-        </div>
+        <ViewTransition name={projectCoverTransition(project.slug)} share="morph">
+          <div className="rounded-[20px] bg-gradient-to-br from-surface-2 to-accent-soft p-3 transition-transform duration-500 ease-out group-hover:-translate-y-1">
+            <BrowserFrame
+              src={projectCover(project)}
+              alt={project.title}
+              host={projectHost(project)}
+              sizes="(max-width: 768px) 100vw, 560px"
+              priority={index < 2}
+              imageClassName="transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+            />
+          </div>
+        </ViewTransition>
 
         <div className="mt-6 flex items-start justify-between gap-4">
           <div className="min-w-0">

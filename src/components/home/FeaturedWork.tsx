@@ -1,10 +1,19 @@
 'use client';
 
+import { ViewTransition } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import BrowserFrame from './BrowserFrame';
 import ProjectIndex from './ProjectIndex';
-import { projectCover, projectHost, projectResults, projectStack, projectTeaser, splitFeatured } from './project-utils';
+import {
+  projectCover,
+  projectCoverTransition,
+  projectHost,
+  projectResults,
+  projectStack,
+  projectTeaser,
+  splitFeatured,
+} from './project-utils';
 import type { HomeProject } from './types';
 
 const FEATURED_COUNT = 3;
@@ -137,12 +146,14 @@ function FeaturedCard({ project, index }: { project: HomeProject; index: number 
 
         <div className="pointer-events-none relative min-h-[260px] sm:min-h-[340px] lg:col-span-7 lg:min-h-0">
           <div className="absolute left-6 right-[-12%] top-4 transition-transform duration-700 ease-out [transform:rotate(-3deg)] group-hover:[transform:rotate(0deg)_translateY(-10px)] sm:left-10 md:top-10 lg:left-4 lg:top-16">
-            <BrowserFrame
-              src={projectCover(project)}
-              alt={project.title}
-              host={projectHost(project)}
-              sizes="(max-width: 1024px) 100vw, 720px"
-            />
+            <ViewTransition name={projectCoverTransition(project.slug)} share="morph">
+              <BrowserFrame
+                src={projectCover(project)}
+                alt={project.title}
+                host={projectHost(project)}
+                sizes="(max-width: 1024px) 100vw, 720px"
+              />
+            </ViewTransition>
           </div>
         </div>
       </div>

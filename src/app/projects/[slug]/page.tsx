@@ -4,14 +4,14 @@ import { getPublishedTestimonials } from '@/app/actions/testimonials';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
-import type { CSSProperties } from 'react';
+import { ViewTransition, type CSSProperties } from 'react';
 import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { getProjectImages } from '@/lib/utils';
 import SiteShell from '@/components/home/SiteShell';
 import CtaBand from '@/components/home/CtaBand';
 import ProjectShot from '@/components/home/ProjectShot';
 import ImageWithFallback from '@/components/ImageWithFallback';
-import { projectCover, projectHost, projectResults, projectStack, projectTeaser } from '@/components/home/project-utils';
+import { projectCover, projectCoverTransition, projectHost, projectResults, projectStack, projectTeaser } from '@/components/home/project-utils';
 import { QuoteMark, TestimonialPerson } from '@/components/home/Testimonials';
 import JsonLd from '@/components/JsonLd';
 import { siteUrl, sitePerson, ogImageUrl } from '@/lib/site';
@@ -211,7 +211,9 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
           {cover && (
             <div className="home-reveal mt-8 md:mt-12" style={{ '--d': '0.15s' } as CSSProperties}>
-              <ProjectShot src={cover} alt={`${project.title} — kapak görseli`} host={host} priority />
+              <ViewTransition name={projectCoverTransition(project.slug)} share="morph">
+                <ProjectShot src={cover} alt={`${project.title} — kapak görseli`} host={host} priority />
+              </ViewTransition>
             </div>
           )}
 

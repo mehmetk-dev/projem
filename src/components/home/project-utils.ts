@@ -16,6 +16,11 @@ export function projectCover(project: Pick<HomeProject, 'image'>) {
   return getProjectImages(project.image)[0] || '/placeholder.svg';
 }
 
+/** Kart görselinden detay sayfasının kapağına geçişte iki ucu eşleştiren view transition adı */
+export function projectCoverTransition(slug: string) {
+  return `project-cover-${slug}`;
+}
+
 export function projectStack(project: Pick<HomeProject, 'stack'>) {
   return project.stack
     .split(',')

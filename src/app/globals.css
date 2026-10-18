@@ -131,6 +131,22 @@ body {
   transform: translateY(0);
 }
 
+/* Proje kartı görselinin detay sayfasının kapağına dönüşmesi (ViewTransition share="morph") */
+::view-transition-group(.morph) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::view-transition-image-pair(.morph) {
+  animation-name: via-blur;
+}
+
+@keyframes via-blur {
+  30% {
+    filter: blur(3px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(*),
   ::view-transition-new(*),
@@ -138,31 +154,8 @@ body {
     animation-duration: 0s !important;
     animation-delay: 0s !important;
   }
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
 
-@keyframes catWag {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-8px) rotate(3deg); }
-}
-
-@keyframes contactFadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.animate-cat-wag {
-  animation: catWag 2.5s ease-in-out infinite;
-  transform-origin: bottom center;
-}
-
-.animate-contact-fade-in {
-  animation: contactFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-page-fade-in {
+  .animate-page-fade-in {
     animation: none !important;
   }
 }
