@@ -6,22 +6,20 @@
 
 ## 🎨 UI/UX & Deneyim
 
-### 1. ✅ Karanlık/Aydınlık Mod (Theme Toggle)
+### 1. ✅ Tema Yönetimi (Theme Toggle)
 - **Durum:** Tamamlandı
 - **Teknoloji:** `next-themes` ile Next.js App Router uyumlu tema geçiş sistemi.
 - **Detay:**
-  - `ThemeProvider` (`src/components/ThemeProvider.tsx`) ile `attribute="class"`, `defaultTheme="dark"`, `enableSystem` aktif.
-  - `ThemeToggle` bileşeni (`src/components/ThemeToggle.tsx`) Header ve Dashboard sidebar'a eklendi.
-  - `globals.css` CSS variable'ları (`--background`, `--foreground`) ile dark/light geçiş desteği.
+  - Public site artık yalnızca açık temada; stiller `.home-theme` kapsamında (`src/app/portfolio.css`).
+  - `ThemeToggle` (`src/components/ThemeToggle.tsx`) yalnızca Dashboard'da; dark/light geçişi dashboard içinde geçerli.
+  - `ThemeProvider` (`src/components/ThemeProvider.tsx`) ve `globals.css` CSS variable'ları (`--background`, `--foreground`) dashboard teması için kullanılıyor.
   - `suppressHydrationWarning` ile hydration uyumsuzluğu önlendi.
 
 ### 2. ✅ Özel 404 Sayfası
 - **Durum:** Tamamlandı
 - **Detay:**
-  - `src/app/not-found.tsx` oluşturuldu.
-  - Siyah zemin, büyük "404" glitch efekti, grid pattern overlay.
-  - "Ana Sayfaya Dön" ve "Blog'a Git" butonları.
-  - Dekoratif blur efektli arka plan öğeleri.
+  - `src/app/not-found.tsx` yeni açık temada, `SiteShell` içinde render ediliyor.
+  - Arama kutusu ve sık kullanılan sayfalara kısayollar içeriyor.
 
 ### 3. ✅ Skeleton/Loading State'leri
 - **Durum:** Tamamlandı
@@ -49,6 +47,12 @@
   - Pozisyon: bottom-right. Dark/light mode otomatik uyumlu.
   - Guestbook formunda başarı/hata bildirimleri aktif.
 
+### 30. ✅ Tasarım Birliği
+- **Durum:** Tamamlandı
+- **Detay:**
+  - Tüm public sayfalar (ziyaretçi defteri, arama, WebP dönüştürücü, 404, hata, giriş/kayıt/şifre sayfaları) yeni açık temaya taşındı.
+  - Eski Header/Footer/BubbleMenu/NavLink/Icons bileşenleri silindi.
+
 ---
 
 ## 📦 Yeni Modüller (Hazır tablolar varsa veya kolay eklenir)
@@ -75,9 +79,11 @@
 - **Detay:**
   - `subscribers` tablosu (email, status, ipAddress, createdAt).
   - Public form action: `subscribeAction` (rate limit: 3/saat).
+  - Footer'da abone formu (`src/components/home/NewsletterForm.tsx`).
+  - `/bulten/ayril` abonelikten çıkma sayfası; `unsubscribeAction` ile çıkma desteği.
+  - Ayrılmış adres tekrar abone olunca kayıt yeniden aktifleşiyor.
   - Dashboard'da "Aboneler" sekmesi (admin-only) — aktif/ayrılmış sayaçları ve liste.
-  - `unsubscribeAction` ile abonelikten çıkma desteği.
-  - Çift opt-in temeli atıldı, ileride eklenebilir.
+  - **Eksik:** Abonelere e-posta GÖNDERME özelliği henüz yok; yalnızca kayıt/yönetim var. Çift opt-in da yok.
 
 ### 9. ✅ Yorum Sistemi
 - **Durum:** Tamamlandı
@@ -122,7 +128,8 @@
 - **Detay:**
   - SQLite `LIKE` ile blog (title, content, excerpt) ve proje (title, description) araması aktif.
   - Arama sonuçları sayfası `/search?q=...` oluşturuldu.
-  - Header nav linklerine "Ara" eklendi.
+  - Header'daki "Ara" linki kaldırıldı; arama footer'daki "Keşfet" sütununda ve 404 sayfasında.
+  - Arama sayfası `noindex`.
   - Kategori bazlı ayrılmış sonuç listesi (Blog / Projeler).
 
 ### 14. ✅ Gelişmiş SEO Paneli
@@ -132,15 +139,21 @@
   - Dashboard içindeki form'larda bu alanların zengin bir UI ile yönetilmesi sağlanacak.
   - SEO uyumu gerçek zamanlı önizleme (Google arama sonucu simülasyonu) eklenebilir.
   - Her sayfa için özel OG image otomatik oluşturma (26. madde ile ilişkili).
+  - Proje detay sayfasına OG görseli, Twitter kartı ve canonical eklendi.
+  - JSON-LD (`src/components/JsonLd.tsx`): ana sayfa (Person + WebSite), blog detay (BlogPosting), proje detay (CreativeWork).
 
-### 15. ✅ Çoklu Dil (i18n)
+### 15. ⬜ Çoklu Dil (i18n) — Kaldırıldı / ileride
+- **Durum:** Kaldırıldı, ileride yeniden planlanıyor
+- **Detay:**
+  - `src/lib/i18n.tsx` silindi ve layout'tan `I18nProvider` çıkarıldı.
+  - Neden: Sistem fiilen kullanılmıyordu ve hedef kitle Türkçe; site şimdilik yalnızca Türkçe.
+  - Plan: İleride `/en` route'larıyla (route tabanlı) yeniden yapılacak.
+
+### 29. ✅ KVKK / Gizlilik Politikası
 - **Durum:** Tamamlandı
 - **Detay:**
-  - Basit React Context tabanlı i18n sistemi (`src/lib/i18n.tsx`).
-  - TR/EN dil dosyaları ile temel çeviri desteği.
-  - Header ve mobile menüde dil geçiş butonu (TR/EN).
-  - Route yapısını değiştirmeden, client-side dil değişimi.
-  - İleride `[lang]` sub-path veya `next-intl` ile geliştirilebilir.
+  - `/gizlilik` sayfası eklendi (sitemap'te yer alıyor).
+  - İletişim formu, yorum, ziyaretçi defteri, bülten ve kayıt formlarında gizlilik notu ve sayfaya link.
 
 ---
 
@@ -179,14 +192,16 @@
   - `getSettingValue(key)` helper ile her yerden okunabilir.
   - Dinamik layout/SEO entegrasyonu için temel hazır.
 
-### 20. ⬜ Dosya / Media Yöneticisi
-- **Durum:** Planlanıyor
+### 20. ✅ Dosya / Media Yöneticisi
+- **Durum:** Tamamlandı (temel işlevler); aşağıdaki eksikler planlanıyor
+- **Teknoloji:** Cloudflare R2 (`@aws-sdk/client-s3`, S3 uyumlu API).
 - **Detay:**
-  - Resim yüklemek için basit bir arayüz.
-  - Yaklaşım 1: Lokal `public/uploads` klasörüne yazma + veritabanında URL tutma (düşük ölçekli).
-  - Yaklaşım 2: Cloudflare R2, AWS S3 veya Vercel Blob Storage entegrasyonu.
-  - Dashboard içinde medya kütüphanesi (thumbnail, silme, URL kopyalama).
-  - Blog kapak resmi ve proje resimleri buradan seçilebilecek.
+  - `src/lib/server/r2-storage.ts` — R2 istemcisi; yükleme, listeleme (en fazla 500 nesne), silme ve nesne okuma.
+  - `src/lib/server/uploads.ts` — `saveUploadedImage()`; JPG/PNG/WEBP/GIF, en fazla 5MB doğrulaması. Blog, proje ve günlük formları görselleri bununla R2'ye yükler.
+  - `src/app/actions/files.ts` — admin korumalı server action'lar: klasör bazlı listeleme, yükleme, silme.
+  - `src/components/dashboard/FilesModule.tsx` — Dashboard "Dosyalar" sekmesi (yalnızca admin): klasör seçimi (blog, not, proje, günlük, spotify), yükleme, thumbnail ızgarası, büyük önizleme ve silme.
+  - `src/app/api/media/[...key]/route.ts` — R2 nesnelerini `/api/media/...` üzerinden sunar; eski klasör adları (journal, notes, projects) yeni adlara eşlenir.
+  - **Eksikler:** URL kopyalama butonu yok; blog kapak/proje formlarında medya kütüphanesinden görsel seçme yok (formlar doğrudan dosya yükler); kullanım kontrolü olmadan silme yapılıyor.
 
 ---
 
@@ -251,6 +266,9 @@
 - **Detay:**
   - `sitemap.ts` güncellendi: statik sayfalar + blog yazıları (`/blog/[slug]`) + projeler (`/projects/[id]`).
   - `guestbook` sayfası da sitemap'e eklendi.
+  - `/webp-converter` ve `/gizlilik` eklendi, `/login` çıkarıldı.
+  - Site adresi tek yerde: `src/lib/site.ts` (`NEXT_PUBLIC_SITE_URL`).
+  - `robots` auth sayfalarını ve `/search`'ü engelliyor.
   - `lastModified`, `changeFrequency`, `priority` alanları dinamik olarak veritabanından besleniyor.
   - `getPublishedBlogs` ve `getPublishedProjects` paralel fetch.
 
@@ -269,13 +287,13 @@
 
 | Kategori | Toplam | Tamamlanan | Planlanan |
 |----------|--------|------------|-----------|
-| UI/UX & Deneyim | 5 | 5 | 0 |
+| UI/UX & Deneyim | 6 | 6 | 0 |
 | Yeni Modüller | 7 | 7 | 0 |
-| SEO & İçerik | 3 | 5 | 0 |
+| SEO & İçerik | 4 | 3 | 1 |
 | Veri & Yönetim | 5 | 5 | 0 |
 | Entegrasyonlar | 4 | 4 | 0 |
 | Teknik & Altyapı | 4 | 4 | 0 |
-| **Genel Toplam** | **28** | **28** | **0** |
+| **Genel Toplam** | **30** | **29** | **1** |
 
 ---
 
@@ -301,10 +319,12 @@
 18. ✅ **Sosyal Medya Link Yöneticisi** (#12)
 19. ✅ **Newsletter / Abone Yönetimi** (#8)
 20. ✅ **Takvim / Ajanda Görünümü** (#10)
+21. ✅ **KVKK / Gizlilik Politikası** (#29)
+22. ✅ **Tasarım Birliği** (#30)
 
 ## 🚀 Sonraki Öncelik Sırası Önerisi
 
-21. **Çoklu Dil (i18n)** (#15) — TR/EN desteği.
+21. **Çoklu Dil (i18n)** (#15) — Kaldırıldı; ileride `/en` route'larıyla yeniden yapılacak.
 22. **GitHub Aktivite Widget'ı** (#21) — Son commit'ler.
 23. **Hava Durumu Widget'ı** (#22) — Dashboard hava durumu.
 24. **Harici API Yönetimi** (#23) — API anahtarları veritabanından.
