@@ -135,6 +135,7 @@ export const projects = sqliteTable('projects', {
   role: text('role').notNull().default(''),
   year: integer('year'),
   stack: text('stack').notNull().default(''), // virgülle ayrılmış teknoloji listesi
+  results: text('results').notNull().default(''), // her satır: "değer | açıklama" (ör. "98 | Lighthouse performans skoru")
   featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
   displayOrder: integer('display_order').notNull().default(0),
   published: integer('published', { mode: 'boolean' }).notNull().default(true),
@@ -147,6 +148,27 @@ export const projects = sqliteTable('projects', {
   index('projects_published_idx').on(table.published),
   index('projects_order_idx').on(table.displayOrder),
   index('projects_slug_idx').on(table.slug),
+]);
+
+// --- TESTIMONIALS (Referanslar) ---
+export const testimonials = sqliteTable('testimonials', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  role: text('role').notNull().default(''),
+  company: text('company').notNull().default(''),
+  quote: text('quote').notNull(),
+  avatar: text('avatar'),
+  // Yorum bir projeye bağlıysa o projenin vaka çalışmasında da gösterilir
+  projectId: integer('project_id').references(() => projects.id, { onDelete: 'set null' }),
+  displayOrder: integer('display_order').notNull().default(0),
+  published: integer('published', { mode: 'boolean' }).notNull().default(true),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`(current_timestamp)`),
+  updatedAt: text('updated_at'),
+}, (table) => [
+  index('testimonials_published_idx').on(table.published),
+  index('testimonials_order_idx').on(table.displayOrder),
 ]);
 
 // --- MESSAGES (Contact Form) ---
@@ -348,7 +370,7 @@ export const auditLogs = sqliteTable('audit_logs', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: integer('user_id').references(() => users.id),
   action: text('action', { enum: ['CREATE', 'UPDATE', 'DELETE', 'LOGIN', 'LOGOUT', 'APPROVE', 'PUBLISH'] }).notNull(),
-  entity: text('entity', { enum: ['blog', 'project', 'note', 'todo', 'bookmark', 'snippet', 'message', 'comment', 'guestbook', 'user', 'settings'] }).notNull(),
+  entity: text('entity', { enum: ['blog', 'project', 'note', 'todo', 'bookmark', 'snippet', 'message', 'comment', 'guestbook', 'user', 'settings', 'testimonial'] }).notNull(),
   entityId: integer('entity_id'),
   oldValue: text('old_value'),
   newValue: text('new_value'),

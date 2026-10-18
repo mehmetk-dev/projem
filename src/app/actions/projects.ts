@@ -53,6 +53,7 @@ const projectSchema = z.object({
   role: z.string().max(120).trim().default(''),
   year: z.number().int().min(1990).max(2100).nullable().default(null),
   stack: z.string().max(500).trim().default(''),
+  results: z.string().max(1000).trim().default(''),
   featured: z.coerce.boolean().default(false),
   displayOrder: z.coerce.number().int().default(0),
   published: z.coerce.boolean().default(true),
@@ -75,6 +76,12 @@ function readProjectFields(formData: FormData, image: string) {
       .map((item) => item.trim())
       .filter(Boolean)
       .join(', '),
+    // Boş satırlar atılır; her satır "değer | açıklama"
+    results: String(formData.get('results') || '')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .join('\n'),
     featured: formData.get('featured') === 'true',
     displayOrder: Number(formData.get('displayOrder') || 0),
     published: formData.get('published') === 'true',

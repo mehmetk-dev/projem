@@ -44,6 +44,7 @@ const TABS: { id: TabId; label: string; icon: string; adminOnly?: boolean }[] = 
   { id: 'audit', label: 'Audit Log', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z', adminOnly: true },
   { id: 'users', label: 'Kullanıcılar', icon: 'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z', adminOnly: true },
   { id: 'social', label: 'Sosyal Linkler', icon: 'M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z', adminOnly: true },
+  { id: 'testimonials', label: 'Referanslar', icon: 'M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z', adminOnly: true },
   { id: 'subscribers', label: 'Aboneler', icon: 'M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z', adminOnly: true },
   { id: 'journal', label: 'Günlük', icon: 'M19 3H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h12V3zm-2 16H7V5h10v14zM9 7h6v2H9V7zm0 4h6v2H9v-2zm0 4h4v2H9v-2z' },
   { id: 'files', label: 'Dosyalar', icon: 'M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z', adminOnly: true },
@@ -67,7 +68,7 @@ const CONFIGURABLE_TABS: TabId[] = [
 ];
 
 const RAW_TAB_GROUPS: { key?: string; title: string; ids: TabId[]; adminGroup?: boolean }[] = [
-  { key: 'management', title: 'Yönetim', ids: ['blogs', 'chat', 'spotify', 'audit', 'users', 'social', 'subscribers', 'files', 'settings'], adminGroup: true },
+  { key: 'management', title: 'Yönetim', ids: ['blogs', 'chat', 'spotify', 'audit', 'users', 'social', 'testimonials', 'subscribers', 'files', 'settings'], adminGroup: true },
   { title: 'Ana Panel', ids: ['overview', 'analytics', 'calendar', 'timer'] },
   { title: 'İçerik', ids: ['notes', 'projects', 'messages', 'todos', 'payments', 'bookmarks', 'snippets'] },
   { title: 'Topluluk', ids: ['guestbook', 'comments'] },

@@ -1,6 +1,8 @@
 import { getPublishedProjects } from '@/app/actions/projects';
 import { getPublishedBlogs } from '@/app/actions/blogs';
 import { getSocialLinks } from '@/app/actions/social';
+import { getPublishedTestimonials } from '@/app/actions/testimonials';
+import { getAvailability } from '@/app/actions/settings';
 import PortfolioClient from '@/components/PortfolioClient';
 import JsonLd from '@/components/JsonLd';
 import { siteUrl, sitePerson } from '@/lib/site';
@@ -8,10 +10,12 @@ import { siteUrl, sitePerson } from '@/lib/site';
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const [projects, blogs, socialLinks] = await Promise.all([
+  const [projects, blogs, socialLinks, testimonials, availability] = await Promise.all([
     getPublishedProjects().catch(() => []),
     getPublishedBlogs({ limit: 3 }).catch(() => []),
     getSocialLinks().catch(() => []),
+    getPublishedTestimonials(),
+    getAvailability(),
   ]);
 
   const jsonLd = {
@@ -40,6 +44,8 @@ export default async function HomePage() {
       <PortfolioClient
         projects={projects}
         blogs={blogs}
+        testimonials={testimonials}
+        availability={availability}
         socialLinks={socialLinks.map(({ platform, url }) => ({ platform, url }))}
       />
     </>

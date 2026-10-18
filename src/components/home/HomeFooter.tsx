@@ -3,6 +3,8 @@ import { ArrowUp, ArrowUpRight } from 'lucide-react';
 import BrandMark from './BrandMark';
 import NewsletterForm from './NewsletterForm';
 import NowPlaying from './NowPlaying';
+import AvailabilityDot from './AvailabilityDot';
+import { getAvailability } from '@/app/actions/settings';
 import type { HomeSocialLink } from './types';
 
 const EMAIL = 'mehmetkerem2109@gmail.com';
@@ -26,7 +28,8 @@ const FOOTER_EXTRA = [
 const columnTitle = 'font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted';
 const columnLink = 'text-[15px] text-ink-soft transition-colors hover:text-ink';
 
-export default function HomeFooter({ socialLinks }: { socialLinks: HomeSocialLink[] }) {
+export default async function HomeFooter({ socialLinks }: { socialLinks: HomeSocialLink[] }) {
+  const availability = await getAvailability();
   return (
     <footer className="relative overflow-hidden">
       <div className="mx-auto max-w-6xl px-5 md:px-8">
@@ -118,8 +121,8 @@ export default function HomeFooter({ socialLinks }: { socialLinks: HomeSocialLin
               </li>
               <li>İstanbul, Türkiye</li>
               <li className="inline-flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
-                Yeni projelere açık
+                <AvailabilityDot status={availability.status} />
+                {availability.note}
               </li>
             </ul>
           </div>

@@ -5,13 +5,15 @@ import Link from 'next/link';
 import { ArrowRight, Check, Copy } from 'lucide-react';
 import { submitContactAction } from '@/app/actions/messages';
 import ContactCat from './ContactCat';
+import AvailabilityDot from './AvailabilityDot';
+import type { Availability } from '@/lib/availability';
 
 const EMAIL = 'mehmetkerem2109@gmail.com';
 
 const fieldInput =
   'w-full border-0 border-b border-white/15 bg-transparent px-0 py-3 text-[15px] text-white placeholder:text-white/35 outline-none transition-colors focus:border-white';
 
-export default function ContactCta() {
+export default function ContactCta({ availability }: { availability: Availability }) {
   const [state, formAction, isPending] = useActionState(submitContactAction, null);
   const [copied, setCopied] = useState(false);
 
@@ -35,11 +37,8 @@ export default function ContactCta() {
               aria-hidden="true"
             />
             <p className="relative inline-flex items-center gap-2 text-[13px] text-white/60">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-              </span>
-              Yeni projelere açığım
+              <AvailabilityDot status={availability.status} />
+              {availability.note}
             </p>
             <div className="relative flex flex-1 items-center justify-center py-4">
               <ContactCat />

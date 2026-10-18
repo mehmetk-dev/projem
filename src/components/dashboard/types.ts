@@ -1,6 +1,6 @@
 export interface Note { id: number; userId: number; title: string; content: string; image: string | null; color: string; pinned: boolean; createdAt: string; updatedAt: string | null; }
 export interface Blog { id: number; userId: number; title: string; slug: string; content: string; excerpt: string | null; metaTitle: string | null; metaDescription: string | null; ogImage: string | null; coverImage: string | null; category: string; tags: string; published: boolean; publishedAt: string | null; createdAt: string; updatedAt: string | null; }
-export interface Project { id: number; userId: number; title: string; slug: string; description: string; image: string; link: string | null; category: string; summary: string; client: string; role: string; year: number | null; stack: string; featured: boolean; displayOrder: number; published: boolean; createdAt: string; updatedAt: string | null; }
+export interface Project { id: number; userId: number; title: string; slug: string; description: string; image: string; link: string | null; category: string; summary: string; client: string; role: string; year: number | null; stack: string; results: string; featured: boolean; displayOrder: number; published: boolean; createdAt: string; updatedAt: string | null; }
 export interface Message { id: number; name: string; email: string; subject: string | null; content: string; read: boolean; createdAt: string; }
 export interface DirectMessage { id: number; userId: number; senderId: number; content: string; readAt: string | null; createdAt: string; }
 export interface DirectMessageContact { id: number; email: string; role: string; createdAt: string; }
@@ -45,7 +45,9 @@ export interface ChatContextData {
 
 export type JournalMood = 'calm' | 'good' | 'hard' | 'bright' | 'tired';
 export interface JournalEntry { id: number; userId: number; entryDate: string; title: string; content: string; mood: JournalMood; image: string | null; createdAt: string; updatedAt: string | null; }
-export type TabId = 'overview' | 'notes' | 'blogs' | 'projects' | 'messages' | 'todos' | 'payments' | 'bookmarks' | 'snippets' | 'analytics' | 'calendar' | 'timer' | 'chat' | 'spotify' | 'settings' | 'guestbook' | 'comments' | 'audit' | 'users' | 'social' | 'subscribers' | 'journal' | 'files';
+export interface Testimonial { id: number; name: string; role: string; company: string; quote: string; avatar: string | null; projectId: number | null; displayOrder: number; published: boolean; createdAt: string; updatedAt: string | null; }
+
+export type TabId = 'overview' | 'notes' | 'blogs' | 'projects' | 'messages' | 'todos' | 'payments' | 'bookmarks' | 'snippets' | 'analytics' | 'calendar' | 'timer' | 'chat' | 'spotify' | 'settings' | 'guestbook' | 'comments' | 'audit' | 'users' | 'social' | 'subscribers' | 'journal' | 'files' | 'testimonials';
 
 // Not renkleri: zemin hafif renkli, metin her iki temada okunur kalsın diye text-ink
 export const COLOR_MAP: Record<string, { bg: string; border: string; text: string; badge: string }> = {

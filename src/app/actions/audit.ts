@@ -7,7 +7,7 @@ import { requireAdmin } from '@/lib/auth';
 import { getClientIP } from '@/lib/rate-limit';
 
 export type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'APPROVE' | 'PUBLISH';
-export type AuditEntity = 'blog' | 'project' | 'note' | 'todo' | 'bookmark' | 'snippet' | 'message' | 'comment' | 'guestbook' | 'user' | 'settings';
+export type AuditEntity = 'blog' | 'project' | 'note' | 'todo' | 'bookmark' | 'snippet' | 'message' | 'comment' | 'guestbook' | 'user' | 'settings' | 'testimonial';
 
 export async function logAudit(
   action: AuditAction,

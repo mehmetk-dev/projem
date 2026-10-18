@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import BrowserFrame from './BrowserFrame';
 import ProjectIndex from './ProjectIndex';
-import { projectCover, projectHost, projectStack, projectTeaser, splitFeatured } from './project-utils';
+import { projectCover, projectHost, projectResults, projectStack, projectTeaser, splitFeatured } from './project-utils';
 import type { HomeProject } from './types';
 
 const FEATURED_COUNT = 3;
@@ -74,6 +74,7 @@ function FeaturedCard({ project, index }: { project: HomeProject; index: number 
   const teaser = projectTeaser(project);
   const stack = projectStack(project).slice(0, 4);
   const meta = [project.category, project.year].filter(Boolean).join(' · ');
+  const [topResult] = projectResults(project);
 
   return (
     <article
@@ -92,6 +93,13 @@ function FeaturedCard({ project, index }: { project: HomeProject; index: number 
           </h3>
           {project.client && <p className={`mt-2 text-[15px] ${tone.muted}`}>{project.client}</p>}
           {teaser && <p className={`mt-5 line-clamp-4 text-lg leading-relaxed ${tone.soft}`}>{teaser}</p>}
+
+          {topResult && (
+            <p className="mt-6 flex items-baseline gap-3">
+              <span className="text-4xl font-semibold tracking-[-0.04em] md:text-5xl">{topResult.value}</span>
+              {topResult.label && <span className={`text-[15px] leading-snug ${tone.muted}`}>{topResult.label}</span>}
+            </p>
+          )}
 
           {stack.length > 0 && (
             <ul className="mt-6 flex flex-wrap gap-2">

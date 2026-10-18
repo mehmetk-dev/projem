@@ -16,6 +16,7 @@ import { getSettings } from '@/app/actions/settings';
 import { getMyPreferences } from '@/app/actions/preferences';
 import { getAllUsers } from '@/app/actions/users';
 import { getAllSocialLinks, getSubscribers } from '@/app/actions/social';
+import { getAllTestimonials, getTestimonialProjectOptions } from '@/app/actions/testimonials';
 import { getSpotifyNowPlaying, getSpotifyRecentTracks } from '@/app/actions/spotify';
 import { getJournalEntries } from '@/app/actions/journal';
 import { redirect, notFound } from 'next/navigation';
@@ -30,10 +31,10 @@ const VALID_TABS: TabId[] = [
   'notes', 'blogs', 'projects', 'messages', 'todos', 'payments', 
   'bookmarks', 'snippets', 'analytics', 'calendar', 'timer', 
   'chat', 'spotify', 'settings', 'guestbook', 'comments', 
-  'audit', 'users', 'social', 'subscribers', 'journal', 'files'
+  'audit', 'users', 'social', 'subscribers', 'journal', 'files', 'testimonials'
 ];
 
-const ADMIN_ONLY_TABS = ['blogs', 'projects', 'chat', 'spotify', 'audit', 'users', 'social', 'subscribers', 'files'];
+const ADMIN_ONLY_TABS = ['blogs', 'projects', 'chat', 'spotify', 'audit', 'users', 'social', 'subscribers', 'files', 'testimonials'];
 
 const TAB_LABELS: Record<TabId, string> = {
   overview: 'Genel Bakış',
@@ -59,6 +60,7 @@ const TAB_LABELS: Record<TabId, string> = {
   subscribers: 'Aboneler',
   journal: 'Günlük',
   files: 'Dosyalar',
+  testimonials: 'Referanslar',
 };
 
 interface PageProps {
@@ -188,6 +190,7 @@ async function DashboardTabContent({
           getSettings(),
           getMyPreferences(),
         ]);
+        data.isAdmin = isAdmin;
         break;
       case 'guestbook':
         data.entries = await getAllGuestbookEntries();
@@ -203,6 +206,9 @@ async function DashboardTabContent({
         break;
       case 'social':
         data.links = await getAllSocialLinks();
+        break;
+      case 'testimonials':
+        [data.testimonials, data.projectOptions] = await Promise.all([getAllTestimonials(), getTestimonialProjectOptions()]);
         break;
       case 'subscribers':
         data.subscribers = await getSubscribers();

@@ -2,6 +2,8 @@ import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import { ArrowDown, ArrowUpRight, Code2, PenTool } from 'lucide-react';
 import IstanbulClock from './IstanbulClock';
+import AvailabilityDot from './AvailabilityDot';
+import type { Availability } from '@/lib/availability';
 import type { HomeSocialLink } from './types';
 
 const delay = (seconds: number) => ({ '--d': `${seconds}s` }) as CSSProperties;
@@ -9,7 +11,7 @@ const delay = (seconds: number) => ({ '--d': `${seconds}s` }) as CSSProperties;
 const chipClass =
   'inline-grid h-[0.8em] w-[1.5em] translate-y-[0.06em] place-items-center rounded-full align-baseline transition-transform duration-500';
 
-export default function HomeHero({ socialLinks }: { socialLinks: HomeSocialLink[] }) {
+export default function HomeHero({ socialLinks, availability }: { socialLinks: HomeSocialLink[]; availability: Availability }) {
   return (
     <section id="about" className="relative overflow-hidden pt-32 pb-16 md:pt-40 md:pb-20">
       <div className="home-dot-grid pointer-events-none absolute inset-0" aria-hidden="true" />
@@ -24,6 +26,10 @@ export default function HomeHero({ socialLinks }: { socialLinks: HomeSocialLink[
           style={delay(0)}
         >
           <span>İstanbul — <IstanbulClock /></span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface/80 px-3 py-1 text-ink-soft backdrop-blur">
+            <AvailabilityDot status={availability.status} />
+            {availability.note}
+          </span>
         </div>
 
         <h1 className="mt-10 text-[clamp(2.7rem,8.6vw,7.6rem)] font-semibold leading-[0.98] tracking-[-0.045em] text-ink md:mt-14">

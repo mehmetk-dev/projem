@@ -11,7 +11,19 @@ export interface HomeProject {
   role: string;
   year: number | null;
   stack: string;
+  results: string;
   featured: boolean;
+}
+
+export interface HomeTestimonial {
+  id: number;
+  name: string;
+  role: string;
+  company: string;
+  quote: string;
+  avatar: string | null;
+  projectTitle: string | null;
+  projectSlug: string | null;
 }
 
 export interface HomeBlog {

@@ -23,6 +23,7 @@ type ProjectFormState = {
   role: string;
   year: string;
   stack: string;
+  results: string;
   featured: boolean;
   displayOrder: number;
   published: boolean;
@@ -30,7 +31,7 @@ type ProjectFormState = {
 
 const EMPTY_FORM: ProjectFormState = {
   title: '', description: '', link: '', category: 'Genel',
-  summary: '', client: '', role: '', year: '', stack: '', featured: false,
+  summary: '', client: '', role: '', year: '', stack: '', results: '', featured: false,
   displayOrder: 0, published: true,
 };
 
@@ -70,6 +71,7 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
       role: p.role || '',
       year: p.year ? String(p.year) : '',
       stack: p.stack || '',
+      results: p.results || '',
       featured: !!p.featured,
       displayOrder: p.displayOrder,
       published: p.published,
@@ -166,6 +168,10 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
             <input name="year" type="number" min={1990} max={2100} value={f.year} onChange={(e) => setF((s) => ({ ...s, year: e.target.value }))} placeholder="Yıl" className={fieldClass} />
           </div>
           <input name="stack" value={f.stack} onChange={(e) => setF((s) => ({ ...s, stack: e.target.value }))} placeholder="Teknolojiler, virgülle ayır (ör. Next.js, Tailwind CSS, Turso)" className={fieldClass} />
+          <div className="space-y-1.5">
+            <label htmlFor="project-results" className={ui.label}>Sonuçlar — vaka çalışmasında büyük rakamlarla görünür</label>
+            <textarea id="project-results" name="results" value={f.results} onChange={(e) => setF((s) => ({ ...s, results: e.target.value }))} placeholder={'Her satıra bir sonuç: değer | açıklama\n98 | Lighthouse performans skoru\n0,8 sn | İlk açılış süresi\n3 hafta | Fikirden yayına'} rows={4} className={`${fieldClass} resize-y font-mono text-[13px]`} />
+          </div>
           
           <div className="space-y-2">
             <label className={ui.label}>Proje Görselleri (Sürükleyip Bırakabilir & Kapak Seçebilirsiniz)</label>

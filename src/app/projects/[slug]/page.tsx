@@ -1,5 +1,6 @@
 import { getPublishedProjects } from '@/app/actions/projects';
 import { getSocialLinks } from '@/app/actions/social';
+import { getPublishedTestimonials } from '@/app/actions/testimonials';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -10,7 +11,8 @@ import SiteShell from '@/components/home/SiteShell';
 import CtaBand from '@/components/home/CtaBand';
 import ProjectShot from '@/components/home/ProjectShot';
 import ImageWithFallback from '@/components/ImageWithFallback';
-import { projectCover, projectHost, projectStack, projectTeaser } from '@/components/home/project-utils';
+import { projectCover, projectHost, projectResults, projectStack, projectTeaser } from '@/components/home/project-utils';
+import { QuoteMark, TestimonialPerson } from '@/components/home/Testimonials';
 import JsonLd from '@/components/JsonLd';
 import { siteUrl, sitePerson, ogImageUrl } from '@/lib/site';
 
@@ -104,14 +106,23 @@ function assignImages(blocks: StoryBlock[], images: string[]) {
   return { byBlock, leftover };
 }
 
+// Sonuç sayısına göre geniş ekran sütunları (Tailwind sınıfları statik kalmalı)
+const RESULT_COLUMNS: Record<number, string> = {
+  1: '',
+  2: 'lg:grid-cols-2',
+  3: 'lg:grid-cols-3',
+  4: 'lg:grid-cols-4',
+};
+
 const isResult = (heading: string | null) => !!heading && /^sonuç/i.test(heading);
 
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const { slug } = await params;
 
-  const [allProjects, socialLinks] = await Promise.all([
+  const [allProjects, socialLinks, testimonials] = await Promise.all([
     getPublishedProjects().catch(() => []),
     getSocialLinks().catch(() => []),
+    getPublishedTestimonials(),
   ]);
   const project = allProjects.find((item) => item.slug === slug);
 
@@ -125,6 +136,8 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
   const [cover, ...restImages] = getProjectImages(project.image);
   const stack = projectStack(project);
+  const results = projectResults(project);
+  const testimonial = testimonials.find((item) => item.projectId === project.id);
   const host = projectHost(project);
   const blocks = project.description ? storyBlocks(project.description) : [];
   const { byBlock, leftover } = assignImages(blocks, restImages);
@@ -223,6 +236,28 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             )}
           </div>
 
+          {results.length > 0 && (
+            <section
+              aria-label="Sonuçlar"
+              className={`animate-on-scroll mt-10 grid gap-px overflow-hidden rounded-[24px] border border-line bg-line md:mt-12 md:rounded-[28px] ${
+                results.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
+              } ${RESULT_COLUMNS[results.length]}`}
+            >
+              {results.map((result, index) => (
+                <div
+                  key={`${result.value}-${index}`}
+                  className={`bg-surface p-6 md:p-9 ${
+                    results.length % 2 === 1 && index === results.length - 1 && results.length > 1 ? 'col-span-2 lg:col-span-1' : ''
+                  }`}
+                >
+                  <p className="text-[2.6rem] font-semibold leading-none tracking-[-0.045em] text-ink md:text-6xl">
+                    {result.value}
+                  </p>
+                  {result.label && <p className="mt-3 text-[14px] leading-snug text-ink-muted md:text-[15px]">{result.label}</p>}
+                </div>
+              ))}
+            </section>
+          )}
 
           {blocks.length === 0 ? (
             <p className="mx-auto mt-16 max-w-2xl text-center text-base leading-relaxed text-ink-muted md:mt-20 md:text-lg">
@@ -312,6 +347,21 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                 ))}
               </div>
             </section>
+          )}
+
+          {testimonial && (
+            <figure className="animate-on-scroll mt-16 grid gap-6 border-t border-line pt-10 md:mt-32 md:pt-14 lg:grid-cols-12 lg:gap-14">
+              <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-accent lg:col-span-4">Müşterinin gözünden</p>
+              <div className="lg:col-span-8">
+                <QuoteMark className="text-accent" />
+                <blockquote className="mt-2 text-2xl font-medium leading-snug tracking-[-0.02em] text-ink md:text-4xl">
+                  {testimonial.quote}
+                </blockquote>
+                <figcaption className="mt-8">
+                  <TestimonialPerson testimonial={testimonial} />
+                </figcaption>
+              </div>
+            </figure>
           )}
 
           {nextProject && (

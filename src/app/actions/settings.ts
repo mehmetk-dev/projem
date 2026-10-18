@@ -2,10 +2,12 @@
 
 import { db } from '@/db';
 import { siteSettings } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { requireAdmin } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { logAudit } from '@/app/actions/audit';
+import { cache } from 'react';
+import { AVAILABILITY_KEYS, parseAvailability, type Availability } from '@/lib/availability';
 
 export interface SettingActionState {
   error?: string;
@@ -20,6 +22,22 @@ export async function getSettingValue(key: string): Promise<string | null> {
   const row = await db.select().from(siteSettings).where(eq(siteSettings.key, key)).get();
   return row?.value ?? null;
 }
+
+/** Public sayfalardaki müsaitlik rozeti; okunamazsa varsayılan "açık" durumu döner */
+export const getAvailability = cache(async (): Promise<Availability> => {
+  try {
+    const rows = await db
+      .select()
+      .from(siteSettings)
+      .where(inArray(siteSettings.key, Object.values(AVAILABILITY_KEYS)))
+      .all();
+    const value = (key: string) => rows.find((row) => row.key === key)?.value;
+    return parseAvailability(value(AVAILABILITY_KEYS.status), value(AVAILABILITY_KEYS.note));
+  } catch (error) {
+    console.error('getAvailability error:', error);
+    return parseAvailability(null, null);
+  }
+});
 
 export async function saveSettingAction(formData: FormData): Promise<SettingActionState> {
   await requireAdmin();
@@ -38,6 +56,10 @@ export async function saveSettingAction(formData: FormData): Promise<SettingActi
       await logAudit('CREATE', 'settings', undefined, undefined, `${key}=${value}`);
     }
     revalidatePath('/dashboard');
+    // Müsaitlik rozeti tüm public sayfaların footer'ında görünür
+    if (Object.values(AVAILABILITY_KEYS).includes(key as (typeof AVAILABILITY_KEYS)[keyof typeof AVAILABILITY_KEYS])) {
+      revalidatePath('/', 'layout');
+    }
     return { success: 'Ayar kaydedildi.' };
   } catch (error) {
     console.error('Save Setting Error:', error);

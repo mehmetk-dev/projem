@@ -23,6 +23,18 @@ export function projectStack(project: Pick<HomeProject, 'stack'>) {
     .filter(Boolean);
 }
 
+/** "değer | açıklama" satırlarından sonuç rakamları; ayraç yoksa satır açıklamasız değer sayılır */
+export function projectResults(project: Pick<HomeProject, 'results'>) {
+  return (project.results ?? '')
+    .split('\n')
+    .map((line) => {
+      const [value, ...label] = line.split('|');
+      return { value: value.trim(), label: label.join('|').trim() };
+    })
+    .filter((result) => result.value)
+    .slice(0, 4);
+}
+
 /** Kartlarda gösterilecek kısa metin: özet yoksa açıklamanın ilk paragrafı */
 export function projectTeaser(project: Pick<HomeProject, 'summary' | 'description'>) {
   return project.summary || project.description.split(/\n\s*\n/)[0]?.trim() || '';

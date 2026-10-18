@@ -8,6 +8,7 @@ import { saveHiddenTabsAction } from '@/app/actions/preferences';
 import { exportUserData, importUserData } from '@/app/actions/export';
 import { useTransition } from 'react';
 import type { TabId } from './types';
+import { AVAILABILITY_KEYS, AVAILABILITY_OPTIONS, parseAvailability, type AvailabilityStatus } from '@/lib/availability';
 
 interface Props {
   userEmail: string;
@@ -15,15 +16,18 @@ interface Props {
   preferences: T.UserPreferences;
   tabs: { id: TabId; label: string; adminOnly?: boolean }[];
   configurableTabs: TabId[];
+  isAdmin: boolean;
   toastFn: (msg: string, ok: boolean) => void;
 }
 
-export default function SettingsModule({ userEmail, settings, preferences, tabs, configurableTabs, toastFn }: Props) {
+export default function SettingsModule({ userEmail, settings, preferences, tabs, configurableTabs, isAdmin, toastFn }: Props) {
   return (
     <div className="space-y-6">
       <PageHeader title="Ayarlar" description="Hesap ve tercihler" />
 
       <div className="max-w-2xl space-y-4">
+        {isAdmin && <AvailabilityCard settings={settings} toastFn={toastFn} />}
+
         <Card>
           <h2 className="font-bold text-sm mb-4">Hesap Bilgileri</h2>
           <div className="space-y-3">
@@ -49,6 +53,76 @@ export default function SettingsModule({ userEmail, settings, preferences, tabs,
         <SiteSettingsCard settings={settings} toastFn={toastFn} />
       </div>
     </div>
+  );
+}
+
+function AvailabilityCard({ settings, toastFn }: { settings: T.SiteSetting[]; toastFn: (msg: string, ok: boolean) => void }) {
+  const [isPending, startTransition] = useTransition();
+  const saved = settings.find((setting) => setting.key === AVAILABILITY_KEYS.note)?.value ?? '';
+  const initial = parseAvailability(settings.find((setting) => setting.key === AVAILABILITY_KEYS.status)?.value, saved);
+  const [status, setStatus] = useState<AvailabilityStatus>(initial.status);
+  const [note, setNote] = useState(saved);
+
+  const handleSave = () => {
+    startTransition(async () => {
+      const results = await Promise.all(
+        [
+          [AVAILABILITY_KEYS.status, status],
+          [AVAILABILITY_KEYS.note, note.trim()],
+        ].map(([key, value]) => {
+          const fd = new FormData();
+          fd.append('key', key);
+          fd.append('value', value);
+          return saveSettingAction(fd);
+        })
+      );
+      const failed = results.find((res) => res.error);
+      toastFn(failed?.error || 'Müsaitlik durumu güncellendi.', !failed);
+    });
+  };
+
+  return (
+    <Card>
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-sm font-bold">Müsaitlik</h2>
+          <p className="mt-1 text-xs text-ink-muted">Ana sayfada, iletişim bölümünde ve footer&apos;da görünen durum rozeti.</p>
+        </div>
+        <button onClick={handleSave} disabled={isPending} className={ui.btnPrimary}>
+          {isPending ? '...' : 'Kaydet'}
+        </button>
+      </div>
+      <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Müsaitlik durumu">
+        {(Object.keys(AVAILABILITY_OPTIONS) as AvailabilityStatus[]).map((key) => {
+          const option = AVAILABILITY_OPTIONS[key];
+          const active = status === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => setStatus(key)}
+              className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors ${
+                active ? 'border-ink bg-surface-2 text-ink' : 'border-line text-ink-muted hover:text-ink'
+              }`}
+            >
+              <span className={`h-2 w-2 rounded-full ${option.dot}`} aria-hidden="true" />
+              {option.label}
+            </button>
+          );
+        })}
+      </div>
+      <input
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        maxLength={60}
+        placeholder={AVAILABILITY_OPTIONS[status].defaultNote}
+        aria-label="Rozet metni"
+        className={`${ui.input} mt-3`}
+      />
+      <p className="mt-1.5 text-[11px] text-ink-muted">Boş bırakırsanız seçili durumun varsayılan metni kullanılır. Ör. “Aralık için 1 yer kaldı”.</p>
+    </Card>
   );
 }
 
