@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { getPublishedBlogs } from '@/app/actions/blogs';
 import { getPublishedProjects } from '@/app/actions/projects';
+import { getNowPage } from '@/app/actions/settings';
 import { siteUrl } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
@@ -18,10 +19,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/gizlilik`, lastModified: new Date('2026-10-18'), changeFrequency: 'yearly', priority: 0.2 },
   ];
 
-  const [blogs, projects] = await Promise.all([
+  const [blogs, projects, nowPage] = await Promise.all([
     getPublishedBlogs().catch(() => []),
     getPublishedProjects().catch(() => []),
+    getNowPage(),
   ]);
+
+  if (nowPage.content) {
+    staticPages.push({
+      url: `${baseUrl}/simdi`,
+      lastModified: nowPage.updatedAt ? new Date(nowPage.updatedAt) : new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    });
+  }
 
   const blogPages: MetadataRoute.Sitemap = blogs.map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,

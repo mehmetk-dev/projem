@@ -63,7 +63,7 @@ export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
-  const [index, setIndex] = useState<{ projects: IndexEntry[]; posts: IndexEntry[] } | null>(null);
+  const [index, setIndex] = useState<{ projects: IndexEntry[]; posts: IndexEntry[]; hasNowPage?: boolean } | null>(null);
   const [copied, setCopied] = useState(false);
   const modKey = useModKey();
 
@@ -144,6 +144,9 @@ export default function CommandPalette() {
     const all: Item[] = [
       ...actions,
       ...PAGES.map((page) => ({ ...page, group: 'Sayfalar' as const, icon: <FileText size={16} /> })),
+      ...(index?.hasNowPage
+        ? [{ id: 'now', group: 'Sayfalar' as const, title: 'Şu an ne yapıyorum', href: '/simdi', keywords: 'now şimdi', icon: <FileText size={16} /> }]
+        : []),
       ...(index?.projects ?? []).map((project) => ({
         id: `project-${project.slug}`,
         group: 'Projeler' as const,

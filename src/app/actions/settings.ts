@@ -39,6 +39,51 @@ export const getAvailability = cache(async (): Promise<Availability> => {
   }
 });
 
+const NOW_PAGE_KEYS = { content: 'nowPage', updatedAt: 'nowPageUpdatedAt' } as const;
+
+/** /simdi sayfasının markdown içeriği; boşsa sayfa yayınlanmaz */
+export const getNowPage = cache(async (): Promise<{ content: string; updatedAt: string | null }> => {
+  try {
+    const rows = await db
+      .select()
+      .from(siteSettings)
+      .where(inArray(siteSettings.key, Object.values(NOW_PAGE_KEYS)))
+      .all();
+    const value = (key: string) => rows.find((row) => row.key === key)?.value;
+    return { content: value(NOW_PAGE_KEYS.content)?.trim() ?? '', updatedAt: value(NOW_PAGE_KEYS.updatedAt) || null };
+  } catch (error) {
+    console.error('getNowPage error:', error);
+    return { content: '', updatedAt: null };
+  }
+});
+
+export async function saveNowPageAction(formData: FormData): Promise<SettingActionState> {
+  await requireAdmin();
+  const content = String(formData.get('content') || '').trim();
+  if (content.length > 10000) return { error: 'İçerik en fazla 10.000 karakter olabilir.' };
+
+  try {
+    const now = new Date().toISOString();
+    for (const [key, value] of [
+      [NOW_PAGE_KEYS.content, content],
+      [NOW_PAGE_KEYS.updatedAt, now],
+    ] as const) {
+      await db
+        .insert(siteSettings)
+        .values({ key, value, updatedAt: now })
+        .onConflictDoUpdate({ target: siteSettings.key, set: { value, updatedAt: now } });
+    }
+    await logAudit('UPDATE', 'settings', undefined, undefined, NOW_PAGE_KEYS.content);
+    revalidatePath('/dashboard');
+    // Footer ve komut paleti sayfanın var olup olmadığına göre link gösterir
+    revalidatePath('/', 'layout');
+    return { success: content ? '“Şimdi” sayfası güncellendi.' : '“Şimdi” sayfası yayından kaldırıldı.' };
+  } catch (error) {
+    console.error('Save Now Page Error:', error);
+    return { error: 'Kaydedilirken hata oluştu.' };
+  }
+}
+
 export async function saveSettingAction(formData: FormData): Promise<SettingActionState> {
   await requireAdmin();
   const key = formData.get('key') as string;

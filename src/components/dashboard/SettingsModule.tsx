@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, PageHeader, ui } from './ui';
 import * as T from './types';
-import { saveSettingAction, deleteSettingAction } from '@/app/actions/settings';
+import { saveSettingAction, deleteSettingAction, saveNowPageAction } from '@/app/actions/settings';
 import { saveHiddenTabsAction } from '@/app/actions/preferences';
 import { exportUserData, importUserData } from '@/app/actions/export';
 import { useTransition } from 'react';
@@ -27,6 +27,7 @@ export default function SettingsModule({ userEmail, settings, preferences, tabs,
 
       <div className="max-w-2xl space-y-4">
         {isAdmin && <AvailabilityCard settings={settings} toastFn={toastFn} />}
+        {isAdmin && <NowPageCard settings={settings} toastFn={toastFn} />}
 
         <Card>
           <h2 className="font-bold text-sm mb-4">Hesap Bilgileri</h2>
@@ -50,9 +51,59 @@ export default function SettingsModule({ userEmail, settings, preferences, tabs,
           <button onClick={() => alert('Hesap silme özelliği yakında eklenecek.')} className="text-sm text-rose-600 hover:text-rose-500 dark:text-rose-400 dark:hover:text-rose-300 px-4 py-2 rounded-full border border-rose-500/20 hover:bg-rose-500/10 transition-colors">Hesabı Sil</button>
         </Card>
 
-        <SiteSettingsCard settings={settings} toastFn={toastFn} />
+        {/* Yukarıdaki kartların yönettiği anahtarlar genel listede tekrar görünmesin */}
+        <SiteSettingsCard settings={settings.filter((setting) => !MANAGED_KEYS.has(setting.key))} toastFn={toastFn} />
       </div>
     </div>
+  );
+}
+
+const MANAGED_KEYS = new Set<string>([...Object.values(AVAILABILITY_KEYS), 'nowPage', 'nowPageUpdatedAt']);
+
+function NowPageCard({ settings, toastFn }: { settings: T.SiteSetting[]; toastFn: (msg: string, ok: boolean) => void }) {
+  const [isPending, startTransition] = useTransition();
+  const [content, setContent] = useState(settings.find((setting) => setting.key === 'nowPage')?.value ?? '');
+  const updatedAt = settings.find((setting) => setting.key === 'nowPageUpdatedAt')?.value;
+
+  const handleSave = () => {
+    const fd = new FormData();
+    fd.append('content', content);
+    startTransition(async () => {
+      const res = await saveNowPageAction(fd);
+      toastFn(res.success || res.error || 'Tamamlandı.', !!res.success);
+    });
+  };
+
+  return (
+    <Card>
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-sm font-bold">“Şimdi” sayfası</h2>
+          <p className="mt-1 text-xs text-ink-muted">
+            /simdi adresinde, bu aralar neyle uğraştığınızı anlatan kısa bir markdown sayfa. Boş bırakırsanız sayfa yayınlanmaz.
+            {updatedAt && ` Son güncelleme: ${new Date(updatedAt).toLocaleDateString('tr-TR')}.`}
+          </p>
+        </div>
+        <div className="flex shrink-0 gap-2">
+          {content.trim() && (
+            <a href="/simdi" target="_blank" rel="noopener noreferrer" className={ui.btnSecondary}>
+              Görüntüle
+            </a>
+          )}
+          <button onClick={handleSave} disabled={isPending} className={ui.btnPrimary}>
+            {isPending ? '...' : 'Kaydet'}
+          </button>
+        </div>
+      </div>
+      <textarea
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        rows={8}
+        maxLength={10000}
+        placeholder={'## Üzerinde çalıştıklarım\n- …\n\n## Öğrendiklerim\n- …\n\n## Okuduklarım / dinlediklerim\n- …'}
+        className={`${ui.input} resize-y font-mono text-[13px]`}
+      />
+    </Card>
   );
 }
 

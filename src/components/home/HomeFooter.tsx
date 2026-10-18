@@ -4,7 +4,7 @@ import BrandMark from './BrandMark';
 import NewsletterForm from './NewsletterForm';
 import NowPlaying from './NowPlaying';
 import AvailabilityDot from './AvailabilityDot';
-import { getAvailability } from '@/app/actions/settings';
+import { getAvailability, getNowPage } from '@/app/actions/settings';
 import type { HomeSocialLink } from './types';
 
 const EMAIL = 'mehmetkerem2109@gmail.com';
@@ -29,7 +29,8 @@ const columnTitle = 'font-mono text-[11px] uppercase tracking-[0.14em] text-ink-
 const columnLink = 'text-[15px] text-ink-soft transition-colors hover:text-ink';
 
 export default async function HomeFooter({ socialLinks }: { socialLinks: HomeSocialLink[] }) {
-  const availability = await getAvailability();
+  const [availability, nowPage] = await Promise.all([getAvailability(), getNowPage()]);
+  const extraLinks = nowPage.content ? [{ href: '/simdi', label: 'Şu an ne yapıyorum' }, ...FOOTER_EXTRA] : FOOTER_EXTRA;
   return (
     <footer className="relative overflow-hidden">
       <div className="mx-auto max-w-6xl px-5 md:px-8">
@@ -69,7 +70,7 @@ export default async function HomeFooter({ socialLinks }: { socialLinks: HomeSoc
           <nav aria-label="Diğer sayfalar">
             <h2 className={columnTitle}>Keşfet</h2>
             <ul className="mt-5 space-y-3">
-              {FOOTER_EXTRA.map((item) => (
+              {extraLinks.map((item) => (
                 <li key={item.href}>
                   {/* RSS bir route handler; istemci tarafı gezinme yerine doğrudan açılır */}
                   {item.href.endsWith('.xml') ? (
