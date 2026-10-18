@@ -1,11 +1,11 @@
 {
   "name": "Mehmet Kerem - Portfolio",
   "short_name": "MK Portfolio",
-  "description": "Mehmet Kerem'in kişisel portfolyo ve blog sitesi",
+  "description": "Mehmet Kerem — ajanslar ve markalar için web siteleri ve web uygulamaları geliştiren full-stack web geliştirici.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#fafaf9",
+  "theme_color": "#fafaf9",
   "orientation": "portrait-primary",
   "icons": [
     {
