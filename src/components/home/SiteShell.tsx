@@ -3,6 +3,7 @@ import SiteHeader from './SiteHeader';
 import HomeFooter from './HomeFooter';
 import ScrollAnimations from '../ScrollAnimations';
 import HashScroll from './HashScroll';
+import PageViewTracker from './PageViewTracker';
 import { homeFontVariables } from './fonts';
 import type { HomeSocialLink } from './types';
 import '@/app/portfolio.css';
@@ -15,6 +16,7 @@ export default function SiteShell({ socialLinks, children }: { socialLinks: Home
     >
       <ScrollAnimations />
       <HashScroll />
+      <PageViewTracker />
       <SiteHeader />
       <main>{children}</main>
       <HomeFooter socialLinks={socialLinks} />

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getSocialLinks } from '@/app/actions/social';
 import SiteShell from '@/components/home/SiteShell';
+import { ogImageUrl } from '@/lib/site';
 
 export const revalidate = 3600;
 
@@ -16,6 +17,13 @@ export const metadata: Metadata = {
     description,
     type: 'website',
     locale: 'tr_TR',
+    images: [ogImageUrl('Gizlilik Politikası', description)],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Gizlilik Politikası | Mehmet Kerem',
+    description,
+    images: [ogImageUrl('Gizlilik Politikası', description)],
   },
   alternates: {
     canonical: '/gizlilik',
@@ -52,6 +60,7 @@ const sections: Section[] = [
       'Bülten aboneliği: e-posta adresi ve IP adresi. Bülten göndermek ve aboneliği yönetmek için kullanılır.',
       'Hesap kaydı ve giriş: e-posta adresi ve şifre. Şifre düz metin olarak saklanmaz; yalnızca bcrypt ile hash\'lenmiş hâli tutulur.',
       'Güvenlik: kötüye kullanımı önlemek amacıyla IP adresine dayalı istek sınırlama (rate limit) uygulanır. Yönetim panelindeki işlemler için IP adresi içeren işlem kayıtları tutulur.',
+      'Ziyaret istatistiği: hangi sayfanın ne zaman görüntülendiği ve siteye başka bir siteden gelindiyse o sitenin alan adı (ör. linkedin.com). IP adresi, tarayıcı bilgisi veya çerez kullanılmaz; bu kayıtlar tek başına kimseyi tanımlamaz ve yalnızca toplam ziyaret sayılarını görmek için kullanılır.',
     ],
   },
   {
@@ -61,7 +70,7 @@ const sections: Section[] = [
     items: [
       'Açık rıza: bülten aboneliği ve yorum ile ziyaretçi defteri gibi içeriklerin yayınlanması.',
       'Sözleşmenin kurulması veya ifasıyla doğrudan ilgili olması: hesap oluşturma ve giriş işlemleri ile iletişim formu üzerinden iletilen talebin değerlendirilmesi.',
-      'Veri sorumlusunun meşru menfaati: sitenin güvenliğinin sağlanması, kötüye kullanımın önlenmesi ve işlem kayıtlarının tutulması; bu menfaatin ilgili kişinin temel hak ve özgürlüklerine zarar vermemesi şartıyla.',
+      'Veri sorumlusunun meşru menfaati: sitenin güvenliğinin sağlanması, kötüye kullanımın önlenmesi, işlem kayıtlarının tutulması ve sitenin geliştirilmesi için toplu ziyaret istatistiklerinin izlenmesi; bu menfaatin ilgili kişinin temel hak ve özgürlüklerine zarar vermemesi şartıyla.',
       'Bir hakkın tesisi, kullanılması veya korunması için veri işlemenin zorunlu olması: ihtilaf hâlinde gerekli kayıtların muhafazası.',
     ],
   },
@@ -91,6 +100,7 @@ const sections: Section[] = [
       'Bülten aboneliği: abonelikten ayrıldığınızda size bülten gönderilmez; tekrar gönderim yapılmaması için ayrılma kaydınız tutulur. Kaydın tamamen silinmesini e-posta ile talep edebilirsiniz.',
       'Hesap bilgileri: hesabınız silinene kadar.',
       'Güvenlik ve işlem kayıtları ile istek sınırlama verileri: güvenlik amacının gerektirdiği makul süre.',
+      'Ziyaret istatistikleri: kimseyi tanımlamayan toplu kayıtlar olarak istatistik amacı sürdükçe.',
     ],
     after: ['Saklama süresi dolan veya amaç ortadan kalkan veriler silinir, yok edilir veya anonim hâle getirilir.'],
   },
@@ -98,7 +108,7 @@ const sections: Section[] = [
     id: 'cerezler',
     title: 'Çerezler ve yerel depolama',
     paragraphs: [
-      'Sitede analitik veya reklam amaçlı çerez kullanılmaz.',
+      'Sitede analitik veya reklam amaçlı çerez kullanılmaz; ziyaret istatistiği çerezsiz tutulur.',
       'Giriş yaptığınızda oturumunuzu sürdürmek için tek bir zorunlu çerez (JWT oturum çerezi) kullanılır. Bu çerez httpOnly olarak ayarlanır; yani tarayıcıdaki komut dosyalarınca okunamaz.',
       'Siteyi daha hızlı ve çevrimdışıyken de açabilmek için bazı sayfa ve dosyalar tarayıcınızın önbelleğinde (service worker) saklanabilir. Bu önbellek kişisel veri içermez, yalnızca cihazınızda kalır ve tarayıcı ayarlarınızdan silinebilir.',
       'Yönetim paneli kullanıcıları için seçilen tema (açık/koyu) tercihi tarayıcının localStorage alanında saklanır (next-themes). Bu bilgi kişisel veri içermez ve yalnızca cihazda kalır.',

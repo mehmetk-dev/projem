@@ -6,11 +6,12 @@ import { sql, gte } from 'drizzle-orm';
 import { requireAuth } from '@/lib/auth';
 import { cache } from 'react';
 
-export async function trackPageView(page: string, sessionId?: string) {
+// Yalnızca sayfa yolu, zaman ve yönlendiren alan adı kaydedilir; IP, tarayıcı bilgisi veya çerez tutulmaz
+export async function trackPageView(page: string, referrerHost?: string | null) {
   try {
     await db.insert(pageViews).values({
       page,
-      sessionId: sessionId || null,
+      referrer: referrerHost || null,
       createdAt: new Date().toISOString(),
     });
   } catch (error) {
