@@ -12,7 +12,7 @@ import ProjectShot from '@/components/home/ProjectShot';
 import ImageWithFallback from '@/components/ImageWithFallback';
 import { projectCover, projectHost, projectStack, projectTeaser } from '@/components/home/project-utils';
 import JsonLd from '@/components/JsonLd';
-import { siteUrl, sitePerson } from '@/lib/site';
+import { siteUrl, sitePerson, ogImageUrl } from '@/lib/site';
 
 export const revalidate = 3600;
 
@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: ProjectDetailPageProps): Prom
   const cover = projectCover(project);
   // SVG yer tutucu sosyal ağlarda görünmez; o durumda dinamik OG görseli üretilir
   const ogImage = cover.endsWith('.svg')
-    ? `/api/og?title=${encodeURIComponent(project.title)}&description=${encodeURIComponent(description)}`
+    ? ogImageUrl(project.title, description, ['Proje', project.category].filter(Boolean).join(' · '))
     : cover;
 
   return {

@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: BlogDetailPageProps): Promise
 
   const ogTitle = post.metaTitle || post.title;
   const ogDesc = post.metaDescription || post.excerpt || post.content.slice(0, 160);
-  const ogImageUrl = buildOgImageUrl(ogTitle, ogDesc);
+  const ogImageUrl = buildOgImageUrl(ogTitle, ogDesc, `Blog · ${post.category}`);
 
   return {
     title: ogTitle,
