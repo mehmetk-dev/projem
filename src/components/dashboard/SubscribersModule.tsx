@@ -1,6 +1,6 @@
 'use client';
 
-import { Mail } from 'lucide-react';
+import { PageHeader } from './ui';
 
 interface Subscriber {
   id: number;
@@ -21,37 +21,32 @@ export default function SubscribersModule({ subscribers }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Mail size={20} className="text-neutral-500 dark:text-neutral-400" />
-          <h2 className="text-2xl font-bold tracking-tight">Aboneler</h2>
-        </div>
-      </div>
+      <PageHeader title="Aboneler" />
 
       <div className="grid grid-cols-2 gap-4">
         <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-center">
-          <div className="text-2xl font-bold text-emerald-400">{activeCount}</div>
-          <div className="text-xs text-neutral-500 mt-1">Aktif</div>
+          <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{activeCount}</div>
+          <div className="text-xs text-ink-muted mt-1">Aktif</div>
         </div>
-        <div className="p-4 rounded-xl border border-neutral-500/20 bg-neutral-500/5 text-center">
-          <div className="text-2xl font-bold text-neutral-400">{unsubscribedCount}</div>
-          <div className="text-xs text-neutral-500 mt-1">Ayrılmış</div>
+        <div className="p-4 rounded-xl border border-line bg-surface text-center">
+          <div className="text-2xl font-bold text-ink-muted">{unsubscribedCount}</div>
+          <div className="text-xs text-ink-muted mt-1">Ayrılmış</div>
         </div>
       </div>
 
       {subscribers.length === 0 ? (
-        <p className="text-neutral-500 dark:text-neutral-400 text-sm">Henüz abone yok.</p>
+        <p className="text-ink-muted text-sm">Henüz abone yok.</p>
       ) : (
         <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
           {subscribers.map((s) => (
-            <div key={s.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-lg border border-neutral-200 dark:border-white/5 bg-neutral-100 dark:bg-white/[0.02]">
+            <div key={s.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl border border-line bg-surface">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="text-sm text-neutral-900 dark:text-white">{s.email}</span>
-                <span className={`text-[10px] px-2 py-0.5 rounded border ${s.status === 'active' ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10' : 'text-neutral-400 border-neutral-500/20 bg-neutral-500/10'}`}>
+                <span className="text-sm text-ink">{s.email}</span>
+                <span className={`text-[10px] px-2 py-0.5 rounded border ${s.status === 'active' ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/20 bg-emerald-500/10' : 'text-ink-muted border-line bg-surface-2'}`}>
                   {s.status}
                 </span>
               </div>
-              <span className="text-[11px] text-neutral-500 dark:text-neutral-400">{new Date(s.createdAt).toLocaleDateString('tr-TR')}</span>
+              <span className="text-[11px] text-ink-muted">{new Date(s.createdAt).toLocaleDateString('tr-TR')}</span>
             </div>
           ))}
         </div>

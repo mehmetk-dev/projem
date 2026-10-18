@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { saveSocialLinkAction, deleteSocialLinkAction } from '@/app/actions/social';
-import { Link2 } from 'lucide-react';
+import { PageHeader, ui } from './ui';
 
 interface SocialLink {
   id: number;
@@ -60,40 +60,35 @@ export default function SocialLinksModule({ links, toastFn }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link2 size={20} className="text-neutral-500 dark:text-neutral-400" />
-          <h2 className="text-2xl font-bold tracking-tight">Sosyal Linkler</h2>
-        </div>
-      </div>
+      <PageHeader title="Sosyal Linkler" />
 
       <form onSubmit={handleSave} className="flex flex-wrap gap-2">
-        <input value={form.platform} onChange={(e) => setForm((f) => ({ ...f, platform: e.target.value }))} placeholder="Platform" className="flex-1 min-w-[120px] bg-neutral-100 dark:bg-transparent border border-neutral-300 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-500 dark:placeholder:text-neutral-500" required />
-        <input value={form.url} onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))} placeholder="URL" className="flex-[2] min-w-[200px] bg-neutral-100 dark:bg-transparent border border-neutral-300 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-500 dark:placeholder:text-neutral-500" required />
-        <input value={form.icon} onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))} placeholder="İkon" className="w-24 bg-neutral-100 dark:bg-transparent border border-neutral-300 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-500 dark:placeholder:text-neutral-500" />
-        <input type="number" value={form.displayOrder} onChange={(e) => setForm((f) => ({ ...f, displayOrder: Number(e.target.value) }))} placeholder="Sıra" className="w-20 bg-neutral-100 dark:bg-transparent border border-neutral-300 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-neutral-900 dark:text-white" />
-        <label className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400">
-          <input type="checkbox" checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))} className="accent-neutral-900 dark:accent-white" />
+        <input value={form.platform} onChange={(e) => setForm((f) => ({ ...f, platform: e.target.value }))} placeholder="Platform" className={`${ui.input} min-w-[120px] flex-1 !w-auto`} required />
+        <input value={form.url} onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))} placeholder="URL" className={`${ui.input} min-w-[200px] flex-[2] !w-auto`} required />
+        <input value={form.icon} onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))} placeholder="İkon" className={`${ui.input} !w-24`} />
+        <input type="number" value={form.displayOrder} onChange={(e) => setForm((f) => ({ ...f, displayOrder: Number(e.target.value) }))} placeholder="Sıra" aria-label="Sıra" className={`${ui.input} !w-20`} />
+        <label className="flex items-center gap-2 text-sm text-ink-muted">
+          <input type="checkbox" checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))} className="accent-[var(--accent)] dark:accent-[var(--accent)]" />
           Aktif
         </label>
-        <button type="submit" disabled={isPending} className="bg-neutral-900 text-white dark:bg-white dark:text-black px-4 py-2 rounded-full text-sm font-bold hover:bg-neutral-700 dark:hover:bg-neutral-200 disabled:opacity-50">
+        <button type="submit" disabled={isPending} className={ui.btnPrimary}>
           {editing ? 'Güncelle' : 'Ekle'}
         </button>
-        {editing && <button type="button" onClick={() => { setEditing(null); setForm({ platform: '', url: '', icon: 'link', displayOrder: 0, isActive: true }); }} className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white">İptal</button>}
+        {editing && <button type="button" onClick={() => { setEditing(null); setForm({ platform: '', url: '', icon: 'link', displayOrder: 0, isActive: true }); }} className="text-sm text-ink-muted hover:text-ink">İptal</button>}
       </form>
 
       <div className="space-y-2">
-        {links.length === 0 && <p className="text-sm text-neutral-500 dark:text-neutral-400">Henüz link yok.</p>}
+        {links.length === 0 && <p className="text-sm text-ink-muted">Henüz link yok.</p>}
         {links.map((link) => (
-          <div key={link.id} className="flex items-center justify-between p-3 rounded-lg border border-neutral-200 dark:border-white/5 bg-neutral-100 dark:bg-white/[0.02]">
+          <div key={link.id} className="flex items-center justify-between p-3 rounded-xl border border-line bg-surface">
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-neutral-900 dark:text-white">{link.platform}</span>
-              <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white truncate max-w-[200px]">{link.url}</a>
-              {!link.isActive && <span className="text-[9px] text-neutral-500 dark:text-neutral-400 border border-neutral-300 dark:border-white/10 px-1.5 rounded">pasif</span>}
+              <span className="text-sm font-medium text-ink">{link.platform}</span>
+              <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-xs text-ink-muted hover:text-ink truncate max-w-[200px]">{link.url}</a>
+              {!link.isActive && <span className="text-[9px] text-ink-muted border border-line px-1.5 rounded">pasif</span>}
             </div>
             <div className="flex gap-2">
-              <button onClick={() => startEdit(link)} className="text-xs text-sky-400 hover:text-sky-300 px-2 py-1 rounded border border-sky-500/20 hover:bg-sky-500/10 transition-colors">Düzenle</button>
-              <button onClick={() => handleDelete(link.id)} className="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded border border-rose-500/20 hover:bg-rose-500/10 transition-colors">Sil</button>
+              <button onClick={() => startEdit(link)} className="text-xs text-sky-600 hover:text-sky-500 dark:text-sky-400 dark:hover:text-sky-300 px-2 py-1 rounded-full border border-sky-500/20 hover:bg-sky-500/10 transition-colors">Düzenle</button>
+              <button onClick={() => handleDelete(link.id)} className="text-xs text-rose-600 hover:text-rose-500 dark:text-rose-400 dark:hover:text-rose-300 px-2 py-1 rounded-full border border-rose-500/20 hover:bg-rose-500/10 transition-colors">Sil</button>
             </div>
           </div>
         ))}

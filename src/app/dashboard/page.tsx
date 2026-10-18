@@ -28,17 +28,17 @@ function OverviewSkeleton() {
   return (
     <div className="space-y-5">
       <div className="space-y-3">
-        <div className="h-8 w-44 animate-pulse rounded-lg bg-white/[0.06]" />
-        <div className="h-4 w-28 animate-pulse rounded-lg bg-white/[0.04]" />
+        <div className="h-8 w-44 animate-pulse rounded-lg bg-surface-2" />
+        <div className="h-4 w-28 animate-pulse rounded-lg bg-surface-2" />
       </div>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[0, 1, 2, 3].map((item) => (
-          <div key={item} className="h-24 animate-pulse rounded-xl border border-white/5 bg-neutral-900/40" />
+          <div key={item} className="h-24 animate-pulse rounded-2xl border border-line bg-surface" />
         ))}
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
         {[0, 1, 2].map((item) => (
-          <div key={item} className="h-56 animate-pulse rounded-2xl border border-white/5 bg-neutral-900/30" />
+          <div key={item} className="h-56 animate-pulse rounded-2xl border border-line bg-surface" />
         ))}
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import * as T from './types';
-import { Empty, Card } from './ui';
+import { Empty, Card, PageHeader, ui } from './ui';
 
 function formatDateShort(dateStr: string) {
   const d = new Date(dateStr);
@@ -49,10 +49,7 @@ export default function AnalyticsModule({ analytics }: { analytics: T.AnalyticsD
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">İstatistikler</h1>
-        <p className="text-sm text-neutral-500 mt-1">Ziyaretçi verileri</p>
-      </div>
+      <PageHeader title="İstatistikler" description="Ziyaretçi verileri" />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
@@ -60,9 +57,9 @@ export default function AnalyticsModule({ analytics }: { analytics: T.AnalyticsD
           { label: 'Bugün', value: analytics.today },
           { label: 'Bu Hafta', value: analytics.week },
         ].map((s) => (
-          <div key={s.label} className="p-4 rounded-xl bg-neutral-900/30 border border-white/5">
-            <p className="text-2xl font-bold">{s.value}</p>
-            <p className="text-[11px] text-neutral-500 uppercase tracking-wider mt-1">{s.label}</p>
+          <div key={s.label} className={`${ui.card} p-4`}>
+            <p className="text-3xl font-semibold tracking-[-0.03em] text-ink">{s.value}</p>
+            <p className={`${ui.sectionTitle} mt-1`}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -72,24 +69,24 @@ export default function AnalyticsModule({ analytics }: { analytics: T.AnalyticsD
         <div className="lg:col-span-2">
           <Card>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-sm">Haftalık Trafik Eğilimi</h2>
+              <h2 className={ui.sectionTitle}>Haftalık Trafik Eğilimi</h2>
               {hoveredIndex !== null && chartData[hoveredIndex] && (
-                <div className="text-xs bg-white/10 px-2 py-1 rounded border border-white/5 animate-in fade-in zoom-in duration-100">
-                  <span className="text-neutral-400 mr-1.5">{formatDateShort(chartData[hoveredIndex].date)}:</span>
-                  <span className="font-bold text-white">{chartData[hoveredIndex].count} sayfa gösterimi</span>
+                <div className="text-xs bg-surface-2 px-2 py-1 rounded-lg border border-line animate-in fade-in zoom-in duration-100">
+                  <span className="text-ink-muted mr-1.5">{formatDateShort(chartData[hoveredIndex].date)}:</span>
+                  <span className="font-bold text-ink">{chartData[hoveredIndex].count} sayfa gösterimi</span>
                 </div>
               )}
             </div>
 
             {chartData.length === 0 ? (
-              <div className="h-[220px] flex items-center justify-center text-sm text-neutral-500">Veri bulunamadı.</div>
+              <div className="h-[220px] flex items-center justify-center text-sm text-ink-muted">Veri bulunamadı.</div>
             ) : (
               <div className="relative w-full overflow-x-auto select-none">
                 <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-auto overflow-visible">
                   <defs>
                     <linearGradient id="chartAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="rgba(255, 255, 255, 0.12)" />
-                      <stop offset="100%" stopColor="rgba(255, 255, 255, 0.0)" />
+                      <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.18" />
+                      <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
                     </linearGradient>
                   </defs>
 
@@ -98,13 +95,13 @@ export default function AnalyticsModule({ analytics }: { analytics: T.AnalyticsD
                     const y = paddingTop + r * chartHeight;
                     const val = Math.round(gridMax * (1 - r));
                     return (
-                      <g key={idx} className="opacity-20">
+                      <g key={idx} className="text-ink opacity-20">
                         <line 
                           x1={paddingLeft} 
                           y1={y} 
                           x2={svgWidth - paddingRight} 
                           y2={y} 
-                          stroke="white" 
+                          stroke="currentColor" 
                           strokeWidth="1" 
                           strokeDasharray="4 4" 
                         />
@@ -112,7 +109,7 @@ export default function AnalyticsModule({ analytics }: { analytics: T.AnalyticsD
                           x={paddingLeft - 8} 
                           y={y + 4} 
                           textAnchor="end" 
-                          fill="white" 
+                          fill="currentColor" 
                           className="text-[9px] font-medium"
                         >
                           {val}
@@ -131,9 +128,8 @@ export default function AnalyticsModule({ analytics }: { analytics: T.AnalyticsD
                     <path 
                       d={linePath} 
                       fill="none" 
-                      stroke="white" 
                       strokeWidth="2" 
-                      className="opacity-80" 
+                      className="stroke-accent" 
                     />
                   )}
 
@@ -158,10 +154,8 @@ export default function AnalyticsModule({ analytics }: { analytics: T.AnalyticsD
                           cx={p.x}
                           cy={p.y}
                           r={isHovered ? "5" : "3.5"}
-                          fill={isHovered ? "white" : "black"}
-                          stroke="white"
                           strokeWidth="1.5"
-                          className="transition-all duration-100 pointer-events-none"
+                          className={`stroke-accent transition-all duration-100 pointer-events-none ${isHovered ? 'fill-accent' : 'fill-surface'}`}
                         />
 
                         {/* Date Label on X axis */}
@@ -169,8 +163,7 @@ export default function AnalyticsModule({ analytics }: { analytics: T.AnalyticsD
                           x={p.x}
                           y={svgHeight - 12}
                           textAnchor="middle"
-                          fill={isHovered ? "white" : "rgba(255, 255, 255, 0.4)"}
-                          className="text-[9px] font-medium transition-colors"
+                          className={`text-[9px] font-medium transition-colors ${isHovered ? 'fill-ink' : 'fill-ink-muted'}`}
                         >
                           {formatDateShort(p.date)}
                         </text>
@@ -186,18 +179,18 @@ export default function AnalyticsModule({ analytics }: { analytics: T.AnalyticsD
         {/* Top Pages list */}
         <div>
           <Card className="h-full">
-            <h2 className="font-bold text-sm mb-4">En Çok Görüntülenen Sayfalar</h2>
+            <h2 className={`${ui.sectionTitle} mb-4`}>En Çok Görüntülenen Sayfalar</h2>
             {analytics.topPages.length === 0 ? <Empty /> : (
               <div className="space-y-3">
                 {analytics.topPages.map((p) => (
                   <div key={p.page}>
                     <div className="flex justify-between text-xs mb-1.5">
-                      <span className="text-neutral-300 truncate max-w-[170px]" title={p.page}>{p.page}</span>
-                      <span className="text-neutral-500">{p.count}</span>
+                      <span className="text-ink-soft truncate max-w-[170px]" title={p.page}>{p.page}</span>
+                      <span className="text-ink-muted">{p.count}</span>
                     </div>
-                    <div className="h-1 rounded-full bg-white/5 overflow-hidden">
+                    <div className="h-1 rounded-full bg-surface-2 overflow-hidden">
                       <div 
-                        className="h-full rounded-full bg-white/20 transition-all" 
+                        className="h-full rounded-full bg-accent transition-all" 
                         style={{ width: `${(p.count / maxPageCount) * 100}%` }} 
                       />
                     </div>

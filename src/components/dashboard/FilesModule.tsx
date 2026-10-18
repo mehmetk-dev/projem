@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { FolderOpen, Trash2, Upload, X, Eye } from 'lucide-react';
+import { PageHeader, ui } from './ui';
 import { deleteFileAction, getFileManagerData, uploadFileAction, type FileManagerData } from '@/app/actions/files';
 
 interface Props {
@@ -97,44 +98,39 @@ export default function FilesModule({ toastFn }: Props) {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dosya Yöneticisi</h1>
-          <p className="text-sm text-neutral-500 mt-0.5">R2 depolama alanındaki tüm görseller ve dosyalar</p>
-        </div>
-      </div>
+      <PageHeader title="Dosya Yöneticisi" description="R2 depolama alanındaki tüm görseller ve dosyalar" />
 
       <div className="grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)] gap-4">
         <aside className="space-y-2">
-          <h2 className="text-xs uppercase tracking-[0.18em] text-neutral-500 px-1">Klasörler</h2>
+          <h2 className={`${ui.sectionTitle} px-1`}>Klasörler</h2>
           {data?.folders.length ? (
             <div className="space-y-1">
               {data.folders.map((f) => (
                 <button
                   key={f.name}
                   onClick={() => load(f.name)}
-                  className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm transition ${
+                  className={`w-full flex items-center justify-between rounded-xl px-3 py-2 text-sm transition ${
                     activeFolder === f.name
-                      ? 'bg-white/10 text-white'
-                      : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                      ? 'bg-surface-2 text-ink'
+                      : 'text-ink-muted hover:text-ink hover:bg-surface-2'
                   }`}
                 >
                   <span className="flex items-center gap-2">
                     <FolderOpen size={14} />
                     {f.label}
                   </span>
-                  <span className="text-xs text-neutral-500">{f.fileCount}</span>
+                  <span className="text-xs text-ink-muted">{f.fileCount}</span>
                 </button>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-neutral-500 px-1">Klasör bulunamadı.</p>
+            <p className="text-sm text-ink-muted px-1">Klasör bulunamadı.</p>
           )}
 
           <div className="pt-3">
             <button
               onClick={() => setUploadExpanded(!uploadExpanded)}
-              className="w-full flex items-center justify-between rounded-lg border border-white/10 px-3 py-2 text-sm text-neutral-400 hover:text-white transition"
+              className="w-full flex items-center justify-between rounded-full border border-line px-3 py-2 text-sm text-ink-muted hover:border-ink/30 hover:text-ink transition"
             >
               <span className="flex items-center gap-2">
                 <Upload size={14} />
@@ -152,18 +148,18 @@ export default function FilesModule({ toastFn }: Props) {
 
         <div className="min-w-0 space-y-4">
           {uploadExpanded && (
-            <form onSubmit={handleUpload} className="rounded-2xl border border-white/10 bg-neutral-900/40 p-4 space-y-3">
-              <h2 className="text-sm font-bold">
+            <form onSubmit={handleUpload} className="rounded-2xl border border-line bg-surface p-4 space-y-3">
+              <h2 className="text-sm font-semibold text-ink">
                 {data?.folderLabel || activeFolder} klasörüne dosya yükle
               </h2>
               <input type="hidden" name="folder" value={activeFolder} />
-              <label className="flex min-h-20 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/10 bg-black/20 p-4 text-center text-xs text-neutral-500 hover:border-white/20">
+              <label className="flex min-h-20 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-line bg-paper p-4 text-center text-xs text-ink-muted hover:border-ink/30">
                 <Upload size={18} />
                 <span>Resim veya dosya seç (max 5MB)</span>
                 <input ref={fileRef} name="file" type="file" accept="image/*" className="sr-only" />
               </label>
               <div className="flex justify-end">
-                <button type="submit" disabled={busy} className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-1.5 text-sm font-bold text-black hover:bg-neutral-200 disabled:opacity-50">
+                <button type="submit" disabled={busy} className={ui.btnPrimary}>
                   <Upload size={14} />
                   {busy ? 'Yükleniyor...' : 'Yükle'}
                 </button>
@@ -172,11 +168,11 @@ export default function FilesModule({ toastFn }: Props) {
           )}
 
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold">{data?.folderLabel || activeFolder} — {data?.files.length || 0} dosya</h2>
+            <h2 className="text-sm font-semibold text-ink">{data?.folderLabel || activeFolder} — {data?.files.length || 0} dosya</h2>
           </div>
 
           {loading ? (
-            <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-neutral-500">
+            <div className="rounded-2xl border border-dashed border-line p-8 text-center text-sm text-ink-muted">
               Yükleniyor...
             </div>
           ) : data?.files.length ? (
@@ -184,7 +180,7 @@ export default function FilesModule({ toastFn }: Props) {
               {data.files.map((file) => (
                 <div
                   key={file.key}
-                  className="group overflow-hidden rounded-xl border border-white/10 bg-neutral-900/30 transition hover:border-white/20"
+                  className="group overflow-hidden rounded-xl border border-line bg-surface transition hover:border-ink/15"
                 >
                   {isImage(file.fileName) ? (
                     <button
@@ -200,23 +196,23 @@ export default function FilesModule({ toastFn }: Props) {
                       />
                     </button>
                   ) : (
-                    <div className="flex h-32 items-center justify-center bg-white/[0.02]">
-                      <Eye size={24} className="text-neutral-600" />
+                    <div className="flex h-32 items-center justify-center bg-surface-2">
+                      <Eye size={24} className="text-ink-muted" />
                     </div>
                   )}
 
                   <div className="p-2 space-y-1">
-                    <p className="text-xs text-neutral-300 truncate" title={file.fileName}>
+                    <p className="text-xs text-ink-soft truncate" title={file.fileName}>
                       {file.fileName}
                     </p>
                     <div className="flex items-center justify-between gap-1">
-                      <span className="text-[10px] text-neutral-500">{formatSize(file.size)}</span>
-                      <span className="text-[10px] text-neutral-600">{formatDate(file.lastModified)}</span>
+                      <span className="text-[10px] text-ink-muted">{formatSize(file.size)}</span>
+                      <span className="text-[10px] text-ink-muted">{formatDate(file.lastModified)}</span>
                     </div>
                     <button
                       onClick={() => handleDelete(file.key, file.fileName)}
                       disabled={busy}
-                      className="mt-1 w-full flex items-center justify-center gap-1 rounded-lg border border-rose-500/20 py-1 text-[10px] text-rose-400 hover:text-rose-300 disabled:opacity-50"
+                      className="mt-1 w-full flex items-center justify-center gap-1 rounded-lg border border-rose-500/20 py-1 text-[10px] text-rose-600 hover:text-rose-500 dark:text-rose-400 dark:hover:text-rose-300 disabled:opacity-50"
                     >
                       <Trash2 size={10} />
                       Sil
@@ -226,7 +222,7 @@ export default function FilesModule({ toastFn }: Props) {
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-neutral-500">
+            <div className="rounded-2xl border border-dashed border-line p-8 text-center text-sm text-ink-muted">
               Bu klasörde henüz dosya yok.
             </div>
           )}
@@ -235,13 +231,14 @@ export default function FilesModule({ toastFn }: Props) {
 
       {preview && (
         <div
+          // Görsel önizlemesi temadan bağımsız koyu zeminde gösterilir
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
           onClick={() => setPreview(null)}
         >
           <div className="relative max-w-3xl max-h-[85vh] w-full" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setPreview(null)}
-              className="absolute -top-10 right-0 text-white/70 hover:text-white"
+              className="absolute -top-10 right-0 text-white/80 hover:text-white" aria-label="Kapat"
             >
               <X size={24} />
             </button>
@@ -252,7 +249,7 @@ export default function FilesModule({ toastFn }: Props) {
               height={900}
               className="rounded-xl object-contain max-h-[85vh] w-full"
             />
-            <p className="mt-2 text-center text-sm text-neutral-400">{preview.name}</p>
+            <p className="mt-2 text-center text-sm text-white/90">{preview.name}</p>
           </div>
         </div>
       )}

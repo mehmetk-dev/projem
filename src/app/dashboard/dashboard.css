@@ -1,0 +1,35 @@
+/* ═══════════════════════════════════════
+   Dashboard teması
+   Public sitenin token'larını (.home-theme) kullanır; koyu modda aynı token'lar
+   sıcak taş tonlarıyla yeniden tanımlanır. Modüller dark: varyantı yazmadan
+   bg-surface, text-ink, border-line… ile iki temada da doğru görünür.
+   ═══════════════════════════════════════ */
+
+.dark .dash-theme {
+  --paper: #0c0a09;
+  --surface: #171412;
+  --surface-2: #24201d;
+  --ink: #fafaf9;
+  --ink-soft: #d6d3d1;
+  --ink-muted: #a8a29e;
+  --line: #2c2723;
+  --accent: #3b82f6;
+  --accent-strong: #60a5fa;
+  --accent-soft: rgba(59, 130, 246, 0.14);
+
+  color-scheme: dark;
+}
+
+html.dark:has(.dash-theme) {
+  background: #0c0a09;
+}
+
+/* Sidebar kaydırma çubuğu: ince ve tema rengiyle */
+.dash-theme .dashboard-sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.dash-theme .dashboard-sidebar-scroll::-webkit-scrollbar-thumb {
+  background: var(--line);
+}

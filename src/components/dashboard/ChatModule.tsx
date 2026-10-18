@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useTransition } from 'react';
 import * as T from './types';
-import { Card } from './ui';
+import { Card, PageHeader, ui } from './ui';
 import { createConversationAction, deleteConversationAction, renameConversationAction, createMessageAction, getMessages, updateChatSettingsAction } from '@/app/actions/chat';
 import { Volume2, VolumeX, Mic, Copy } from 'lucide-react';
 
@@ -338,18 +338,18 @@ export default function ChatModule({ conversations: initialConversations, chatSe
         const language = match?.[1] || '';
         const code = match?.[2] || part.slice(3, -3);
         return (
-          <div key={index} className="my-2 border border-white/10 bg-black/60 rounded-xl overflow-hidden font-mono text-[11px] leading-normal w-full max-w-full text-left">
-            <div className="bg-neutral-900 px-3 py-1.5 text-[10px] text-neutral-400 font-bold border-b border-white/5 flex justify-between items-center select-none">
+          <div key={index} className="my-2 border border-line bg-paper rounded-xl overflow-hidden font-mono text-[11px] leading-normal w-full max-w-full text-left">
+            <div className="bg-surface-2 px-3 py-1.5 text-[10px] text-ink-muted font-bold border-b border-line flex justify-between items-center select-none">
               <span>{language.toUpperCase() || 'KOD'}</span>
               <button 
                 type="button"
                 onClick={() => copyToClipboard(code)} 
-                className="text-[9px] text-neutral-400 hover:text-white border border-white/15 px-1.5 py-0.5 rounded bg-white/5 transition-colors"
+                className="text-[9px] text-ink-muted hover:text-ink border border-line px-1.5 py-0.5 rounded-full bg-surface transition-colors"
               >
                 Kopyala
               </button>
             </div>
-            <pre className="p-3 overflow-x-auto text-neutral-200">
+            <pre className="p-3 overflow-x-auto text-ink">
               <code>{code}</code>
             </pre>
           </div>
@@ -362,7 +362,7 @@ export default function ChatModule({ conversations: initialConversations, chatSe
           {inlineParts.map((subPart, subIndex) => {
             if (subPart.startsWith('`') && subPart.endsWith('`')) {
               return (
-                <code key={subIndex} className="bg-white/10 px-1.5 py-0.5 rounded font-mono text-[11px] text-rose-300">
+                <code key={subIndex} className="bg-paper border border-line px-1.5 py-0.5 rounded font-mono text-[11px] text-rose-600 dark:text-rose-300">
                   {subPart.slice(1, -1)}
                 </code>
               );
@@ -378,23 +378,22 @@ export default function ChatModule({ conversations: initialConversations, chatSe
 
   return (
     <div className="space-y-5">
-      <div className="flex justify-between items-center">
-        <div><h1 className="text-2xl font-bold tracking-tight">Chat</h1><p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">Kişisel asistan</p></div>
+      <PageHeader title="Chat" description="Kişisel asistan">
         <button
           onClick={() => setShowSettings(!showSettings)}
-          className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${showSettings ? 'bg-neutral-200 dark:bg-white/10 border-neutral-400 dark:border-white/20 text-neutral-900 dark:text-white' : 'border-neutral-200 dark:border-white/10 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'}`}
+          className={`text-xs px-3.5 py-1.5 rounded-full border transition-colors ${showSettings ? 'bg-surface-2 border-ink/30 text-ink' : 'border-line text-ink-muted hover:border-ink/30 hover:text-ink'}`}
         >
           {showSettings ? 'Ayarları Gizle' : 'Ayarlar'}
         </button>
-      </div>
+      </PageHeader>
 
       <div className={`flex gap-4 ${showSettings ? 'h-[calc(100vh-480px)]' : 'h-[calc(100vh-220px)]'} min-h-[420px]`}>
         {/* Sidebar */}
         <div className="w-56 shrink-0 flex flex-col gap-2">
-          <button onClick={startNew} className="w-full bg-white text-black text-xs font-bold py-2 rounded-full hover:bg-neutral-200">+ Yeni Sohbet</button>
+          <button onClick={startNew} className={`${ui.btnPrimary} w-full`}>+ Yeni Sohbet</button>
           <div className="dashboard-sidebar-scroll flex-1 overflow-y-auto space-y-1 pr-1">
             {conversations.map((c) => (
-              <div key={c.id} className={`group rounded-lg transition-all ${selectedId === c.id ? 'bg-neutral-200 dark:bg-white/10' : 'hover:bg-neutral-100 dark:hover:bg-white/5'}`}>
+              <div key={c.id} className={`group rounded-lg transition-all ${selectedId === c.id ? 'bg-surface-2' : 'hover:bg-surface-2/60'}`}>
                 {renamingId === c.id ? (
                   <input
                     value={renameText}
@@ -402,7 +401,7 @@ export default function ChatModule({ conversations: initialConversations, chatSe
                     onBlur={submitRename}
                     onKeyDown={(e) => { if (e.key === 'Enter') submitRename(); if (e.key === 'Escape') setRenamingId(null); }}
                     autoFocus
-                    className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-white/20 rounded-lg px-2 py-1.5 text-xs text-neutral-900 dark:text-white outline-none"
+                    className="w-full bg-paper border border-line focus:border-accent rounded-lg px-2 py-1.5 text-xs text-ink outline-none"
                   />
                 ) : (
                   <div
@@ -411,20 +410,21 @@ export default function ChatModule({ conversations: initialConversations, chatSe
                     className="cursor-pointer px-3 py-2 flex flex-col gap-0.5"
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`text-xs font-medium truncate flex-1 ${selectedId === c.id ? 'text-neutral-900 dark:text-white' : 'text-neutral-600 dark:text-neutral-400'}`}>
+                      <span className={`text-xs font-medium truncate flex-1 ${selectedId === c.id ? 'text-ink' : 'text-ink-soft'}`}>
                         {c.title}
                       </span>
                       <button
                         onClick={(e) => { e.stopPropagation(); delConv(c.id); }}
-                        className="ml-1 text-rose-400 hover:text-rose-300 opacity-0 group-hover:opacity-100 shrink-0"
+                        className="ml-1 text-rose-600 dark:text-rose-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 focus:opacity-100 shrink-0"
                         title="Sil"
+                        aria-label="Sohbeti sil"
                       >×</button>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[9px] text-neutral-400 dark:text-neutral-500 truncate">
+                      <span className="text-[9px] text-ink-muted truncate">
                         {c.model.split('/').pop()}
                       </span>
-                      <span className="text-[9px] text-neutral-400 dark:text-neutral-600">
+                      <span className="text-[9px] text-ink-muted">
                         {new Date(c.createdAt).toLocaleDateString('tr-TR')}
                       </span>
                     </div>
@@ -433,24 +433,24 @@ export default function ChatModule({ conversations: initialConversations, chatSe
               </div>
             ))}
           </div>
-          <div className="pt-2 border-t border-white/5">
-            <label className="text-[10px] text-neutral-500 uppercase tracking-wider mb-1 block">Model</label>
-            <input value={model} onChange={(e) => setModel(e.target.value)} className="w-full bg-transparent border border-white/10 rounded-lg px-2 py-1.5 text-xs" placeholder="openai/gpt-4o-mini" />
+          <div className="pt-2 border-t border-line">
+            <label className={ui.label}>Model</label>
+            <input value={model} onChange={(e) => setModel(e.target.value)} className={`${ui.input} !px-2 !py-1.5 !text-xs`} placeholder="openai/gpt-4o-mini" />
           </div>
         </div>
 
         {/* Chat area */}
-        <div className="flex-1 flex flex-col bg-neutral-900/40 border border-white/10 rounded-2xl overflow-hidden">
+        <div className="flex-1 flex flex-col bg-surface border border-line rounded-2xl overflow-hidden">
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {!selectedId && (
-              <div className="h-full flex flex-col items-center justify-center text-neutral-600 text-sm">
+              <div className="h-full flex flex-col items-center justify-center text-ink-muted text-sm">
                 <p>Yeni bir sohbet başlatın veya mevcut bir sohbeti seçin.</p>
                 <p className="text-xs mt-2">Model: {model}</p>
               </div>
             )}
             {messages.map((m) => (
               <div key={m.id} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
-                <div className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${m.role === 'user' ? 'bg-white text-black rounded-br-md font-sans' : 'bg-white/5 text-neutral-200 border border-white/5 rounded-bl-md'}`}>
+                <div className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${m.role === 'user' ? 'bg-ink text-paper rounded-br-md font-sans' : 'bg-surface-2 text-ink rounded-bl-md'}`}>
                   {m.role === 'user' ? m.content : formatChatMessageContent(m.content)}
                 </div>
                 {m.role === 'assistant' && m.id !== 0 && (
@@ -458,18 +458,18 @@ export default function ChatModule({ conversations: initialConversations, chatSe
                     <button 
                       onClick={() => copyToClipboard(m.content)} 
                       title="Kopyala" 
-                      className="text-[9px] text-neutral-400 hover:text-white flex items-center gap-1 border border-white/5 px-1.5 py-0.5 rounded bg-black/20"
+                      className="text-[9px] text-ink-muted hover:text-ink flex items-center gap-1 border border-line px-1.5 py-0.5 rounded-full bg-surface"
                     >
                       <Copy size={9} /> Kopyala
                     </button>
                     <button 
                       onClick={() => speakText(m.content, m.id)} 
                       title="Seslendir" 
-                      className="text-[9px] text-neutral-400 hover:text-white flex items-center gap-1 border border-white/5 px-1.5 py-0.5 rounded bg-black/20"
+                      className="text-[9px] text-ink-muted hover:text-ink flex items-center gap-1 border border-line px-1.5 py-0.5 rounded-full bg-surface"
                     >
                       {speakingMsgId === m.id ? (
                         <>
-                          <VolumeX size={9} className="text-rose-400" /> Durdur
+                          <VolumeX size={9} className="text-rose-600 dark:text-rose-400" /> Durdur
                         </>
                       ) : (
                         <>
@@ -483,10 +483,10 @@ export default function ChatModule({ conversations: initialConversations, chatSe
             ))}
             {loading && messages[messages.length - 1]?.role !== 'assistant' && (
               <div className="flex justify-start">
-                <div className="bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/5 px-4 py-2.5 rounded-2xl rounded-bl-md flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-neutral-400 dark:bg-neutral-400 animate-bounce [animation-delay:0ms]" />
-                  <span className="w-2 h-2 rounded-full bg-neutral-400 dark:bg-neutral-400 animate-bounce [animation-delay:150ms]" />
-                  <span className="w-2 h-2 rounded-full bg-neutral-400 dark:bg-neutral-400 animate-bounce [animation-delay:300ms]" />
+                <div className="bg-surface-2 px-4 py-2.5 rounded-2xl rounded-bl-md flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-ink-muted animate-bounce [animation-delay:0ms]" />
+                  <span className="w-2 h-2 rounded-full bg-ink-muted animate-bounce [animation-delay:150ms]" />
+                  <span className="w-2 h-2 rounded-full bg-ink-muted animate-bounce [animation-delay:300ms]" />
                 </div>
               </div>
             )}
@@ -494,16 +494,17 @@ export default function ChatModule({ conversations: initialConversations, chatSe
           </div>
 
           {selectedId && (
-            <div className="p-3 border-t border-white/5 flex gap-2 items-center">
+            <div className="p-3 border-t border-line flex gap-2 items-center">
               <button
                 type="button"
                 onClick={startListening}
                 className={`p-2.5 rounded-xl border transition-all ${
                   isListening
-                    ? 'bg-rose-500/20 border-rose-500 text-rose-400 animate-pulse'
-                    : 'border-white/10 bg-neutral-900/60 text-neutral-400 hover:text-white'
+                    ? 'bg-rose-500/20 border-rose-500 text-rose-600 dark:text-rose-400 animate-pulse'
+                    : 'border-line bg-surface text-ink-muted hover:text-ink'
                 }`}
                 title={isListening ? 'Dinlemeyi Durdur' : 'Konuşarak Yaz'}
+                aria-label={isListening ? 'Dinlemeyi Durdur' : 'Konuşarak Yaz'}
               >
                 <Mic size={16} />
               </button>
@@ -513,9 +514,10 @@ export default function ChatModule({ conversations: initialConversations, chatSe
                 onKeyDown={handleKey}
                 placeholder="Bir şeyler yazın…"
                 rows={1}
-                className="flex-1 bg-neutral-900/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/20 resize-none max-h-32"
+                aria-label="Mesaj"
+                className={`${ui.input} flex-1 resize-none max-h-32`}
               />
-              <button onClick={send} disabled={loading || !input.trim() || !contextReady} className="bg-white text-black px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-neutral-200 disabled:opacity-40 disabled:cursor-not-allowed h-fit">
+              <button onClick={send} disabled={loading || !input.trim() || !contextReady} className={`${ui.btnPrimary} h-fit`}>
                 Gönder
               </button>
             </div>
@@ -525,31 +527,31 @@ export default function ChatModule({ conversations: initialConversations, chatSe
 
       {showSettings && (
         <Card>
-          <h2 className="font-bold text-sm mb-4">Chat Asistan Ayarlari</h2>
+          <h2 className={`${ui.sectionTitle} mb-4`}>Chat Asistan Ayarları</h2>
           <form onSubmit={saveAssistantSettings} className="space-y-4">
             <div>
-              <label className="text-[11px] text-neutral-500 dark:text-neutral-400 uppercase tracking-wider block mb-1">Sistem Promptu</label>
+              <label className={ui.label}>Sistem Promptu</label>
               <textarea
                 value={assistantSettings.systemPrompt}
                 onChange={(event) => setAssistantSettings((current) => ({ ...current, systemPrompt: event.target.value }))}
                 rows={4}
-                className="w-full bg-neutral-100 dark:bg-transparent border border-neutral-300 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 dark:focus:border-white/20 resize-none"
+                className={`${ui.input} resize-none`}
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="text-[11px] text-neutral-500 dark:text-neutral-400 uppercase tracking-wider block mb-1">Varsayilan Model</label>
+                <label className={ui.label}>Varsayılan Model</label>
                 <input
                   value={assistantSettings.defaultModel}
                   onChange={(event) => {
                     setAssistantSettings((current) => ({ ...current, defaultModel: event.target.value }));
                     setModel(event.target.value);
                   }}
-                  className="w-full bg-neutral-100 dark:bg-transparent border border-neutral-300 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 dark:focus:border-white/20"
+                  className={ui.input}
                 />
               </div>
               <div>
-                <label className="text-[11px] text-neutral-500 dark:text-neutral-400 uppercase tracking-wider block mb-1">Sicaklik: {assistantSettings.temperature}</label>
+                <label className={ui.label}>Sıcaklık: {assistantSettings.temperature}</label>
                 <input
                   type="range"
                   min="0"
@@ -557,21 +559,21 @@ export default function ChatModule({ conversations: initialConversations, chatSe
                   step="0.1"
                   value={assistantSettings.temperature}
                   onChange={(event) => setAssistantSettings((current) => ({ ...current, temperature: event.target.value }))}
-                  className="w-full accent-neutral-900 dark:accent-white"
+                  className="w-full accent-accent"
                 />
               </div>
               <div>
-                <label className="text-[11px] text-neutral-500 dark:text-neutral-400 uppercase tracking-wider block mb-1">OpenRouter API Key</label>
+                <label className={ui.label}>OpenRouter API Key</label>
                 <input
                   type="password"
                   value={assistantSettings.apiKey}
                   onChange={(event) => setAssistantSettings((current) => ({ ...current, apiKey: event.target.value }))}
-                  className="w-full bg-neutral-100 dark:bg-transparent border border-neutral-300 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-neutral-900 dark:text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 dark:focus:border-white/20"
+                  className={ui.input}
                   placeholder="sk-..."
                 />
               </div>
             </div>
-            <button type="submit" disabled={settingsPending} className="bg-neutral-900 text-white dark:bg-white dark:text-black px-5 py-2 rounded-full text-sm font-bold hover:bg-neutral-700 dark:hover:bg-neutral-200 disabled:opacity-50">
+            <button type="submit" disabled={settingsPending} className={ui.btnPrimary}>
               {settingsPending ? 'Kaydediliyor...' : 'Kaydet'}
             </button>
           </form>

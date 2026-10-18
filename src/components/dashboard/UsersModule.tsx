@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { updateUserRoleAction, deleteUserAction } from '@/app/actions/users';
-import { Users } from 'lucide-react';
+import { PageHeader } from './ui';
 
 interface User {
   id: number;
@@ -46,38 +46,32 @@ export default function UsersModule({ users, toastFn }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Users size={20} className="text-neutral-500 dark:text-neutral-400" />
-          <h2 className="text-2xl font-bold tracking-tight">Kullanıcılar</h2>
-        </div>
-        <span className="text-xs text-neutral-500 dark:text-neutral-400">{users.length} kayıt</span>
-      </div>
+      <PageHeader title="Kullanıcılar" description={`${users.length} kayıt`} />
 
       {users.length === 0 ? (
-        <p className="text-neutral-500 dark:text-neutral-400 text-sm">Kullanıcı bulunmuyor.</p>
+        <p className="text-ink-muted text-sm">Kullanıcı bulunmuyor.</p>
       ) : (
         <div className="space-y-3">
           {users.map((user) => (
-            <div key={user.id} className="p-4 rounded-xl border border-neutral-200 dark:border-white/5 bg-neutral-100 dark:bg-white/[0.02] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div key={user.id} className="p-4 rounded-2xl border border-line bg-surface flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-medium text-neutral-900 dark:text-white">{user.email}</p>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">{new Date(user.createdAt).toLocaleDateString('tr-TR')}</p>
+                <p className="text-sm font-medium text-ink">{user.email}</p>
+                <p className="text-[11px] text-ink-muted">{new Date(user.createdAt).toLocaleDateString('tr-TR')}</p>
               </div>
               <div className="flex items-center gap-3">
                 <select
                   value={user.role}
                   onChange={(e) => handleRoleChange(user.id, e.target.value)}
                   disabled={isPending && actionId === user.id}
-                  className="bg-neutral-100 dark:bg-transparent border border-neutral-300 dark:border-white/10 rounded-lg px-3 py-1.5 text-xs text-neutral-900 dark:text-white"
+                  className="bg-paper border border-line rounded-xl px-3 py-1.5 text-xs text-ink outline-none focus:border-accent" aria-label={`${user.email} rolü`}
                 >
-                  <option value="user" className="bg-neutral-100 dark:bg-neutral-900">user</option>
-                  <option value="admin" className="bg-neutral-100 dark:bg-neutral-900">admin</option>
+                  <option value="user" className="bg-surface">user</option>
+                  <option value="admin" className="bg-surface">admin</option>
                 </select>
                 <button
                   onClick={() => handleDelete(user.id)}
                   disabled={isPending && actionId === user.id}
-                  className="text-xs text-rose-400 hover:text-rose-300 px-3 py-1.5 rounded-lg border border-rose-500/20 hover:bg-rose-500/10 transition-colors disabled:opacity-50"
+                  className="text-xs text-rose-600 hover:text-rose-500 dark:text-rose-400 dark:hover:text-rose-300 px-3 py-1.5 rounded-full border border-rose-500/20 hover:bg-rose-500/10 transition-colors disabled:opacity-50"
                 >
                   Sil
                 </button>

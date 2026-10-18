@@ -3,9 +3,14 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { ArrowUpRight, LogOut } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import BrandMark from './home/BrandMark';
+import { homeFontVariables } from './home/fonts';
 import * as T from './dashboard/types';
 import { getVisibleTabIds } from '@/lib/dashboard/preferences';
+import '@/app/portfolio.css';
+import '@/app/dashboard/dashboard.css';
 
 interface Props {
   children: React.ReactNode;
@@ -118,37 +123,51 @@ export default function DashboardLayoutClient({ children, userEmail, isAdmin, un
     router.push('/'); 
   };
 
+  const activeTab = TABS.find((item) => item.id === tab);
+  const today = new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Istanbul' });
+
   return (
-    <div className="min-h-screen bg-neutral-950 text-white font-sans selection:bg-white selection:text-black lg:flex">
-      <div className="lg:hidden fixed top-0 inset-x-0 h-14 flex items-center justify-between px-4 bg-neutral-950/90 backdrop-blur-xl border-b border-white/5 z-40">
+    <div
+      className={`home-theme dash-theme ${homeFontVariables} min-h-screen bg-paper text-ink antialiased selection:bg-accent selection:text-white lg:flex`}
+    >
+      {/* Mobil üst bar */}
+      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-line bg-paper/85 px-4 backdrop-blur-xl lg:hidden">
         <div className="flex items-center gap-2">
-          <button onClick={() => setMenuOpen(!menuOpen)} className="p-2 -ml-2 text-neutral-400 hover:text-white" aria-label="Menu">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d={menuOpen ? 'M18 6L6 18M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} />
+          <button
+            type="button"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="-ml-2 grid h-9 w-9 place-items-center rounded-full text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
+            aria-label={menuOpen ? 'Menüyü kapat' : 'Menüyü aç'}
+            aria-expanded={menuOpen}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <path d={menuOpen ? 'M18 6L6 18M6 6l12 12' : 'M4 7h16M4 12h16M4 17h16'} />
             </svg>
           </button>
-          <span className="text-sm font-bold tracking-tight">Dashboard</span>
+          <span className="text-sm font-semibold tracking-tight">{activeTab?.label ?? 'Panel'}</span>
         </div>
-        <span className="text-xs text-neutral-500 truncate max-w-[120px]">{userEmail}</span>
+        <ThemeToggle size={16} />
       </div>
 
-      <aside className={`fixed lg:sticky lg:top-0 inset-y-0 left-0 z-30 w-60 lg:h-screen bg-neutral-950 border-r border-white/5 p-5 flex flex-col transition-transform duration-300 ${menuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-        <div className="hidden lg:flex items-center gap-3 mb-8">
-          <span className="w-2 h-2 rounded-full bg-white" />
-          <span className="text-sm font-bold tracking-tight uppercase">Dashboard</span>
+      <aside
+        className={`fixed inset-y-0 left-0 z-30 flex w-64 flex-col border-r border-line bg-surface transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        <div className="hidden items-center justify-between px-5 pt-6 pb-5 lg:flex">
+          <BrandMark />
         </div>
 
-        <nav className="dashboard-sidebar-scroll flex-1 min-h-0 overflow-y-auto pr-1 mt-14 lg:mt-0 space-y-5">
+        <nav className="dashboard-sidebar-scroll mt-14 min-h-0 flex-1 space-y-5 overflow-y-auto px-3 pb-4 lg:mt-0" aria-label="Panel menüsü">
           {visibleGroups.map((group) => {
             const isActiveGroup = group.tabs.some((item) => item.id === tab);
             const isCollapsed = collapsedGroups[group.key] && !isActiveGroup;
 
             return (
-              <div key={group.title} className="space-y-1.5">
+              <div key={group.title} className="space-y-1">
                 <button
                   type="button"
                   onClick={() => toggleGroup(group.key)}
-                  className={`w-full flex items-center justify-between px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors ${isActiveGroup ? 'text-neutral-400' : 'text-neutral-700 hover:text-neutral-500'}`}
+                  aria-expanded={!isCollapsed}
+                  className={`flex w-full items-center justify-between px-3 py-1 font-mono text-[10.5px] uppercase tracking-[0.14em] transition-colors ${isActiveGroup ? 'text-ink-soft' : 'text-ink-muted hover:text-ink-soft'}`}
                 >
                   <span>{group.title}</span>
                   <svg
@@ -158,6 +177,7 @@ export default function DashboardLayoutClient({ children, userEmail, isAdmin, un
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
+                    aria-hidden="true"
                     className={`transition-transform ${isCollapsed ? '-rotate-90' : 'rotate-0'}`}
                   >
                     <path d="M6 9l6 6 6-6" />
@@ -165,32 +185,38 @@ export default function DashboardLayoutClient({ children, userEmail, isAdmin, un
                 </button>
 
                 <div
-                  className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isCollapsed ? 'grid-rows-[0fr] opacity-0 pointer-events-none' : 'grid-rows-[1fr] opacity-100'}`}
+                  className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isCollapsed ? 'pointer-events-none grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'}`}
                   aria-hidden={isCollapsed}
                 >
-                  <div className="overflow-hidden space-y-1.5">
-                    {group.tabs.map((t) => (
-                      <button
-                        key={t.id}
-                        onClick={() => { handleTabChange(t.id); }}
-                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${tab === t.id ? 'bg-white/10 text-white' : 'text-neutral-500 hover:text-white hover:bg-white/5'}`}
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                          <path d={t.icon} />
-                        </svg>
-                        <span className="flex-1 text-left">{t.label}</span>
-                        {t.id === 'messages' && unread > 0 && (
-                          <span className="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                            {unread}
-                          </span>
-                        )}
-                        {t.adminOnly && (
-                          <span className="text-[9px] text-amber-400 border border-amber-500/20 px-1.5 rounded">
-                            admin
-                          </span>
-                        )}
-                      </button>
-                    ))}
+                  <div className="space-y-0.5 overflow-hidden">
+                    {group.tabs.map((t) => {
+                      const isActive = tab === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => { handleTabChange(t.id); }}
+                          aria-current={isActive ? 'page' : undefined}
+                          className={`relative flex w-full items-center gap-3 rounded-xl px-3 py-2 text-[14px] font-medium transition-colors ${isActive ? 'bg-surface-2 text-ink' : 'text-ink-muted hover:bg-surface-2/60 hover:text-ink'}`}
+                        >
+                          {isActive && <span className="absolute inset-y-2 left-0 w-[3px] rounded-full bg-accent" aria-hidden="true" />}
+                          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={isActive ? 'text-accent' : ''}>
+                            <path d={t.icon} />
+                          </svg>
+                          <span className="flex-1 text-left">{t.label}</span>
+                          {t.id === 'messages' && unread > 0 && (
+                            <span className="rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                              {unread}
+                            </span>
+                          )}
+                          {t.adminOnly && (
+                            <span className="rounded border border-line px-1 font-mono text-[9px] uppercase tracking-wider text-ink-muted">
+                              admin
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -198,25 +224,54 @@ export default function DashboardLayoutClient({ children, userEmail, isAdmin, un
           })}
         </nav>
 
-        <div className="pt-4 mt-4 border-t border-white/5 space-y-3">
-          <div className="flex items-center justify-between px-3">
-            <p className="text-[11px] text-neutral-600">{userEmail}</p>
-            <ThemeToggle size={16} />
+        <div className="space-y-3 border-t border-line p-4">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent-soft text-sm font-semibold text-accent" aria-hidden="true">
+              {userEmail.charAt(0).toUpperCase()}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13px] font-medium text-ink">{userEmail}</p>
+              <p className="text-[11px] text-ink-muted">{isAdmin ? 'Yönetici' : 'Kullanıcı'}</p>
+            </div>
+            <ThemeToggle size={15} />
           </div>
-          <div className="flex gap-2 px-3">
-            <Link href="/" className="flex-1 text-center text-[11px] text-neutral-400 hover:text-white transition-colors py-2 rounded-md border border-white/10 hover:border-white/20">Portfolyo</Link>
-            <button onClick={handleLogout} className="flex-1 text-[11px] text-neutral-400 hover:text-white transition-colors py-2 rounded-md border border-white/10 hover:border-white/20">Çıkış</button>
+          <div className="flex gap-2">
+            <Link
+              href="/"
+              className="inline-flex flex-1 items-center justify-center gap-1 rounded-full border border-line py-2 text-[12px] font-medium text-ink-soft transition-colors hover:border-ink/30 hover:text-ink"
+            >
+              Siteye git
+              <ArrowUpRight size={13} aria-hidden="true" />
+            </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-line py-2 text-[12px] font-medium text-ink-soft transition-colors hover:border-rose-500/40 hover:text-rose-600"
+            >
+              <LogOut size={13} aria-hidden="true" />
+              Çıkış
+            </button>
           </div>
         </div>
       </aside>
 
-      {menuOpen && <div className="lg:hidden fixed inset-0 bg-black/40 z-20" onClick={() => setMenuOpen(false)} />}
+      {menuOpen && <div className="fixed inset-0 z-20 bg-ink/30 backdrop-blur-sm lg:hidden" onClick={() => setMenuOpen(false)} aria-hidden="true" />}
 
-      <main className="flex-1 min-w-0 p-5 lg:p-8 pt-20 lg:pt-8">
-        <div className="max-w-5xl mx-auto">
-          {children}
-        </div>
-      </main>
+      <div className="min-w-0 flex-1">
+        {/* Masaüstü üst bar: konum ve tarih */}
+        <header className="sticky top-0 z-10 hidden h-16 items-center justify-between border-b border-line bg-paper/80 px-8 backdrop-blur-xl lg:flex">
+          <p className="flex items-center gap-2 text-[13px] text-ink-muted">
+            <span>Panel</span>
+            <span aria-hidden="true">/</span>
+            <span className="font-medium text-ink">{activeTab?.label ?? 'Genel Bakış'}</span>
+          </p>
+          <p className="font-mono text-[12px] capitalize text-ink-muted" suppressHydrationWarning>{today}</p>
+        </header>
+
+        <main className="p-5 pt-20 lg:p-8">
+          <div className="mx-auto max-w-5xl">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }

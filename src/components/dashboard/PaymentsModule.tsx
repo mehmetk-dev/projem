@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { Briefcase, Car, Check, CircleDot, Home, HeartPulse, Pencil, Plus, Receipt, Repeat, ShoppingBag, Trash2, Utensils, Wallet } from 'lucide-react';
 import * as T from './types';
+import { PageHeader, ui } from './ui';
 import { createPaymentAction, deletePaymentAction, togglePaymentPaidAction, updatePaymentAction } from '@/app/actions/payments';
 import { buildPaymentSummary, formatTRY, getCategoryMeta, isPaymentPaidForMonth, PAYMENT_CATEGORIES } from '@/lib/payments/summary';
 
@@ -27,16 +28,16 @@ const iconMap = {
 };
 
 const colorMap: Record<string, string> = {
-  emerald: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
-  sky: 'bg-sky-500/10 text-sky-300 border-sky-500/20',
-  amber: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
-  orange: 'bg-orange-500/10 text-orange-300 border-orange-500/20',
-  violet: 'bg-violet-500/10 text-violet-300 border-violet-500/20',
-  rose: 'bg-rose-500/10 text-rose-300 border-rose-500/20',
-  red: 'bg-red-500/10 text-red-300 border-red-500/20',
-  green: 'bg-green-500/10 text-green-300 border-green-500/20',
-  cyan: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20',
-  neutral: 'bg-white/5 text-neutral-300 border-white/10',
+  emerald: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border-emerald-500/20',
+  sky: 'bg-sky-500/10 text-sky-600 dark:text-sky-300 border-sky-500/20',
+  amber: 'bg-amber-500/10 text-amber-600 dark:text-amber-300 border-amber-500/20',
+  orange: 'bg-orange-500/10 text-orange-600 dark:text-orange-300 border-orange-500/20',
+  violet: 'bg-violet-500/10 text-violet-600 dark:text-violet-300 border-violet-500/20',
+  rose: 'bg-rose-500/10 text-rose-600 dark:text-rose-300 border-rose-500/20',
+  red: 'bg-red-500/10 text-red-600 dark:text-red-300 border-red-500/20',
+  green: 'bg-green-500/10 text-green-600 dark:text-green-300 border-green-500/20',
+  cyan: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 border-cyan-500/20',
+  neutral: 'bg-surface-2 text-ink-soft border-line',
 };
 
 const strokeColorMap: Record<string, string> = {
@@ -219,15 +220,11 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Ödemeler</h1>
-          <p className="text-sm text-neutral-500 mt-0.5">Gelir, gider ve aylık abonelik takibi</p>
-        </div>
-        <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-bold text-black hover:bg-neutral-200">
+      <PageHeader title="Ödemeler" description="Gelir, gider ve aylık abonelik takibi">
+        <button onClick={() => setShowForm(true)} className={ui.btnPrimary}>
           <Plus size={16} /> Yeni Kayıt
         </button>
-      </div>
+      </PageHeader>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <Stat label="Bu ay gider" value={formatTRY(summary.monthlyExpenseCents)} tone="rose" />
@@ -238,16 +235,16 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={reset}>
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-neutral-900 p-5 space-y-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 backdrop-blur-sm p-4" onClick={reset}>
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-line bg-surface p-5 space-y-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold">{edit ? 'Kaydı Düzenle' : 'Hızlı Kayıt'}</h2>
-              <button type="button" onClick={reset} className="text-xs text-neutral-400 hover:text-white">İptal</button>
+              <h2 className="text-sm font-semibold text-ink">{edit ? 'Kaydı Düzenle' : 'Hızlı Kayıt'}</h2>
+              <button type="button" onClick={reset} className="text-xs text-ink-muted hover:text-ink">İptal</button>
             </div>
             <form onSubmit={submit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-[1fr_160px] gap-3">
-                <input name="title" value={form.title} onChange={(e) => setForm((s) => ({ ...s, title: e.target.value }))} placeholder="Yemek, Spotify, maaş..." required className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30" />
-                <input name="amount" value={form.amount} onChange={(e) => setForm((s) => ({ ...s, amount: e.target.value }))} placeholder="100 TL" required inputMode="decimal" className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30" />
+                <input name="title" value={form.title} onChange={(e) => setForm((s) => ({ ...s, title: e.target.value }))} placeholder="Yemek, Spotify, maaş..." required className={ui.input} />
+                <input name="amount" value={form.amount} onChange={(e) => setForm((s) => ({ ...s, amount: e.target.value }))} placeholder="100 TL" required inputMode="decimal" className={ui.input} />
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -262,7 +259,7 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
                     key={category.key}
                     type="button"
                     onClick={() => setForm((s) => ({ ...s, category: category.key }))}
-                    className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs transition-colors ${form.category === category.key ? colorMap[category.color] : 'border-white/10 bg-white/[0.02] text-neutral-400 hover:text-white'}`}
+                    className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs transition-colors ${form.category === category.key ? colorMap[category.color] : 'border-line bg-surface text-ink-muted hover:text-ink'}`}
                   >
                     {categoryIcon(category.key, 14)}
                     <span className="truncate">{category.label}</span>
@@ -272,18 +269,18 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <input name="dueDate" type="date" value={form.dueDate} onChange={(e) => setForm((s) => ({ ...s, dueDate: e.target.value, recurringDay: new Date(e.target.value).getDate() }))} className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30" />
-                <input name="recurringDay" type="number" min={1} max={31} value={form.recurringDay} onChange={(e) => setForm((s) => ({ ...s, recurringDay: Number(e.target.value) }))} className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30" />
-                <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-neutral-300">
-                  <input type="checkbox" name="recurrence" value="monthly" checked={form.recurrence === 'monthly'} onChange={(e) => setForm((s) => ({ ...s, recurrence: e.target.checked ? 'monthly' : 'none' }))} className="accent-white" /> Aylık
+                <input name="dueDate" type="date" aria-label="Tarih" value={form.dueDate} onChange={(e) => setForm((s) => ({ ...s, dueDate: e.target.value, recurringDay: new Date(e.target.value).getDate() }))} className={ui.input} />
+                <input name="recurringDay" aria-label="Ayın günü" type="number" min={1} max={31} value={form.recurringDay} onChange={(e) => setForm((s) => ({ ...s, recurringDay: Number(e.target.value) }))} className={ui.input} />
+                <label className="flex items-center gap-2 rounded-xl border border-line bg-paper px-3 py-2 text-sm text-ink-soft">
+                  <input type="checkbox" name="recurrence" value="monthly" checked={form.recurrence === 'monthly'} onChange={(e) => setForm((s) => ({ ...s, recurrence: e.target.checked ? 'monthly' : 'none' }))} className="accent-accent" /> Aylık
                 </label>
-                <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-neutral-300">
-                  <input type="checkbox" name="paid" value="true" checked={form.paid} onChange={(e) => setForm((s) => ({ ...s, paid: e.target.checked }))} className="accent-white" /> Ödendi
+                <label className="flex items-center gap-2 rounded-xl border border-line bg-paper px-3 py-2 text-sm text-ink-soft">
+                  <input type="checkbox" name="paid" value="true" checked={form.paid} onChange={(e) => setForm((s) => ({ ...s, paid: e.target.checked }))} className="accent-accent" /> Ödendi
                 </label>
               </div>
 
-              <textarea name="notes" value={form.notes} onChange={(e) => setForm((s) => ({ ...s, notes: e.target.value }))} placeholder="Not (isteğe bağlı)" rows={2} className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-neutral-600 resize-none focus:outline-none focus:border-white/30" />
-              <button type="submit" disabled={busy} className="rounded-lg bg-white px-4 py-2 text-sm font-bold text-black hover:bg-neutral-200 disabled:opacity-50">{busy ? 'Kaydediliyor...' : edit ? 'Güncelle' : 'Kaydet'}</button>
+              <textarea name="notes" value={form.notes} onChange={(e) => setForm((s) => ({ ...s, notes: e.target.value }))} placeholder="Not (isteğe bağlı)" rows={2} className={`${ui.input} resize-none`} />
+              <button type="submit" disabled={busy} className={ui.btnPrimary}>{busy ? 'Kaydediliyor...' : edit ? 'Güncelle' : 'Kaydet'}</button>
             </form>
           </div>
         </div>
@@ -300,7 +297,7 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4">
         <div className="space-y-2">
           {visiblePayments.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center text-sm text-neutral-500">Henüz kayıt yok.</div>
+            <div className="rounded-2xl border border-dashed border-line p-8 text-center text-sm text-ink-muted">Henüz kayıt yok.</div>
           ) : visiblePayments.map((payment) => (
             <PaymentRow key={payment.id} payment={payment} displayMonth={filter === 'next' ? nextMonth : today} onEdit={openEdit} onDelete={del} onTogglePaid={togglePaid} />
           ))}
@@ -308,10 +305,10 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
 
         <aside className="space-y-3">
           {/* Gider Dağılımı Donut Chart */}
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-4">
-            <p className="text-xs uppercase tracking-[0.18em] text-neutral-500">Gider Dağılımı</p>
+          <div className={`${ui.card} p-4 space-y-4`}>
+            <p className={ui.sectionTitle}>Gider Dağılımı</p>
             {categoryTotals.totalExpense === 0 ? (
-              <p className="text-sm text-neutral-500">Bu ay için gider kaydı yok.</p>
+              <p className="text-sm text-ink-muted">Bu ay için gider kaydı yok.</p>
             ) : (
               <div className="space-y-4">
                 <div className="relative w-28 h-28 mx-auto">
@@ -321,7 +318,7 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
                       cy="70"
                       r="45"
                       fill="transparent"
-                      stroke="rgba(255, 255, 255, 0.05)"
+                      stroke="var(--surface-2)"
                       strokeWidth="12"
                     />
                     {(() => {
@@ -352,8 +349,8 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
                     })()}
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-[9px] uppercase text-neutral-500 tracking-wider">Gider</span>
-                    <span className="text-xs font-bold text-white truncate max-w-[80px]" title={formatTRY(categoryTotals.totalExpense)}>
+                    <span className="text-[9px] uppercase text-ink-muted tracking-wider">Gider</span>
+                    <span className="text-xs font-bold text-ink truncate max-w-[80px]" title={formatTRY(categoryTotals.totalExpense)}>
                       {formatTRY(categoryTotals.totalExpense)}
                     </span>
                   </div>
@@ -367,11 +364,11 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
                       <div key={item.key} className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: strokeColor }} />
-                          <span className="text-neutral-300 truncate">{item.label}</span>
+                          <span className="text-ink-soft truncate">{item.label}</span>
                         </div>
                         <div className="text-right shrink-0">
-                          <span className="text-neutral-400 mr-2">%{item.percentage}</span>
-                          <span className="font-semibold text-neutral-300">{formatTRY(item.amountCents)}</span>
+                          <span className="text-ink-muted mr-2">%{item.percentage}</span>
+                          <span className="font-semibold text-ink-soft">{formatTRY(item.amountCents)}</span>
                         </div>
                       </div>
                     );
@@ -381,34 +378,34 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
             )}
           </div>
 
-          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.03] p-4">
-            <p className="text-xs uppercase tracking-[0.18em] text-amber-400/80 mb-3">Geciken</p>
-            {summary.overdue.length === 0 ? <p className="text-sm text-neutral-500">Geciken ödeme yok.</p> : summary.overdue.slice(0, 5).map((payment) => (
-              <div key={payment.id} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
+            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-amber-600 dark:text-amber-400/80 mb-3">Geciken</p>
+            {summary.overdue.length === 0 ? <p className="text-sm text-ink-muted">Geciken ödeme yok.</p> : summary.overdue.slice(0, 5).map((payment) => (
+              <div key={payment.id} className="flex items-center justify-between py-2 border-b border-line last:border-0">
                 <div className="min-w-0">
-                  <p className="text-sm truncate">{payment.title}</p>
-                  <p className="text-[11px] text-neutral-500">Ayın {paymentDay(payment)}. günü</p>
+                  <p className="text-sm text-ink truncate">{payment.title}</p>
+                  <p className="text-[11px] text-ink-muted">Ayın {paymentDay(payment)}. günü</p>
                 </div>
-                <span className="text-sm font-semibold text-amber-300">{formatTRY(payment.amountCents)}</span>
+                <span className="text-sm font-semibold text-amber-600 dark:text-amber-300">{formatTRY(payment.amountCents)}</span>
               </div>
             ))}
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-            <p className="text-xs uppercase tracking-[0.18em] text-neutral-500 mb-3">Yaklaşan</p>
-            {summary.upcoming.length === 0 ? <p className="text-sm text-neutral-500">Bu ay bekleyen ödeme yok.</p> : summary.upcoming.slice(0, 5).map((payment) => (
-              <div key={payment.id} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+          <div className={`${ui.card} p-4`}>
+            <p className={`mb-3 ${ui.sectionTitle}`}>Yaklaşan</p>
+            {summary.upcoming.length === 0 ? <p className="text-sm text-ink-muted">Bu ay bekleyen ödeme yok.</p> : summary.upcoming.slice(0, 5).map((payment) => (
+              <div key={payment.id} className="flex items-center justify-between py-2 border-b border-line last:border-0">
                 <div className="min-w-0">
-                  <p className="text-sm truncate">{payment.title}</p>
-                  <p className="text-[11px] text-neutral-500">Ayın {paymentDay(payment)}. günü</p>
+                  <p className="text-sm text-ink truncate">{payment.title}</p>
+                  <p className="text-[11px] text-ink-muted">Ayın {paymentDay(payment)}. günü</p>
                 </div>
-                <span className="text-sm font-semibold text-rose-300">{formatTRY(payment.amountCents)}</span>
+                <span className="text-sm font-semibold text-rose-600 dark:text-rose-300">{formatTRY(payment.amountCents)}</span>
               </div>
             ))}
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-            <p className="text-xs uppercase tracking-[0.18em] text-neutral-500 mb-3">Hızlı Ekle</p>
+          <div className={`${ui.card} p-4`}>
+            <p className={`mb-3 ${ui.sectionTitle}`}>Hızlı Ekle</p>
             <div className="grid grid-cols-2 gap-2">
               <Quick onClick={() => quickSet('Yemek', 'food')}>Yemek</Quick>
               <Quick onClick={() => quickSet('Market', 'shopping')}>Market</Quick>
@@ -425,49 +422,49 @@ export default function PaymentsModule({ payments: initialPayments, toastFn }: P
 }
 
 function Stat({ label, value, tone }: { label: string; value: string; tone: string }) {
-  const toneClass = tone === 'rose' ? 'text-rose-300' : tone === 'emerald' ? 'text-emerald-300' : tone === 'amber' ? 'text-amber-300' : tone === 'violet' ? 'text-violet-300' : 'text-sky-300';
+  const toneClass = tone === 'rose' ? 'text-rose-600 dark:text-rose-300' : tone === 'emerald' ? 'text-emerald-600 dark:text-emerald-300' : tone === 'amber' ? 'text-amber-600 dark:text-amber-300' : tone === 'violet' ? 'text-violet-600 dark:text-violet-300' : 'text-sky-600 dark:text-sky-300';
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-      <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-500">{label}</p>
+    <div className={`${ui.card} p-4`}>
+      <p className={ui.sectionTitle}>{label}</p>
       <p className={`mt-2 text-xl font-bold ${toneClass}`}>{value}</p>
     </div>
   );
 }
 
 function Segment({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button type="button" onClick={onClick} className={`rounded-lg px-3 py-1.5 text-sm border ${active ? 'bg-white text-black border-white' : 'border-white/10 text-neutral-400 hover:text-white'}`}>{children}</button>;
+  return <button type="button" onClick={onClick} className={`rounded-full px-3.5 py-1.5 text-sm border ${active ? 'bg-ink text-paper border-ink' : 'border-line text-ink-muted hover:text-ink'}`}>{children}</button>;
 }
 
 function FilterButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button type="button" onClick={onClick} className={`shrink-0 rounded-lg px-3 py-1.5 text-xs border ${active ? 'bg-white text-black border-white font-bold' : 'border-white/10 text-neutral-400 hover:text-white'}`}>{children}</button>;
+  return <button type="button" onClick={onClick} className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs border ${active ? 'bg-ink text-paper border-ink font-medium' : 'border-line text-ink-muted hover:text-ink'}`}>{children}</button>;
 }
 
 function Quick({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
-  return <button type="button" onClick={onClick} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs text-neutral-300 hover:text-white hover:border-white/20">{children}</button>;
+  return <button type="button" onClick={onClick} className="rounded-full border border-line px-3 py-2 text-xs text-ink-soft hover:text-ink hover:border-ink/30">{children}</button>;
 }
 
 function PaymentRow({ payment, displayMonth, onEdit, onDelete, onTogglePaid }: { payment: T.Payment; displayMonth: Date; onEdit: (payment: T.Payment) => void; onDelete: (id: number) => void; onTogglePaid: (payment: T.Payment) => void }) {
   const meta = getCategoryMeta(payment.category);
   const paidForMonth = isPaymentPaidForMonth(payment, displayMonth);
   return (
-    <div className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-neutral-900/30 p-3 hover:border-white/20">
+    <div className="group flex items-center gap-3 rounded-2xl border border-line bg-surface p-3 hover:border-ink/15">
       <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${colorMap[meta.color]}`}>
         {categoryIcon(payment.category)}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <p className="truncate text-sm font-semibold">{payment.title}</p>
-          {payment.recurrence === 'monthly' && <span className="rounded border border-violet-500/20 px-1.5 py-0.5 text-[10px] text-violet-300">aylık</span>}
-          {paidForMonth && <span className="rounded border border-emerald-500/20 px-1.5 py-0.5 text-[10px] text-emerald-300">ödendi</span>}
+          <p className="truncate text-sm font-semibold text-ink">{payment.title}</p>
+          {payment.recurrence === 'monthly' && <span className="rounded border border-violet-500/25 px-1.5 py-0.5 text-[10px] text-violet-600 dark:text-violet-300">aylık</span>}
+          {paidForMonth && <span className="rounded border border-emerald-500/25 px-1.5 py-0.5 text-[10px] text-emerald-600 dark:text-emerald-300">ödendi</span>}
         </div>
-        <p className="mt-0.5 text-[11px] text-neutral-500">{meta.label} · {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString('tr-TR') : `Ayın ${payment.recurringDay}. günü`}</p>
+        <p className="mt-0.5 text-[11px] text-ink-muted">{meta.label} · {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString('tr-TR') : `Ayın ${payment.recurringDay}. günü`}</p>
       </div>
       <div className="text-right">
-        <p className={`text-sm font-bold ${payment.type === 'income' ? 'text-emerald-300' : 'text-rose-300'}`}>{payment.type === 'income' ? '+' : '-'}{formatTRY(payment.amountCents)}</p>
+        <p className={`text-sm font-bold ${payment.type === 'income' ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300'}`}>{payment.type === 'income' ? '+' : '-'}{formatTRY(payment.amountCents)}</p>
         <div className="mt-1 flex justify-end gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-          <button onClick={() => onTogglePaid(payment)} title="Ödendi" className="rounded border border-white/10 p-1 text-neutral-400 hover:text-white"><Check size={13} /></button>
-          <button onClick={() => onEdit(payment)} title="Düzenle" className="rounded border border-white/10 p-1 text-neutral-400 hover:text-white"><Pencil size={13} /></button>
-          <button onClick={() => onDelete(payment.id)} title="Sil" className="rounded border border-rose-500/20 p-1 text-rose-400 hover:text-rose-300"><Trash2 size={13} /></button>
+          <button onClick={() => onTogglePaid(payment)} title="Ödendi" aria-label="Ödendi" className="rounded-lg border border-line p-1 text-ink-muted hover:bg-surface-2 hover:text-ink"><Check size={13} /></button>
+          <button onClick={() => onEdit(payment)} title="Düzenle" aria-label="Düzenle" className="rounded-lg border border-line p-1 text-ink-muted hover:bg-surface-2 hover:text-ink"><Pencil size={13} /></button>
+          <button onClick={() => onDelete(payment.id)} title="Sil" aria-label="Sil" className="rounded-lg border border-rose-500/25 p-1 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10"><Trash2 size={13} /></button>
         </div>
       </div>
     </div>

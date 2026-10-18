@@ -7,7 +7,7 @@ import SpotifyWidget from './SpotifyWidget';
 import type { WeatherData, GitHubEvent, SpotifyData, TabId } from './types';
 
 function WidgetSkeleton() {
-  return <div className="rounded-2xl border border-white/5 bg-white/[0.02] h-40 animate-pulse" />;
+  return <div className="rounded-2xl border border-line bg-surface-2 h-40 animate-pulse" />;
 }
 
 function WeatherLoader() {

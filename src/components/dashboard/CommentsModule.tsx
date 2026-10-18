@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { approveCommentAction, deleteCommentAction } from '@/app/actions/comments';
-import { MessageCircle } from 'lucide-react';
+import { PageHeader } from './ui';
 
 interface Comment {
   id: number;
@@ -56,63 +56,58 @@ export default function CommentsModule({ comments, toastFn }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <MessageCircle size={20} className="text-neutral-500 dark:text-neutral-400" />
-          <h2 className="text-2xl font-bold tracking-tight">Yorumlar</h2>
-        </div>
-        <div className="flex gap-2">
+      <PageHeader title="Yorumlar">
           {(['all', 'pending', 'approved'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+              aria-pressed={filter === f}
+              className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                 filter === f
-                  ? 'bg-neutral-200 dark:bg-white/10 border-neutral-400 dark:border-white/20 text-neutral-900 dark:text-white'
-                  : 'border-neutral-200 dark:border-white/10 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  ? 'bg-surface-2 border-ink/30 text-ink'
+                  : 'border-line text-ink-muted hover:border-ink/30 hover:text-ink'
               }`}
             >
               {f === 'all' ? 'Tümü' : f === 'pending' ? 'Bekleyen' : 'Onaylı'}
             </button>
           ))}
-        </div>
-      </div>
+      </PageHeader>
 
       {filtered.length === 0 ? (
-        <p className="text-neutral-500 dark:text-neutral-400 text-sm">Bu kategoride yorum bulunmuyor.</p>
+        <p className="text-ink-muted text-sm">Bu kategoride yorum bulunmuyor.</p>
       ) : (
         <div className="space-y-4">
           {filtered.map((comment) => (
             <div
               key={comment.id}
-              className={`p-5 rounded-xl border ${
-                comment.approved ? 'border-neutral-200 dark:border-white/5 bg-neutral-100 dark:bg-white/[0.02]' : 'border-amber-500/20 bg-amber-500/[0.03]'
+              className={`p-5 rounded-2xl border ${
+                comment.approved ? 'border-line bg-surface' : 'border-amber-500/25 bg-amber-500/5'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-full bg-neutral-300 dark:bg-white/10 flex items-center justify-center text-xs font-bold text-neutral-700 dark:text-white">
+                  <div className="w-7 h-7 rounded-full bg-surface-2 flex items-center justify-center text-xs font-bold text-ink-soft">
                     {comment.name.charAt(0).toUpperCase()}
                   </div>
-                  <span className="font-semibold text-neutral-900 dark:text-white">{comment.name}</span>
-                  <span className="text-[11px] text-neutral-500 dark:text-neutral-400">{comment.email}</span>
+                  <span className="font-semibold text-ink">{comment.name}</span>
+                  <span className="text-[11px] text-ink-muted">{comment.email}</span>
                   {!comment.approved && (
-                    <span className="text-[9px] text-amber-400 border border-amber-500/20 px-1.5 rounded">
+                    <span className="text-[9px] text-amber-700 dark:text-amber-400 border border-amber-500/25 px-1.5 rounded">
                       onay bekliyor
                     </span>
                   )}
                 </div>
-                <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                <span className="text-[11px] text-ink-muted">
                   {new Date(comment.createdAt).toLocaleDateString('tr-TR')}
                 </span>
               </div>
-              <p className="text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed mb-4 whitespace-pre-wrap">{comment.content}</p>
+              <p className="text-ink-soft text-sm leading-relaxed mb-4 whitespace-pre-wrap">{comment.content}</p>
               <div className="flex gap-2">
                 {!comment.approved && (
                   <button
                     onClick={() => handleApprove(comment.id)}
                     disabled={isPending && actionId === comment.id}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+                    className="text-xs px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25 hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
                   >
                     {isPending && actionId === comment.id ? '...' : 'Onayla'}
                   </button>
@@ -120,7 +115,7 @@ export default function CommentsModule({ comments, toastFn }: Props) {
                 <button
                   onClick={() => handleDelete(comment.id)}
                   disabled={isPending && actionId === comment.id}
-                  className="text-xs px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-colors disabled:opacity-50"
+                  className="text-xs px-3 py-1.5 rounded-full bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/25 hover:bg-rose-500/20 transition-colors disabled:opacity-50"
                 >
                   {isPending && actionId === comment.id ? '...' : 'Sil'}
                 </button>

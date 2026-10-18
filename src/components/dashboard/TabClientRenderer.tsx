@@ -8,7 +8,7 @@ import type { TabId } from './types';
 
 function ModuleFallback() {
   return (
-    <div className="min-h-[240px] rounded-2xl border border-white/5 bg-neutral-900/30 animate-pulse" />
+    <div className="min-h-[240px] rounded-2xl border border-line bg-surface-2 animate-pulse" />
   );
 }
 
@@ -100,15 +100,15 @@ export default function TabClientRenderer({ tab, data, userEmail, openCreateProj
     return (
       <div className="rounded-2xl border border-rose-500/20 bg-rose-500/5 p-6">
         <div className="flex items-start gap-3">
-          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-500/10 text-rose-300">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-300">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <circle cx="12" cy="12" r="10" />
               <path d="M12 8v4M12 16h.01" />
             </svg>
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-white">Bölüm yüklenemedi</h1>
-            <p className="mt-1 text-sm text-neutral-400">{data.loadError}</p>
+            <h1 className="text-lg font-semibold text-ink">Bölüm yüklenemedi</h1>
+            <p className="mt-1 text-sm text-ink-muted">{data.loadError}</p>
           </div>
         </div>
       </div>
@@ -167,6 +167,6 @@ export default function TabClientRenderer({ tab, data, userEmail, openCreateProj
     case 'files':
       return <FilesModule toastFn={toastFn} />;
     default:
-      return <div className="text-neutral-500">Seçilen sekme bulunamadı.</div>;
+      return <div className="text-ink-muted">Seçilen sekme bulunamadı.</div>;
   }
 }

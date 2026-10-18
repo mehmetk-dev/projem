@@ -70,15 +70,15 @@ function DashboardContentSkeleton() {
   return (
     <div className="space-y-5">
       <div className="space-y-3">
-        <div className="h-8 w-44 animate-pulse rounded-lg bg-white/[0.06]" />
-        <div className="h-4 w-32 animate-pulse rounded-lg bg-white/[0.04]" />
+        <div className="h-8 w-44 animate-pulse rounded-lg bg-surface-2" />
+        <div className="h-4 w-32 animate-pulse rounded-lg bg-surface-2" />
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         {[0, 1, 2, 3].map((item) => (
-          <div key={item} className="h-28 animate-pulse rounded-2xl border border-white/5 bg-neutral-900/30" />
+          <div key={item} className="h-28 animate-pulse rounded-2xl border border-line bg-surface" />
         ))}
       </div>
-      <div className="h-64 animate-pulse rounded-2xl border border-white/5 bg-neutral-900/30" />
+      <div className="h-64 animate-pulse rounded-2xl border border-line bg-surface" />
     </div>
   );
 }

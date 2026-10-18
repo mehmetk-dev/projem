@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import * as T from './types';
-import { Empty, PlusIcon, Btn, ActionBtn, Input } from './ui';
+import { Empty, PlusIcon, Btn, ActionBtn, Input, PageHeader, ui } from './ui';
 import { createNoteAction, updateNoteAction, deleteNoteAction, togglePinNoteAction } from '@/app/actions/notes';
 
 interface Props {
@@ -87,42 +87,38 @@ export default function NotesModule({ notes: initialNotes, fmt, toastFn }: Props
 
   return (
     <div className="space-y-5">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Notlar</h1>
-          <p className="text-sm text-neutral-500 mt-0.5">{notes.length} not</p>
-        </div>
+      <PageHeader title="Notlar" description={`${notes.length} not`}>
         {mode === 'list' && (
           <Btn onClick={() => setMode('form')}>
             <PlusIcon /> Yeni Not
           </Btn>
         )}
-      </div>
+      </PageHeader>
 
       {mode === 'form' && (
-        <form onSubmit={submit} className="bg-neutral-900/40 border border-white/10 rounded-2xl p-5 space-y-3 animate-in fade-in">
+        <form onSubmit={submit} className={`${ui.card} p-5 space-y-3 animate-in fade-in`}>
           <div className="flex justify-between items-center">
-            <h2 className="font-bold text-sm">{edit ? 'Notu Düzenle' : 'Yeni Not'}</h2>
+            <h2 className="text-sm font-semibold text-ink">{edit ? 'Notu Düzenle' : 'Yeni Not'}</h2>
             <Btn variant="ghost" onClick={reset}>İptal</Btn>
           </div>
           <Input name="title" value={f.title} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setF((s) => ({ ...s, title: e.target.value }))} placeholder="Başlık" required />
           <input type="hidden" name="image" value={f.image} />
           <div className="space-y-2">
-            <label className="block text-xs text-neutral-500">Görsel (isteğe bağlı)</label>
-            <input name="imageFile" type="file" accept="image/*" className="w-full text-xs text-neutral-400 file:bg-neutral-800 file:text-white file:border-0 file:px-3 file:py-1.5 file:rounded-lg file:mr-3" />
+            <label className={ui.label}>Görsel (isteğe bağlı)</label>
+            <input name="imageFile" type="file" accept="image/*" className="w-full text-xs text-ink-muted file:bg-surface-2 file:text-ink file:border-0 file:px-3 file:py-1.5 file:rounded-full file:mr-3" />
           </div>
-          {f.image && <Image src={f.image} alt="preview" width={400} height={128} className="w-full h-32 object-cover rounded-lg border border-white/10" />}
+          {f.image && <Image src={f.image} alt="preview" width={400} height={128} className="w-full h-32 object-cover rounded-xl border border-line" />}
           <Input name="content" value={f.content} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setF((s) => ({ ...s, content: e.target.value }))} placeholder="Notunuzu yazın..." rows={4} />
           <div className="flex items-center gap-2 pt-1">
             {(['neutral', 'blue', 'green', 'amber', 'rose', 'violet'] as const).map((c) => (
-              <button key={c} type="button" onClick={() => setF((s) => ({ ...s, color: c }))} className={`w-5 h-5 rounded-full border-2 transition-all ${f.color === c ? 'border-white scale-110' : 'border-transparent opacity-50 hover:opacity-100'} ${c === 'neutral' ? 'bg-neutral-700' : c === 'blue' ? 'bg-sky-600' : c === 'green' ? 'bg-emerald-600' : c === 'amber' ? 'bg-amber-600' : c === 'rose' ? 'bg-rose-600' : 'bg-violet-600'}`} />
+              <button key={c} type="button" aria-label={`Renk: ${c}`} onClick={() => setF((s) => ({ ...s, color: c }))} className={`w-5 h-5 rounded-full border-2 transition-all ${f.color === c ? 'border-ink scale-110' : 'border-transparent opacity-50 hover:opacity-100'} ${c === 'neutral' ? 'bg-stone-500' : c === 'blue' ? 'bg-sky-600' : c === 'green' ? 'bg-emerald-600' : c === 'amber' ? 'bg-amber-600' : c === 'rose' ? 'bg-rose-600' : 'bg-violet-600'}`} />
             ))}
             <input type="hidden" name="color" value={f.color} />
-            <label className="flex items-center gap-2 ml-auto text-xs text-neutral-400 cursor-pointer">
-              <input type="checkbox" name="pinned" value="true" checked={f.pinned} onChange={(e) => setF((s) => ({ ...s, pinned: e.target.checked }))} className="accent-white" /> Sabitle
+            <label className="flex items-center gap-2 ml-auto text-xs text-ink-soft cursor-pointer">
+              <input type="checkbox" name="pinned" value="true" checked={f.pinned} onChange={(e) => setF((s) => ({ ...s, pinned: e.target.checked }))} className="accent-accent" /> Sabitle
             </label>
           </div>
-          <button type="submit" disabled={busy} className="bg-white text-black px-4 py-2 rounded-full text-sm font-bold hover:bg-neutral-200 disabled:opacity-50">
+          <button type="submit" disabled={busy} className={ui.btnPrimary}>
             {busy ? 'Kaydediliyor...' : edit ? 'Güncelle' : 'Oluştur'}
           </button>
         </form>
@@ -138,7 +134,7 @@ function NoteGrid({ notes, title, onEdit, onDel, onPin, fmt }: { notes: T.Note[]
   if (!notes.length && !title) return null;
   return (
     <div>
-      {title && <h2 className="text-xs uppercase tracking-widest text-neutral-500 mb-3">{title}</h2>}
+      {title && <h2 className={`mb-3 ${ui.sectionTitle}`}>{title}</h2>}
       {!notes.length ? (
         <Empty />
       ) : (
@@ -146,24 +142,24 @@ function NoteGrid({ notes, title, onEdit, onDel, onPin, fmt }: { notes: T.Note[]
           {notes.map((note) => {
             const c = T.COLOR_MAP[note.color] || T.COLOR_MAP.neutral;
             return (
-              <div key={note.id} className={`group relative rounded-xl p-4 border transition-all hover:border-white/20 hover:-translate-y-0.5 ${c.bg} ${c.border}`}>
-                {note.image && <Image src={note.image} alt="" width={400} height={112} className="w-full h-28 object-cover rounded-lg mb-3 border border-white/5" />}
+              <div key={note.id} className={`group relative rounded-2xl p-4 border transition-all hover:border-ink/30 hover:-translate-y-0.5 ${c.bg} ${c.border}`}>
+                {note.image && <Image src={note.image} alt="" width={400} height={112} className="w-full h-28 object-cover rounded-lg mb-3 border border-line" />}
                 <div className="flex justify-between items-start mb-2">
                   <h3 className={`font-semibold text-sm line-clamp-2 ${c.text}`}>{note.title}</h3>
                   <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <ActionBtn onClick={() => onPin(note.id)} title={note.pinned ? 'Kaldır' : 'Sabitle'}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill={note.pinned ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M16 12V4H17V2H7V4H8V12L6 14V16H11.2V22H12.8V16H18V14L16 12Z" /></svg>
                     </ActionBtn>
-                    <ActionBtn onClick={() => onEdit(note)}>
+                    <ActionBtn onClick={() => onEdit(note)} title="Düzenle">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                     </ActionBtn>
-                    <ActionBtn onClick={() => onDel(note.id)}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-rose-400"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" /></svg>
+                    <ActionBtn onClick={() => onDel(note.id)} title="Sil">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-rose-600 dark:text-rose-400"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" /></svg>
                     </ActionBtn>
                   </div>
                 </div>
                 <p className={`text-sm line-clamp-3 mb-3 ${c.text} opacity-80`}>{note.content || <span className="italic opacity-40">İçerik yok</span>}</p>
-                <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded ${c.badge} ${c.text} opacity-60`}>{fmt(note.updatedAt)}</span>
+                <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded ${c.badge} ${c.text} opacity-60`}>{fmt(note.updatedAt || note.createdAt)}</span>
               </div>
             );
           })}

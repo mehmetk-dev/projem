@@ -47,11 +47,12 @@ export type JournalMood = 'calm' | 'good' | 'hard' | 'bright' | 'tired';
 export interface JournalEntry { id: number; userId: number; entryDate: string; title: string; content: string; mood: JournalMood; image: string | null; createdAt: string; updatedAt: string | null; }
 export type TabId = 'overview' | 'notes' | 'blogs' | 'projects' | 'messages' | 'todos' | 'payments' | 'bookmarks' | 'snippets' | 'analytics' | 'calendar' | 'timer' | 'chat' | 'spotify' | 'settings' | 'guestbook' | 'comments' | 'audit' | 'users' | 'social' | 'subscribers' | 'journal' | 'files';
 
+// Not renkleri: zemin hafif renkli, metin her iki temada okunur kalsın diye text-ink
 export const COLOR_MAP: Record<string, { bg: string; border: string; text: string; badge: string }> = {
-  neutral: { bg: 'bg-neutral-900/60', border: 'border-white/10', text: 'text-white', badge: 'bg-neutral-800' },
-  blue: { bg: 'bg-sky-950/40', border: 'border-sky-500/20', text: 'text-sky-100', badge: 'bg-sky-900/60' },
-  green: { bg: 'bg-emerald-950/40', border: 'border-emerald-500/20', text: 'text-emerald-100', badge: 'bg-emerald-900/60' },
-  amber: { bg: 'bg-amber-950/40', border: 'border-amber-500/20', text: 'text-amber-100', badge: 'bg-amber-900/60' },
-  rose: { bg: 'bg-rose-950/40', border: 'border-rose-500/20', text: 'text-rose-100', badge: 'bg-rose-900/60' },
-  violet: { bg: 'bg-violet-950/40', border: 'border-violet-500/20', text: 'text-violet-100', badge: 'bg-violet-900/60' },
+  neutral: { bg: 'bg-surface', border: 'border-line', text: 'text-ink', badge: 'bg-surface-2' },
+  blue: { bg: 'bg-sky-500/10', border: 'border-sky-500/25', text: 'text-ink', badge: 'bg-sky-500/15' },
+  green: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/25', text: 'text-ink', badge: 'bg-emerald-500/15' },
+  amber: { bg: 'bg-amber-500/10', border: 'border-amber-500/25', text: 'text-ink', badge: 'bg-amber-500/15' },
+  rose: { bg: 'bg-rose-500/10', border: 'border-rose-500/25', text: 'text-ink', badge: 'bg-rose-500/15' },
+  violet: { bg: 'bg-violet-500/10', border: 'border-violet-500/25', text: 'text-ink', badge: 'bg-violet-500/15' },
 };

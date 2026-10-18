@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { savePomodoroSettingsAction } from '@/app/actions/preferences';
 import type { UserPreferences } from './types';
+import { PageHeader, ui } from './ui';
 
 type Mode = 'pomodoro' | 'timer' | 'stopwatch';
 type WindowWithWebkitAudio = Window & typeof globalThis & {
@@ -122,16 +123,14 @@ export default function TimerModule({ preferences }: { preferences: UserPreferen
 
   return (
     <div className="space-y-5">
-      <div className="flex justify-between items-center">
-        <div><h1 className="text-2xl font-bold tracking-tight">Zamanlayıcı</h1><p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">Pomodoro, geri sayım ve kronometre</p></div>
-      </div>
+      <PageHeader title="Zamanlayıcı" description="Pomodoro, geri sayım ve kronometre" />
 
       <div className="flex gap-2">
         {(['pomodoro', 'timer', 'stopwatch'] as Mode[]).map((m) => (
-          <button key={m} onClick={() => setMode(m)} className={`px-4 py-2 rounded-full text-xs font-bold border transition-all ${
+          <button key={m} onClick={() => setMode(m)} className={`px-4 py-2 rounded-full text-xs font-medium border transition-colors ${
             mode === m
-              ? 'bg-neutral-900 text-white dark:bg-white dark:text-black border-neutral-900 dark:border-white'
-              : 'bg-transparent text-neutral-500 dark:text-neutral-400 border-neutral-200 dark:border-white/10 hover:border-neutral-400 dark:hover:border-white/30'
+              ? 'bg-ink text-paper border-ink'
+              : 'bg-transparent text-ink-muted border-line hover:border-ink/30'
           }`}>
             {m === 'pomodoro' ? 'Pomodoro' : m === 'timer' ? 'Geri Sayım' : 'Kronometre'}
           </button>
@@ -139,61 +138,61 @@ export default function TimerModule({ preferences }: { preferences: UserPreferen
       </div>
 
       {mode === 'pomodoro' && (
-        <div className="bg-neutral-100 dark:bg-neutral-900/40 border border-neutral-200 dark:border-white/10 rounded-2xl p-8 text-center space-y-4">
+        <div className={`${ui.card} p-8 text-center space-y-4`}>
           {!pomoActive && (
-            <button onClick={() => setPomoSettingsOpen((o) => !o)} className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white underline underline-offset-2">
+            <button onClick={() => setPomoSettingsOpen((o) => !o)} className="text-xs text-ink-muted hover:text-ink underline underline-offset-2">
               {pomoSettingsOpen ? 'Ayarları Gizle' : 'Süre Ayarları'}
             </button>
           )}
           {pomoSettingsOpen && !pomoActive && (
             <div className="flex justify-center items-center gap-3 text-sm">
               <div className="flex items-center gap-1.5">
-                <label className="text-neutral-500 dark:text-neutral-400">Çalışma:</label>
-                <input type="number" min={1} max={120} value={workMinutes} disabled={savingPomoSettings} onChange={(e) => { const v = Math.max(1, Math.min(120, Number(e.target.value))); setWorkMinutes(v); if (!pomoBreak) setPomoTime(v * 60); }} className="w-14 bg-neutral-200 dark:bg-transparent border border-neutral-300 dark:border-white/10 rounded-lg py-1.5 text-center text-neutral-900 dark:text-white text-sm disabled:opacity-50" />
-                <span className="text-neutral-400 text-xs">dk</span>
+                <label className="text-ink-muted">Çalışma:</label>
+                <input type="number" min={1} max={120} value={workMinutes} disabled={savingPomoSettings} onChange={(e) => { const v = Math.max(1, Math.min(120, Number(e.target.value))); setWorkMinutes(v); if (!pomoBreak) setPomoTime(v * 60); }} className="w-14 rounded-lg border border-line bg-paper py-1.5 text-center text-sm text-ink outline-none focus:border-accent disabled:opacity-50" />
+                <span className="text-ink-muted text-xs">dk</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <label className="text-neutral-500 dark:text-neutral-400">Mola:</label>
-                <input type="number" min={1} max={60} value={breakMinutes} disabled={savingPomoSettings} onChange={(e) => { const v = Math.max(1, Math.min(60, Number(e.target.value))); setBreakMinutes(v); if (pomoBreak) setPomoTime(v * 60); }} className="w-14 bg-neutral-200 dark:bg-transparent border border-neutral-300 dark:border-white/10 rounded-lg py-1.5 text-center text-neutral-900 dark:text-white text-sm disabled:opacity-50" />
-                <span className="text-neutral-400 text-xs">dk</span>
+                <label className="text-ink-muted">Mola:</label>
+                <input type="number" min={1} max={60} value={breakMinutes} disabled={savingPomoSettings} onChange={(e) => { const v = Math.max(1, Math.min(60, Number(e.target.value))); setBreakMinutes(v); if (pomoBreak) setPomoTime(v * 60); }} className="w-14 rounded-lg border border-line bg-paper py-1.5 text-center text-sm text-ink outline-none focus:border-accent disabled:opacity-50" />
+                <span className="text-ink-muted text-xs">dk</span>
               </div>
-              <button onClick={applyPomoSettings} disabled={savingPomoSettings} className="text-xs bg-neutral-900 text-white dark:bg-white dark:text-black px-3 py-1.5 rounded-full font-bold hover:bg-neutral-700 dark:hover:bg-neutral-200 disabled:opacity-50">
+              <button onClick={applyPomoSettings} disabled={savingPomoSettings} className={`${ui.btnPrimary} !px-3 !py-1.5 !text-xs`}>
                 {savingPomoSettings ? 'Kaydediliyor...' : 'Uygula'}
               </button>
             </div>
           )}
-          <div className="text-[10px] uppercase tracking-widest text-neutral-500 dark:text-neutral-400">{pomoBreak ? 'Mola' : 'Çalışma'}</div>
-          <div className="text-6xl font-mono font-bold tracking-tighter text-neutral-900 dark:text-white">{fmt(pomoTime)}</div>
+          <div className="text-[10px] uppercase tracking-widest text-ink-muted">{pomoBreak ? 'Mola' : 'Çalışma'}</div>
+          <div className="text-6xl font-mono font-bold tracking-tighter text-ink">{fmt(pomoTime)}</div>
           <div className="flex justify-center gap-3">
-            <button onClick={() => setPomoActive((a) => !a)} className="bg-neutral-900 text-white dark:bg-white dark:text-black px-6 py-2 rounded-full text-sm font-bold hover:bg-neutral-700 dark:hover:bg-neutral-200">{pomoActive ? 'Duraklat' : 'Başlat'}</button>
-            <button onClick={resetPomo} className="px-6 py-2 rounded-full text-sm font-bold border border-neutral-200 dark:border-white/10 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:border-neutral-400 dark:hover:border-white/30">Sıfırla</button>
+            <button onClick={() => setPomoActive((a) => !a)} className={ui.btnPrimary}>{pomoActive ? 'Duraklat' : 'Başlat'}</button>
+            <button onClick={resetPomo} className={ui.btnSecondary}>Sıfırla</button>
           </div>
-          <div className="text-xs text-neutral-500 dark:text-neutral-400">Tur: {pomoCycle}</div>
+          <div className="text-xs text-ink-muted">Tur: {pomoCycle}</div>
         </div>
       )}
 
       {mode === 'timer' && (
-        <div className="bg-neutral-100 dark:bg-neutral-900/40 border border-neutral-200 dark:border-white/10 rounded-2xl p-8 text-center space-y-4">
+        <div className={`${ui.card} p-8 text-center space-y-4`}>
           {!cdActive && cdTime === cdInput * 60 && (
             <div className="flex justify-center items-center gap-2">
-              <input type="number" min={1} max={180} value={cdInput} onChange={(e) => { const v = Math.max(1, Math.min(180, Number(e.target.value))); setCdInput(v); setCdTime(v * 60); }} className="w-20 bg-neutral-200 dark:bg-transparent border border-neutral-300 dark:border-white/10 rounded-lg py-2 text-center text-sm text-neutral-900 dark:text-white" />
-              <span className="text-sm text-neutral-500 dark:text-neutral-400">dakika</span>
+              <input type="number" min={1} max={180} value={cdInput} onChange={(e) => { const v = Math.max(1, Math.min(180, Number(e.target.value))); setCdInput(v); setCdTime(v * 60); }} className="w-20 rounded-lg border border-line bg-paper py-2 text-center text-sm text-ink outline-none focus:border-accent" />
+              <span className="text-sm text-ink-muted">dakika</span>
             </div>
           )}
-          <div className="text-6xl font-mono font-bold tracking-tighter text-neutral-900 dark:text-white">{fmt(cdTime)}</div>
+          <div className="text-6xl font-mono font-bold tracking-tighter text-ink">{fmt(cdTime)}</div>
           <div className="flex justify-center gap-3">
-            <button onClick={() => setCdActive((a) => !a)} className="bg-neutral-900 text-white dark:bg-white dark:text-black px-6 py-2 rounded-full text-sm font-bold hover:bg-neutral-700 dark:hover:bg-neutral-200">{cdActive ? 'Duraklat' : 'Başlat'}</button>
-            <button onClick={resetCd} className="px-6 py-2 rounded-full text-sm font-bold border border-neutral-200 dark:border-white/10 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:border-neutral-400 dark:hover:border-white/30">Sıfırla</button>
+            <button onClick={() => setCdActive((a) => !a)} className={ui.btnPrimary}>{cdActive ? 'Duraklat' : 'Başlat'}</button>
+            <button onClick={resetCd} className={ui.btnSecondary}>Sıfırla</button>
           </div>
         </div>
       )}
 
       {mode === 'stopwatch' && (
-        <div className="bg-neutral-100 dark:bg-neutral-900/40 border border-neutral-200 dark:border-white/10 rounded-2xl p-8 text-center space-y-4">
-          <div className="text-6xl font-mono font-bold tracking-tighter text-neutral-900 dark:text-white">{fmt(swTime)}</div>
+        <div className={`${ui.card} p-8 text-center space-y-4`}>
+          <div className="text-6xl font-mono font-bold tracking-tighter text-ink">{fmt(swTime)}</div>
           <div className="flex justify-center gap-3">
-            <button onClick={() => setSwActive((a) => !a)} className="bg-neutral-900 text-white dark:bg-white dark:text-black px-6 py-2 rounded-full text-sm font-bold hover:bg-neutral-700 dark:hover:bg-neutral-200">{swActive ? 'Duraklat' : 'Başlat'}</button>
-            <button onClick={resetSw} className="px-6 py-2 rounded-full text-sm font-bold border border-neutral-200 dark:border-white/10 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:border-neutral-400 dark:hover:border-white/30">Sıfırla</button>
+            <button onClick={() => setSwActive((a) => !a)} className={ui.btnPrimary}>{swActive ? 'Duraklat' : 'Başlat'}</button>
+            <button onClick={resetSw} className={ui.btnSecondary}>Sıfırla</button>
           </div>
         </div>
       )}

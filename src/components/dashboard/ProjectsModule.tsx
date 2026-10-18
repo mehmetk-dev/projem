@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import * as T from './types';
-import { Empty, PlusIcon, Btn } from './ui';
+import { Empty, PlusIcon, Btn, PageHeader, ui } from './ui';
 import { createProjectAction, updateProjectAction, deleteProjectAction } from '@/app/actions/projects';
 import { getProjectImages } from '@/lib/utils';
 
@@ -34,7 +34,7 @@ const EMPTY_FORM: ProjectFormState = {
   displayOrder: 0, published: true,
 };
 
-const fieldClass = 'w-full bg-transparent border-b border-white/10 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-white/30';
+const fieldClass = ui.input;
 
 type ImageItem =
   | { type: 'existing'; url: string }
@@ -150,15 +150,14 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
 
   return (
     <div className="space-y-5">
-      <div className="flex justify-between items-center">
-        <div><h1 className="text-2xl font-bold tracking-tight">Projeler</h1><p className="text-sm text-neutral-500 mt-0.5">{projects.length} proje</p></div>
+      <PageHeader title="Projeler" description={`${projects.length} proje`}>
         {mode === 'list' && <Btn onClick={() => setMode('form')}><PlusIcon /> Yeni Proje</Btn>}
-      </div>
+      </PageHeader>
 
       {mode === 'form' && (
-        <form onSubmit={submit} className="bg-neutral-900/40 border border-white/10 rounded-2xl p-5 space-y-4 animate-in fade-in">
+        <form onSubmit={submit} className="bg-surface border border-line rounded-2xl p-5 space-y-4 animate-in fade-in">
           <div className="flex justify-between items-center"><h2 className="font-bold text-sm">{edit ? 'Projeyi Düzenle' : 'Yeni Proje'}</h2><Btn variant="ghost" onClick={reset}>İptal</Btn></div>
-          <input name="title" value={f.title} onChange={(e) => setF((s) => ({ ...s, title: e.target.value }))} placeholder="Proje Adı" required className="w-full bg-transparent border-b border-white/10 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-white/30" />
+          <input name="title" value={f.title} onChange={(e) => setF((s) => ({ ...s, title: e.target.value }))} placeholder="Proje Adı" required className={ui.input} />
           <input name="summary" value={f.summary} onChange={(e) => setF((s) => ({ ...s, summary: e.target.value }))} maxLength={300} placeholder="Kısa özet — kartlarda görünen tek cümle (ör. “Antika mağazası için hızlı, SEO dostu e-ticaret vitrini.”)" className={fieldClass} />
           <textarea name="description" value={f.description} onChange={(e) => setF((s) => ({ ...s, description: e.target.value }))} placeholder={'Proje hakkında — detay sayfasında görünür. Önerilen akış:\nİhtiyaç: Müşterinin sorunu neydi?\nÇözüm: Ne geliştirdin, nasıl?\nSonuç: Ne kazanıldı?'} rows={6} className={`${fieldClass} resize-y`} />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -169,14 +168,14 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
           <input name="stack" value={f.stack} onChange={(e) => setF((s) => ({ ...s, stack: e.target.value }))} placeholder="Teknolojiler, virgülle ayır (ör. Next.js, Tailwind CSS, Turso)" className={fieldClass} />
           
           <div className="space-y-2">
-            <label className="block text-xs text-neutral-500 font-medium">Proje Görselleri (Sürükleyip Bırakabilir & Kapak Seçebilirsiniz)</label>
+            <label className={ui.label}>Proje Görselleri (Sürükleyip Bırakabilir & Kapak Seçebilirsiniz)</label>
             {images.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 p-3 rounded-2xl bg-neutral-950/50 border border-white/5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 p-3 rounded-2xl bg-paper border border-line">
                 {images.map((img, idx) => {
                   const isCover = idx === 0;
                   const src = img.type === 'existing' ? img.url : img.previewUrl;
                   return (
-                    <div key={img.type === 'existing' ? img.url : img.id} className="relative group aspect-square rounded-xl overflow-hidden border border-white/10 bg-neutral-900 shrink-0 flex flex-col justify-between">
+                    <div key={img.type === 'existing' ? img.url : img.id} className="relative group aspect-square rounded-xl overflow-hidden border border-line bg-surface-2 shrink-0 flex flex-col justify-between">
                       {/* Yeni yüklenen dosyalar blob: önizleme URL'si; next/image bunları optimize edemez */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={src} alt="Proje görseli" className="w-full h-full object-cover absolute inset-0 z-0" />
@@ -186,7 +185,7 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
                           <button
                             type="button"
                             onClick={() => removeImage(idx)}
-                            className="bg-rose-950/80 hover:bg-rose-900 border border-rose-500/20 text-[10px] text-rose-200 px-2 py-1 rounded-lg cursor-pointer"
+                            className="bg-rose-950/80 hover:bg-rose-900 border border-rose-500/20 text-[10px] text-rose-200 px-2 py-1 rounded-full cursor-pointer"
                           >
                             Kaldır
                           </button>
@@ -196,7 +195,7 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
                           <button
                             type="button"
                             onClick={() => setCover(idx)}
-                            className="w-full bg-white text-black font-bold text-[9px] py-1.5 rounded-lg text-center hover:bg-neutral-200 cursor-pointer"
+                            className="w-full bg-white text-black font-bold text-[9px] py-1.5 rounded-full text-center hover:bg-white/80 cursor-pointer"
                           >
                             Kapak Yap
                           </button>
@@ -214,7 +213,7 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
               </div>
             )}
             
-            <div className="flex items-center justify-center border-2 border-dashed border-white/10 rounded-2xl p-6 hover:border-white/20 transition-all cursor-pointer relative bg-neutral-900/20">
+            <div className="flex items-center justify-center border-2 border-dashed border-line rounded-2xl p-6 hover:border-ink/30 transition-all cursor-pointer relative bg-surface">
               <input
                 type="file"
                 accept="image/*"
@@ -223,25 +222,25 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
               <div className="text-center space-y-1">
-                <div className="text-neutral-400 flex justify-center mb-1 scale-150"><PlusIcon /></div>
-                <p className="text-xs text-neutral-300 font-medium">Görsel Eklemek İçin Tıklayın veya Sürükleyin</p>
-                <p className="text-[10px] text-neutral-500">Birden fazla görsel seçebilirsiniz. İlk görsel kapak fotoğrafı olacaktır.</p>
+                <div className="text-ink-muted flex justify-center mb-1 scale-150"><PlusIcon /></div>
+                <p className="text-xs text-ink-soft font-medium">Görsel Eklemek İçin Tıklayın veya Sürükleyin</p>
+                <p className="text-[10px] text-ink-muted">Birden fazla görsel seçebilirsiniz. İlk görsel kapak fotoğrafı olacaktır.</p>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <input name="link" value={f.link} onChange={(e) => setF((s) => ({ ...s, link: e.target.value }))} placeholder="Proje Linki" className="w-full bg-transparent border-b border-white/10 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-white/30" />
-            <input name="category" value={f.category} onChange={(e) => setF((s) => ({ ...s, category: e.target.value }))} placeholder="Kategori" required className="w-full bg-transparent border-b border-white/10 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-white/30" />
+            <input name="link" value={f.link} onChange={(e) => setF((s) => ({ ...s, link: e.target.value }))} placeholder="Proje Linki" className={ui.input} />
+            <input name="category" value={f.category} onChange={(e) => setF((s) => ({ ...s, category: e.target.value }))} placeholder="Kategori" required className={ui.input} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <input name="displayOrder" type="number" value={f.displayOrder} onChange={(e) => setF((s) => ({ ...s, displayOrder: Number(e.target.value) }))} placeholder="Sıra" className="w-full bg-transparent border-b border-white/10 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-white/30" />
+            <input name="displayOrder" type="number" value={f.displayOrder} onChange={(e) => setF((s) => ({ ...s, displayOrder: Number(e.target.value) }))} placeholder="Sıra" className={ui.input} />
             <div className="flex items-center gap-5">
-              <label className="flex items-center gap-2 text-sm text-neutral-400 cursor-pointer"><input type="checkbox" name="published" value="true" checked={f.published} onChange={(e) => setF((s) => ({ ...s, published: e.target.checked }))} className="accent-white" /> Yayında</label>
-              <label className="flex items-center gap-2 text-sm text-neutral-400 cursor-pointer" title="Ana sayfada büyük kart olarak gösterilir (en fazla 3)"><input type="checkbox" name="featured" value="true" checked={f.featured} onChange={(e) => setF((s) => ({ ...s, featured: e.target.checked }))} className="accent-white" /> Öne çıkan</label>
+              <label className="flex items-center gap-2 text-sm text-ink-muted cursor-pointer"><input type="checkbox" name="published" value="true" checked={f.published} onChange={(e) => setF((s) => ({ ...s, published: e.target.checked }))} className="accent-[var(--accent)]" /> Yayında</label>
+              <label className="flex items-center gap-2 text-sm text-ink-muted cursor-pointer" title="Ana sayfada büyük kart olarak gösterilir (en fazla 3)"><input type="checkbox" name="featured" value="true" checked={f.featured} onChange={(e) => setF((s) => ({ ...s, featured: e.target.checked }))} className="accent-[var(--accent)]" /> Öne çıkan</label>
             </div>
           </div>
-          <button type="submit" disabled={busy} className="bg-white text-black px-4 py-2 rounded-full text-sm font-bold hover:bg-neutral-200 disabled:opacity-50">{busy ? 'Kaydediliyor...' : edit ? 'Güncelle' : 'Oluştur'}</button>
+          <button type="submit" disabled={busy} className={ui.btnPrimary}>{busy ? 'Kaydediliyor...' : edit ? 'Güncelle' : 'Oluştur'}</button>
         </form>
       )}
 
@@ -250,16 +249,16 @@ export default function ProjectsModule({ projects: initialProjects, toastFn, ini
           const pImages = getProjectImages(p.image);
           const pThumbnail = pImages[0] || '/placeholder.svg';
           return (
-            <div key={p.id} className="group flex items-start gap-3 p-3 rounded-xl bg-neutral-900/30 border border-white/5 hover:border-white/10 transition-all">
-              <Image src={pThumbnail} alt={p.title} width={48} height={48} className="w-12 h-12 rounded-lg object-cover shrink-0 bg-neutral-800" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }} />
+            <div key={p.id} className="group flex items-start gap-3 p-3 rounded-xl bg-surface border border-line hover:border-ink/15 transition-all">
+              <Image src={pThumbnail} alt={p.title} width={48} height={48} className="w-12 h-12 rounded-lg object-cover shrink-0 bg-surface-2" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }} />
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm">{p.title}</p>
-                <p className="text-[11px] text-neutral-500 mt-0.5">{p.category} • Sıra {p.displayOrder} {p.featured ? '• Öne çıkan' : ''} {p.published ? '' : '• Gizli'} ({pImages.length} Görsel)</p>
-                <p className="text-[11px] text-neutral-600 mt-1 line-clamp-2">{p.summary || p.description}</p>
+                <p className="text-[11px] text-ink-muted mt-0.5">{p.category} • Sıra {p.displayOrder} {p.featured ? '• Öne çıkan' : ''} {p.published ? '' : '• Gizli'} ({pImages.length} Görsel)</p>
+                <p className="text-[11px] text-ink-muted mt-1 line-clamp-2">{p.summary || p.description}</p>
               </div>
               <div className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => openEdit(p)} className="text-[10px] text-neutral-400 hover:text-white px-2 py-1 rounded border border-white/10">Düzenle</button>
-                <button onClick={() => del(p.id)} className="text-[10px] text-rose-400 hover:text-rose-300 px-2 py-1 rounded border border-rose-500/20">Sil</button>
+                <button onClick={() => openEdit(p)} className="text-[10px] text-ink-muted hover:text-ink hover:border-ink/30 px-2 py-1 rounded-full border border-line">Düzenle</button>
+                <button onClick={() => del(p.id)} className="text-[10px] text-rose-600 hover:text-rose-500 dark:text-rose-400 dark:hover:text-rose-300 px-2 py-1 rounded-full border border-rose-500/20">Sil</button>
               </div>
             </div>
           );
