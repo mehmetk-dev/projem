@@ -113,6 +113,7 @@ function AvailabilityCard({ settings, toastFn }: { settings: T.SiteSetting[]; to
   const initial = parseAvailability(settings.find((setting) => setting.key === AVAILABILITY_KEYS.status)?.value, saved);
   const [status, setStatus] = useState<AvailabilityStatus>(initial.status);
   const [note, setNote] = useState(saved);
+  const [booking, setBooking] = useState(settings.find((setting) => setting.key === AVAILABILITY_KEYS.booking)?.value ?? '');
 
   const handleSave = () => {
     startTransition(async () => {
@@ -120,6 +121,7 @@ function AvailabilityCard({ settings, toastFn }: { settings: T.SiteSetting[]; to
         [
           [AVAILABILITY_KEYS.status, status],
           [AVAILABILITY_KEYS.note, note.trim()],
+          [AVAILABILITY_KEYS.booking, booking.trim()],
         ].map(([key, value]) => {
           const fd = new FormData();
           fd.append('key', key);
@@ -137,7 +139,7 @@ function AvailabilityCard({ settings, toastFn }: { settings: T.SiteSetting[]; to
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h2 className="text-sm font-bold">Müsaitlik</h2>
-          <p className="mt-1 text-xs text-ink-muted">Ana sayfada, iletişim bölümünde ve footer&apos;da görünen durum rozeti.</p>
+          <p className="mt-1 text-xs text-ink-muted">Ana sayfada, iletişim bölümünde ve footer&apos;da görünen durum rozeti ve görüşme linki.</p>
         </div>
         <button onClick={handleSave} disabled={isPending} className={ui.btnPrimary}>
           {isPending ? '...' : 'Kaydet'}
@@ -173,6 +175,15 @@ function AvailabilityCard({ settings, toastFn }: { settings: T.SiteSetting[]; to
         className={`${ui.input} mt-3`}
       />
       <p className="mt-1.5 text-[11px] text-ink-muted">Boş bırakırsanız seçili durumun varsayılan metni kullanılır. Ör. “Aralık için 1 yer kaldı”.</p>
+      <input
+        value={booking}
+        onChange={(e) => setBooking(e.target.value)}
+        type="url"
+        placeholder="https://cal.com/kullanici/15dk"
+        aria-label="Görüşme planlama linki"
+        className={`${ui.input} mt-3`}
+      />
+      <p className="mt-1.5 text-[11px] text-ink-muted">Doluysa iletişim bölümünde “15 dakikalık görüşme planlayın” bağlantısı çıkar. https:// ile başlamalı.</p>
     </Card>
   );
 }

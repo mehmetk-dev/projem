@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { cache } from 'react';
 import { sendContactEmail } from '@/lib/mail';
+import { BUDGET_RANGES, PROJECT_TYPES, pickOption } from '@/lib/contact-options';
 
 export interface MessageActionState {
   error?: string;
@@ -62,9 +63,20 @@ export async function submitContactAction(
     return { error: result.error.errors.map((e) => e.message).join(' ') };
   }
 
-  // messages tablosunda telefon kolonu yok; numara mesajın başına eklenir, panelde ve e-postada görünür
+  // messages tablosunda telefon, proje türü ve bütçe kolonu yok; mesajın başına eklenir, panelde ve e-postada görünür
   const { phone, ...fields } = result.data;
-  const data = { ...fields, content: phone ? `Telefon: ${phone}\n\n${fields.content}` : fields.content };
+  const projectType = pickOption(PROJECT_TYPES, formData.get('projectType'));
+  const budget = pickOption(BUDGET_RANGES, formData.get('budget'));
+  const details = [
+    projectType && `Proje türü: ${projectType}`,
+    budget && `Bütçe: ${budget}`,
+    phone && `Telefon: ${phone}`,
+  ].filter(Boolean);
+  const data = {
+    ...fields,
+    subject: fields.subject || [projectType, budget].filter(Boolean).join(' · ') || undefined,
+    content: details.length ? `${details.join('\n')}\n\n${fields.content}` : fields.content,
+  };
 
   try {
     await db.insert(messages).values(data);

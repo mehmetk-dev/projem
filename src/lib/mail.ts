@@ -1,5 +1,10 @@
 import nodemailer from 'nodemailer';
 
+// Ziyaretçiden gelen metin e-posta HTML'ine eklenmeden önce kaçışlanır
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!);
+}
+
 export async function sendContactEmail(name: string, email: string, content: string) {
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = process.env.SMTP_PASS;
@@ -21,6 +26,8 @@ export async function sendContactEmail(name: string, email: string, content: str
     },
   });
 
+  const safe = { name: escapeHtml(name), email: escapeHtml(email), content: escapeHtml(content) };
+
   const mailOptions = {
     from: `"${name} (Portfolio)" <${smtpUser}>`,
     to: 'mehmetkerem2109@gmail.com',
@@ -30,11 +37,11 @@ export async function sendContactEmail(name: string, email: string, content: str
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
         <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">Yeni Portfolyo Mesajı</h2>
-        <p><strong>Gönderen Adı:</strong> ${name}</p>
-        <p><strong>Gönderen E-Posta:</strong> <a href="mailto:${email}">${email}</a></p>
+        <p><strong>Gönderen Adı:</strong> ${safe.name}</p>
+        <p><strong>Gönderen E-Posta:</strong> <a href="mailto:${safe.email}">${safe.email}</a></p>
         <br/>
         <p><strong>Mesaj:</strong></p>
-        <p style="white-space: pre-wrap; background-color: #f9f9f9; padding: 15px; border-radius: 5px; line-height: 1.6;">${content}</p>
+        <p style="white-space: pre-wrap; background-color: #f9f9f9; padding: 15px; border-radius: 5px; line-height: 1.6;">${safe.content}</p>
       </div>
     `,
   };

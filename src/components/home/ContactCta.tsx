@@ -2,11 +2,12 @@
 
 import { useActionState, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Check, Copy } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, CalendarDays, Check, Copy } from 'lucide-react';
 import { submitContactAction } from '@/app/actions/messages';
 import ContactCat from './ContactCat';
 import AvailabilityDot from './AvailabilityDot';
 import type { Availability } from '@/lib/availability';
+import { BUDGET_RANGES, PROJECT_TYPES } from '@/lib/contact-options';
 
 const EMAIL = 'mehmetkerem2109@gmail.com';
 
@@ -99,6 +100,8 @@ export default function ContactCta({ availability }: { availability: Availabilit
                     />
                   </label>
                 </div>
+                <ChipGroup legend="Ne lazım?" name="projectType" options={PROJECT_TYPES} />
+                <ChipGroup legend="Bütçe (isteğe bağlı)" name="budget" options={BUDGET_RANGES} />
                 <label className="flex flex-1 flex-col">
                   <span className="sr-only">Mesajınız</span>
                   <textarea
@@ -144,11 +147,43 @@ export default function ContactCta({ availability }: { availability: Availabilit
                     </button>
                   </span>
                 </div>
+                {availability.bookingUrl && (
+                  <a
+                    href={availability.bookingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group mt-5 inline-flex w-fit items-center gap-2 border-t border-white/10 pt-5 text-[14px] text-white/70 transition-colors hover:text-white"
+                  >
+                    <CalendarDays size={16} className="text-[#93b4f8]" />
+                    Yazmak yerine 15 dakikalık bir tanışma görüşmesi planlayın
+                    <ArrowUpRight size={14} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </a>
+                )}
               </form>
             )}
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+// Koyu zeminde hap biçimli tekli seçim; native radio olduğu için klavye ve form gönderimi kendiliğinden çalışır
+function ChipGroup({ legend, name, options }: { legend: string; name: string; options: readonly string[] }) {
+  return (
+    <fieldset className="mt-4">
+      <legend className="mb-2.5 font-mono text-[11px] uppercase tracking-[0.14em] text-white/40">{legend}</legend>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => (
+          <label
+            key={option}
+            className="cursor-pointer rounded-full border border-white/15 px-3.5 py-1.5 text-[13px] text-white/70 transition-colors hover:border-white/35 hover:text-white has-checked:border-white has-checked:bg-white has-checked:text-ink has-focus-visible:ring-2 has-focus-visible:ring-[#93b4f8]"
+          >
+            <input type="radio" name={name} value={option} className="sr-only" />
+            {option}
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }

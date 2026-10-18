@@ -32,7 +32,7 @@ export const getAvailability = cache(async (): Promise<Availability> => {
       .where(inArray(siteSettings.key, Object.values(AVAILABILITY_KEYS)))
       .all();
     const value = (key: string) => rows.find((row) => row.key === key)?.value;
-    return parseAvailability(value(AVAILABILITY_KEYS.status), value(AVAILABILITY_KEYS.note));
+    return parseAvailability(value(AVAILABILITY_KEYS.status), value(AVAILABILITY_KEYS.note), value(AVAILABILITY_KEYS.booking));
   } catch (error) {
     console.error('getAvailability error:', error);
     return parseAvailability(null, null);
