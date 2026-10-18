@@ -6,6 +6,12 @@ export const siteUrl = (
   (process.env.NODE_ENV === 'production' ? 'https://mehmetkerem.com' : 'http://localhost:3000')
 ).replace(/\/$/, '');
 
+// Dinamik OG görseli için göreli yol; metadataBase mutlak adrese çevirir
+export function ogImageUrl(title: string, description?: string) {
+  const query = `title=${encodeURIComponent(title)}`;
+  return description ? `/api/og?${query}&description=${encodeURIComponent(description)}` : `/api/og?${query}`;
+}
+
 // JSON-LD'de site sahibini temsil eden kişi kaydı
 export const sitePerson = {
   '@type': 'Person',

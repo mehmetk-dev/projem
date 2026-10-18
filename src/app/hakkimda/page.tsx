@@ -10,6 +10,7 @@ import IstanbulClock from '@/components/home/IstanbulClock';
 import { projectCover, projectStack } from '@/components/home/project-utils';
 import ProjectIndex from '@/components/home/ProjectIndex';
 import Workbench, { type WorkbenchProject } from '@/components/about/Workbench';
+import { ogImageUrl } from '@/lib/site';
 
 export const revalidate = 3600;
 
@@ -19,11 +20,19 @@ const description =
 export const metadata: Metadata = {
   title: 'Hakkımda | Mehmet Kerem',
   description,
+  alternates: { canonical: '/hakkimda' },
   openGraph: {
     title: 'Hakkımda | Mehmet Kerem',
     description,
     type: 'profile',
     locale: 'tr_TR',
+    images: [ogImageUrl('Hakkımda', description)],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Hakkımda | Mehmet Kerem',
+    description,
+    images: [ogImageUrl('Hakkımda', description)],
   },
 };
 

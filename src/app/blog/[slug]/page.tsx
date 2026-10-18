@@ -11,7 +11,7 @@ import CtaBand from '@/components/home/CtaBand';
 import ImageWithFallback from '@/components/ImageWithFallback';
 import { contentBlocks, formatPostDate, postExcerpt, readingMinutes } from '@/components/blog/post-utils';
 import JsonLd from '@/components/JsonLd';
-import { siteUrl, sitePerson } from '@/lib/site';
+import { siteUrl, sitePerson, ogImageUrl as buildOgImageUrl } from '@/lib/site';
 
 export const revalidate = 3600;
 
@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: BlogDetailPageProps): Promise
 
   const ogTitle = post.metaTitle || post.title;
   const ogDesc = post.metaDescription || post.excerpt || post.content.slice(0, 160);
-  const ogImageUrl = `${siteUrl}/api/og?title=${encodeURIComponent(ogTitle)}&description=${encodeURIComponent(ogDesc)}`;
+  const ogImageUrl = buildOgImageUrl(ogTitle, ogDesc);
 
   return {
     title: ogTitle,

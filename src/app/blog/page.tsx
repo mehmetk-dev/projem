@@ -7,6 +7,7 @@ import SiteShell from '@/components/home/SiteShell';
 import CtaBand from '@/components/home/CtaBand';
 import ImageWithFallback from '@/components/ImageWithFallback';
 import { formatPostDate, postExcerpt, readingMinutes } from '@/components/blog/post-utils';
+import { ogImageUrl } from '@/lib/site';
 
 export const revalidate = 3600;
 
@@ -15,11 +16,19 @@ const description = 'Geliştirirken öğrendiklerim, denediğim teknikler ve pro
 export const metadata: Metadata = {
   title: 'Blog | Mehmet Kerem',
   description,
+  alternates: { canonical: '/blog' },
   openGraph: {
     title: 'Blog | Mehmet Kerem',
     description,
     type: 'website',
     locale: 'tr_TR',
+    images: [ogImageUrl('Blog', description)],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Blog | Mehmet Kerem',
+    description,
+    images: [ogImageUrl('Blog', description)],
   },
 };
 

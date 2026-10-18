@@ -3,9 +3,9 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { ServiceWorker } from "@/components/ServiceWorker";
-import { siteUrl } from "@/lib/site";
+import { siteUrl, ogImageUrl as buildOgImageUrl } from "@/lib/site";
 
-const ogImageUrl = `${siteUrl}/api/og?title=${encodeURIComponent('Mehmet Kerem')}&description=${encodeURIComponent('Full-Stack Web Geliştirici')}`;
+const ogImageUrl = buildOgImageUrl('Mehmet Kerem', 'Full-Stack Web Geliştirici');
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
