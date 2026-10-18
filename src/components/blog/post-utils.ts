@@ -1,3 +1,5 @@
+import GithubSlugger from 'github-slugger';
+
 interface PostLike {
   excerpt: string | null;
   content: string;
@@ -10,7 +12,12 @@ export function formatPostDate(value: string) {
 /** Markdown işaretlerinden arındırılmış kısa özet */
 export function postExcerpt(post: PostLike, length = 160) {
   if (post.excerpt) return post.excerpt;
-  const plain = post.content.replace(/[#*`>_[\]]/g, '').replace(/\s+/g, ' ').trim();
+  const plain = stripInlineMarkdown(
+    post.content.replace(/```[\s\S]*?```/g, ' ').replace(/^\s*(#{1,6}|>+|[-*+]|\d+\.)\s+/gm, '')
+  )
+    .replace(/\|/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   return plain.length > length ? `${plain.slice(0, length).trim()}…` : plain;
 }
 
@@ -20,40 +27,46 @@ export function readingMinutes(content: string) {
   return Math.max(1, Math.round(words / 200));
 }
 
-export type ContentBlock =
-  | { type: 'heading'; level: 2 | 3; text: string }
-  | { type: 'quote'; text: string }
-  | { type: 'code'; text: string }
-  | { type: 'list'; items: string[] }
-  | { type: 'paragraph'; text: string };
+export interface PostHeading {
+  id: string;
+  text: string;
+  level: 2 | 3;
+}
 
-/** Yazı içeriğini basit bloklara ayırır: ## başlık, > alıntı, ``` kod, - liste ve paragraflar */
-export function contentBlocks(content: string): ContentBlock[] {
-  const blocks: ContentBlock[] = [];
-  const codeParts = content.replace(/\r\n/g, '\n').split(/```[^\n]*\n?/);
+/** Satır içi markdown işaretlerini kaldırır: bağlantı, görsel, kalın, italik, kod */
+export function stripInlineMarkdown(text: string) {
+  return text
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/[*_`~]/g, '')
+    .trim();
+}
 
-  codeParts.forEach((part, index) => {
-    // Tek indeksler ``` arasındaki kod bloklarıdır
-    if (index % 2 === 1) {
-      if (part.trim()) blocks.push({ type: 'code', text: part.replace(/\n$/, '') });
-      return;
+/**
+ * İçindekiler için ## ve ### başlıkları. Kimlikler rehype-slug ile aynı şekilde üretilir:
+ * tüm başlık seviyeleri aynı sayaçtan geçer, böylece tekrar eden başlıklar da eşleşir.
+ */
+export function postHeadings(content: string): PostHeading[] {
+  const slugger = new GithubSlugger();
+  const headings: PostHeading[] = [];
+  let fence: string | null = null;
+
+  for (const line of content.replace(/\r\n/g, '\n').split('\n')) {
+    const fenceMatch = /^\s{0,3}(`{3,}|~{3,})/.exec(line);
+    if (fenceMatch) {
+      if (!fence) fence = fenceMatch[1][0];
+      else if (fenceMatch[1][0] === fence) fence = null;
+      continue;
     }
-    for (const chunk of part.split(/\n\s*\n/).map((c) => c.trim()).filter(Boolean)) {
-      const lines = chunk.split('\n');
-      const heading = /^(#{2,3})\s+(.+)$/.exec(chunk);
-      if (heading && lines.length === 1) {
-        blocks.push({ type: 'heading', level: heading[1].length === 2 ? 2 : 3, text: heading[2] });
-      } else if (/^#\s+/.test(chunk) && lines.length === 1) {
-        blocks.push({ type: 'heading', level: 2, text: chunk.replace(/^#\s+/, '') });
-      } else if (lines.every((line) => line.startsWith('>'))) {
-        blocks.push({ type: 'quote', text: lines.map((line) => line.replace(/^>\s?/, '')).join('\n') });
-      } else if (lines.every((line) => /^[-*]\s+/.test(line))) {
-        blocks.push({ type: 'list', items: lines.map((line) => line.replace(/^[-*]\s+/, '')) });
-      } else {
-        blocks.push({ type: 'paragraph', text: chunk });
-      }
-    }
-  });
+    if (fence) continue;
 
-  return blocks;
+    const match = /^\s{0,3}(#{1,6})\s+(.+?)(?:\s+#+)?\s*$/.exec(line);
+    if (!match) continue;
+    const text = stripInlineMarkdown(match[2]);
+    const id = slugger.slug(text);
+    const level = match[1].length;
+    if (level === 2 || level === 3) headings.push({ id, text, level });
+  }
+
+  return headings;
 }

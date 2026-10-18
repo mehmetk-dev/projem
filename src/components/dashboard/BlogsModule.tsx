@@ -8,47 +8,14 @@ import { Empty, PlusIcon, Btn, PageHeader, ui } from './ui';
 import { createBlogAction, updateBlogAction, deleteBlogAction, togglePublishBlogAction } from '@/app/actions/blogs';
 import { getFileManagerData } from '@/app/actions/files';
 import { FolderOpen, Image as ImageIcon, X } from 'lucide-react';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeSlug from 'rehype-slug';
+import { markdownComponents, postBodyClass } from '@/components/blog/markdown';
 
 interface Props {
   blogs: T.Blog[];
   toastFn: (msg: string, ok: boolean) => void;
-}
-
-function parseMarkdown(text: string): string {
-  if (!text) return '<p class="text-ink-muted italic">İçerik boş. Markdown kullanarak yazmaya başlayın...</p>';
-  
-  // Basic HTML escaping
-  let html = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-
-  // Headings
-  html = html.replace(/^### (.*$)/gim, '<h3 class="text-base font-bold mt-4 mb-2 text-ink">$1</h3>');
-  html = html.replace(/^## (.*$)/gim, '<h2 class="text-lg font-bold mt-5 mb-2.5 text-ink border-b border-line pb-1">$1</h2>');
-  html = html.replace(/^# (.*$)/gim, '<h1 class="text-xl font-bold mt-6 mb-3 text-ink">$1</h1>');
-
-  // Code blocks
-  html = html.replace(/```([\s\S]*?)```/g, '<pre class="bg-paper p-4 rounded-xl border border-line font-mono text-xs my-3 overflow-x-auto text-ink-soft">$1</pre>');
-  // Inline code
-  html = html.replace(/`([^`\n]+)`/g, '<code class="bg-surface-2 px-1.5 py-0.5 rounded font-mono text-xs text-rose-600 dark:text-rose-300">$1</code>');
-
-  // Bold & Italic
-  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-bold text-ink">$1</strong>');
-  html = html.replace(/\*([^*]+)\*/g, '<em class="italic text-ink-soft">$1</em>');
-  
-  // Blockquotes
-  html = html.replace(/^\> (.*$)/gim, '<blockquote class="border-l-2 border-ink/30 pl-3 italic text-ink-muted my-2">$1</blockquote>');
-  
-  // Lists
-  html = html.replace(/^\- (.*$)/gim, '<li class="list-disc list-inside text-sm text-ink-soft ml-2 my-0.5">$1</li>');
-
-  // Paragraph splits
-  html = html.replace(/\n\n/g, '</p><p class="text-sm text-ink-soft leading-relaxed mb-3">');
-  // Single newlines
-  html = html.replace(/\n/g, '<br />');
-
-  return `<p class="text-sm text-ink-soft leading-relaxed mb-3">${html}</p>`;
 }
 
 export default function BlogsModule({ blogs: initialBlogs, toastFn }: Props) {
@@ -182,15 +149,23 @@ export default function BlogsModule({ blogs: initialBlogs, toastFn }: Props) {
                 name="content" 
                 value={f.content} 
                 onChange={(e) => setF((s) => ({ ...s, content: e.target.value }))} 
-                placeholder="İçerik... (# Başlık, **Kalın**, - Liste)" 
+                placeholder="İçerik... (## Başlık, **kalın**, [bağlantı](https://...), ```kod```)" 
                 rows={10} 
                 className={`${ui.input} resize-y`}
               />
             ) : (
-              <div 
-                className="w-full min-h-[220px] max-h-[400px] overflow-y-auto bg-paper border border-line rounded-xl p-4 max-w-none text-left"
-                dangerouslySetInnerHTML={{ __html: parseMarkdown(f.content) }}
-              />
+              // Yayındaki yazıyla aynı bileşenler; yalnızca kod renklendirmesi sunucuda yapıldığı için burada yok
+              <div className="w-full min-h-[220px] max-h-[400px] overflow-y-auto bg-paper border border-line rounded-xl p-4 text-left">
+                {f.content ? (
+                  <div className={postBodyClass}>
+                    <Markdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSlug]} components={markdownComponents}>
+                      {f.content}
+                    </Markdown>
+                  </div>
+                ) : (
+                  <p className="text-sm italic text-ink-muted">İçerik boş. Markdown kullanarak yazmaya başlayın...</p>
+                )}
+              </div>
             )}
           </div>
 
