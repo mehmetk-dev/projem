@@ -53,3 +53,60 @@ export async function sendContactEmail(name: string, email: string, content: str
     console.error('Error sending contact email via SMTP:', error);
   }
 }
+
+/** SMTP ayarlıysa yeniden kullanılabilir taşıyıcı; değilse null */
+function createNewsletterTransport() {
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  if (!smtpUser || !smtpPass) return null;
+  const smtpPort = Number(process.env.SMTP_PORT) || 587;
+  return {
+    from: smtpUser,
+    transporter: nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: smtpPort,
+      secure: smtpPort === 465,
+      pool: true,
+      maxConnections: 1,
+      auth: { user: smtpUser, pass: smtpPass },
+    }),
+  };
+}
+
+export interface NewsletterMessage {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  unsubscribeUrl: string;
+}
+
+/**
+ * Bülteni alıcılara tek tek gönderir (alıcılar birbirini görmez).
+ * SMTP sağlayıcılarının hız sınırına takılmamak için gönderimler sıralıdır.
+ */
+export async function sendNewsletterMessages(messages: NewsletterMessage[]) {
+  const smtp = createNewsletterTransport();
+  if (!smtp) return { sent: 0, failed: messages.length, configured: false };
+
+  let sent = 0;
+  let failed = 0;
+  for (const message of messages) {
+    try {
+      await smtp.transporter.sendMail({
+        from: `"Mehmet Kerem" <${smtp.from}>`,
+        to: message.to,
+        subject: message.subject,
+        html: message.html,
+        text: message.text,
+        list: { unsubscribe: message.unsubscribeUrl },
+      });
+      sent++;
+    } catch (error) {
+      failed++;
+      console.error('Newsletter send error:', message.to, error);
+    }
+  }
+  smtp.transporter.close();
+  return { sent, failed, configured: true };
+}
