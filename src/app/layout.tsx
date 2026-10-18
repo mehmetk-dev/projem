@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
-import { I18nProvider } from "@/lib/i18n";
 import { ServiceWorker } from "@/components/ServiceWorker";
+import { siteUrl } from "@/lib/site";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 const ogImageUrl = `${siteUrl}/api/og?title=${encodeURIComponent('Mehmet Kerem')}&description=${encodeURIComponent('Full-Stack Web Geliştirici')}`;
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Mehmet Kerem | Full-Stack Web Geliştirici",
   description: "Ajanslar ve markalar için kurumsal web siteleri ve özel web uygulamaları geliştiriyorum. Next.js, React ve TypeScript ile hızlı, erişilebilir ve bakımı kolay ürünler.",
   keywords: ["Mehmet Kerem", "Full-Stack Geliştirici", "Freelance Web Geliştirici", "Kurumsal Web Sitesi", "React", "Next.js", "TypeScript"],
@@ -48,11 +48,9 @@ export default function RootLayout({
     >
       <body className="min-h-full h-full flex flex-col">
         <ThemeProvider>
-          <I18nProvider>
-            {children}
-            <Toaster />
-            <ServiceWorker />
-          </I18nProvider>
+          {children}
+          <Toaster />
+          <ServiceWorker />
         </ThemeProvider>
       </body>
     </html>

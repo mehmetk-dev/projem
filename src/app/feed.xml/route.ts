@@ -1,10 +1,10 @@
 import { getPublishedBlogs } from '@/app/actions/blogs';
 import { NextResponse } from 'next/server';
 import { logServerError } from '@/lib/server/error-response';
+import { siteUrl } from '@/lib/site';
 
 export async function GET() {
   try {
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
     const blogPosts = await getPublishedBlogs({ limit: 50 });
 
     const rss = `<?xml version="1.0" encoding="UTF-8" ?>
@@ -12,7 +12,7 @@ export async function GET() {
   <channel>
     <title>Mehmet Kerem | Blog</title>
     <link>${siteUrl}/blog</link>
-    <description>Tasarım, yazılım ve ürün düşünce yapısı hakkındaki yazılar.</description>
+    <description>Geliştirirken öğrendiklerim, denediğim teknikler ve proje notlarım.</description>
     <language>tr</language>
     <generator>Next.js RSS Feed</generator>
     <ttl>60</ttl>

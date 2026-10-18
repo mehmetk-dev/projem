@@ -1,11 +1,12 @@
 import { MetadataRoute } from 'next';
 import { getPublishedBlogs } from '@/app/actions/blogs';
 import { getPublishedProjects } from '@/app/actions/projects';
+import { siteUrl } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://mehmetkerem.com';
+  const baseUrl = siteUrl;
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: `${baseUrl}/`, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
@@ -13,12 +14,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/projects`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
     { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
     { url: `${baseUrl}/guestbook`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.5 },
-    { url: `${baseUrl}/login`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${baseUrl}/webp-converter`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.5 },
+    { url: `${baseUrl}/gizlilik`, lastModified: new Date('2026-10-18'), changeFrequency: 'yearly', priority: 0.2 },
   ];
 
   const [blogs, projects] = await Promise.all([
-    getPublishedBlogs(),
-    getPublishedProjects(),
+    getPublishedBlogs().catch(() => []),
+    getPublishedProjects().catch(() => []),
   ]);
 
   const blogPages: MetadataRoute.Sitemap = blogs.map((post) => ({

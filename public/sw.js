@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mk-portfolio-v3';
+const CACHE_NAME = 'mk-portfolio-v4';
 const STATIC_ASSETS = [
   '/',
   '/blog',

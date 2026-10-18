@@ -10,6 +10,8 @@ import SiteShell from '@/components/home/SiteShell';
 import CtaBand from '@/components/home/CtaBand';
 import ImageWithFallback from '@/components/ImageWithFallback';
 import { contentBlocks, formatPostDate, postExcerpt, readingMinutes } from '@/components/blog/post-utils';
+import JsonLd from '@/components/JsonLd';
+import { siteUrl, sitePerson } from '@/lib/site';
 
 export const revalidate = 3600;
 
@@ -38,7 +40,6 @@ export async function generateMetadata({ params }: BlogDetailPageProps): Promise
     };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const ogTitle = post.metaTitle || post.title;
   const ogDesc = post.metaDescription || post.excerpt || post.content.slice(0, 160);
   const ogImageUrl = `${siteUrl}/api/og?title=${encodeURIComponent(ogTitle)}&description=${encodeURIComponent(ogDesc)}`;
@@ -86,8 +87,25 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
     .map((tag) => tag.trim())
     .filter(Boolean);
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: postExcerpt(post),
+    url: `${siteUrl}/blog/${post.slug}`,
+    mainEntityOfPage: `${siteUrl}/blog/${post.slug}`,
+    image: post.coverImage ? new URL(post.coverImage, siteUrl).toString() : undefined,
+    datePublished: post.publishedAt || post.createdAt,
+    dateModified: post.updatedAt || post.publishedAt || post.createdAt,
+    articleSection: post.category,
+    keywords: tags.join(', ') || undefined,
+    inLanguage: 'tr-TR',
+    author: sitePerson,
+  };
+
   return (
     <SiteShell socialLinks={socialLinks.map(({ platform, url }) => ({ platform, url }))}>
+      <JsonLd data={jsonLd} />
       <article className="pt-24 pb-20 md:pt-36 md:pb-28">
         <div className="mx-auto max-w-3xl px-5 md:px-8">
           <Link

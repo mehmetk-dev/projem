@@ -11,6 +11,8 @@ import CtaBand from '@/components/home/CtaBand';
 import ProjectShot from '@/components/home/ProjectShot';
 import ImageWithFallback from '@/components/ImageWithFallback';
 import { projectCover, projectHost, projectStack, projectTeaser } from '@/components/home/project-utils';
+import JsonLd from '@/components/JsonLd';
+import { siteUrl, sitePerson } from '@/lib/site';
 
 export const revalidate = 3600;
 
@@ -39,15 +41,28 @@ export async function generateMetadata({ params }: ProjectDetailPageProps): Prom
   }
 
   const description = projectTeaser(project) || 'Mehmet Kerem tarafından geliştirilmiş bir proje.';
+  const cover = projectCover(project);
+  // SVG yer tutucu sosyal ağlarda görünmez; o durumda dinamik OG görseli üretilir
+  const ogImage = cover.endsWith('.svg')
+    ? `/api/og?title=${encodeURIComponent(project.title)}&description=${encodeURIComponent(description)}`
+    : cover;
 
   return {
     title: `${project.title} | Projeler | Mehmet Kerem`,
     description,
+    alternates: { canonical: `/projects/${project.slug}` },
     openGraph: {
       title: `${project.title} | Mehmet Kerem`,
       description,
       type: 'article',
       locale: 'tr_TR',
+      images: [ogImage],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${project.title} | Mehmet Kerem`,
+      description,
+      images: [ogImage],
     },
   };
 }
@@ -126,8 +141,22 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
   let imageSide = 0;
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: project.title,
+    description: projectTeaser(project) || undefined,
+    url: `${siteUrl}/projects/${project.slug}`,
+    image: cover ? new URL(cover, siteUrl).toString() : undefined,
+    dateCreated: project.year ? String(project.year) : undefined,
+    genre: project.category,
+    keywords: stack.join(', ') || undefined,
+    creator: sitePerson,
+  };
+
   return (
     <SiteShell socialLinks={socialLinks.map(({ platform, url }) => ({ platform, url }))}>
+      <JsonLd data={jsonLd} />
       <article className="pt-24 pb-20 md:pt-36 md:pb-32">
         <div className="mx-auto max-w-6xl px-5 md:px-8">
           <Link

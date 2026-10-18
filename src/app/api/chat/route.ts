@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth';
 import { logServerError, unexpectedJsonError } from '@/lib/server/error-response';
 import { ExternalServiceError, UnauthorizedError, ValidationError } from '@/lib/server/app-error';
 import { getChatSettings, getAllUserContext } from '@/app/actions/chat';
+import { siteUrl } from '@/lib/site';
 
 export async function POST(req: NextRequest) {
   try {
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${key}`,
-        'HTTP-Referer': process.env.NEXT_PUBLIC_BASE_URL || 'https://localhost',
+        'HTTP-Referer': siteUrl,
         'X-Title': 'Portfolio Dashboard Chat',
       },
       body: JSON.stringify(payload),

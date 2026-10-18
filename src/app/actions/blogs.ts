@@ -136,6 +136,8 @@ export async function createBlogAction(
       ...data,
       publishedAt: data.published ? new Date().toISOString() : null,
     }).returning();
+    // Ana sayfadaki "son yazılar" da güncellensin
+    revalidatePath('/');
     revalidatePath('/blog');
     revalidatePath(`/blog/${slug}`);
     return { success: 'Blog yazısı oluşturuldu.', data: blog };
@@ -207,6 +209,7 @@ export async function updateBlogAction(
       .where(eq(blogs.id, blogId))
       .returning();
 
+    revalidatePath('/');
     revalidatePath('/blog');
     revalidatePath(`/blog/${newSlug}`);
     if (existing.slug !== newSlug) revalidatePath(`/blog/${existing.slug}`);
@@ -223,8 +226,13 @@ export async function deleteBlogAction(formData: FormData): Promise<BlogActionSt
   if (!blogId || isNaN(blogId)) return { error: 'Geçersiz blog ID.' };
 
   try {
-    await db.delete(blogs).where(and(eq(blogs.id, blogId), eq(blogs.userId, userId)));
+    const [deleted] = await db
+      .delete(blogs)
+      .where(and(eq(blogs.id, blogId), eq(blogs.userId, userId)))
+      .returning({ slug: blogs.slug });
+    revalidatePath('/');
     revalidatePath('/blog');
+    if (deleted) revalidatePath(`/blog/${deleted.slug}`);
     return { success: 'Blog silindi.' };
   } catch (error) {
     console.error('Delete Blog Error:', error);
@@ -250,7 +258,9 @@ export async function togglePublishBlogAction(formData: FormData): Promise<BlogA
       })
       .where(and(eq(blogs.id, blogId), eq(blogs.userId, userId)));
 
+    revalidatePath('/');
     revalidatePath('/blog');
+    revalidatePath(`/blog/${existing.slug}`);
     return { success: existing.published ? 'Yayından kaldırıldı.' : 'Yayınlandı.' };
   } catch (error) {
     console.error('Toggle Publish Error:', error);
