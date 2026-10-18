@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowUp, ArrowUpRight } from 'lucide-react';
 import BrandMark from './BrandMark';
 import NewsletterForm from './NewsletterForm';
+import NowPlaying from './NowPlaying';
 import type { HomeSocialLink } from './types';
 
 const EMAIL = 'mehmetkerem2109@gmail.com';
@@ -46,6 +47,7 @@ export default function HomeFooter({ socialLinks }: { socialLinks: HomeSocialLin
               Proje başlatalım
               <ArrowUpRight size={15} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
+            <NowPlaying />
           </div>
 
           <nav aria-label="Alt menü">

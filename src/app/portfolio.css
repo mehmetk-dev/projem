@@ -125,150 +125,27 @@ html:has(.home-theme) {
   51%, 100% { opacity: 0; }
 }
 
-/* ═══════════════════════════════════════
-   Spotify Now Playing Widget
-   ═══════════════════════════════════════ */
-
-.spotify-now-playing {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px 10px 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  text-decoration: none;
-  color: inherit;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  max-width: 320px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.spotify-now-playing:hover {
-  background: rgba(29, 185, 84, 0.08);
-  border-color: rgba(29, 185, 84, 0.25);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(29, 185, 84, 0.1);
-}
-
-.spotify-album-art {
-  position: relative;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.spotify-album-art img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 6px;
-}
-
-.spotify-album-placeholder {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #1DB954 0%, #191414 100%);
-  border-radius: 6px;
-}
-
-/* Equalizer animation */
-.spotify-eq {
-  position: absolute;
-  bottom: 3px;
-  right: 3px;
-  display: flex;
-  gap: 1.5px;
-  align-items: flex-end;
-  height: 10px;
-  padding: 2px;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 2px;
-}
-
-.spotify-eq span {
+/* Footer'daki Spotify rozeti: çalarken zıplayan ekolayzer çubukları */
+.home-eq span {
   display: block;
-  width: 2px;
-  background: #1DB954;
+  width: 3px;
+  height: 100%;
   border-radius: 1px;
-  animation: eq-bar 1.2s ease-in-out infinite;
+  background: currentColor;
+  transform-origin: bottom;
+  animation: home-eq 1.1s ease-in-out infinite;
 }
 
-.spotify-eq span:nth-child(1) {
-  animation-delay: 0s;
-  height: 4px;
+.home-eq span:nth-child(2) { animation-delay: -0.35s; }
+.home-eq span:nth-child(3) { animation-delay: -0.7s; }
+
+@keyframes home-eq {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
 }
 
-.spotify-eq span:nth-child(2) {
-  animation-delay: 0.2s;
-  height: 7px;
-}
-
-.spotify-eq span:nth-child(3) {
-  animation-delay: 0.4s;
-  height: 5px;
-}
-
-@keyframes eq-bar {
-  0%, 100% { height: 3px; }
-  50% { height: 10px; }
-}
-
-.spotify-track-info {
-  overflow: hidden;
-  min-width: 0;
-}
-
-.spotify-status {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 2px;
-}
-
-.spotify-status span {
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #1DB954;
-}
-
-.spotify-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0;
-  line-height: 1.3;
-}
-
-.spotify-artist {
-  font-size: 11px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.45);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0;
-  line-height: 1.3;
-}
-
-/* Spotify Dropdown Player Animation */
-@keyframes spotifyDropIn {
-  0% {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.96);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+@media (prefers-reduced-motion: reduce) {
+  .home-eq span { animation: none; transform: scaleY(0.6); }
 }
 
 @media (max-width: 767px), (prefers-reduced-motion: reduce) {
