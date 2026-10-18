@@ -83,7 +83,8 @@
   - `/bulten/ayril` abonelikten çıkma sayfası; `unsubscribeAction` ile çıkma desteği.
   - Ayrılmış adres tekrar abone olunca kayıt yeniden aktifleşiyor.
   - Dashboard'da "Aboneler" sekmesi (admin-only) — aktif/ayrılmış sayaçları ve liste.
-  - **Eksik:** Abonelere e-posta GÖNDERME özelliği henüz yok; yalnızca kayıt/yönetim var. Çift opt-in da yok.
+  - Dashboard "Aboneler" sekmesinden markdown ile bülten yazma, önizleme, kendine test ve tüm aktif abonelere gönderme (`src/app/actions/newsletter.ts`, şablon `src/lib/newsletter.ts`). Her aboneye ayrı e-posta; altta ve `List-Unsubscribe` başlığında ayrılma linki.
+  - **Eksik:** Çift opt-in yok; ayrılma linki token'sız (adresi bilen herkes çıkarabilir).
 
 ### 9. ✅ Yorum Sistemi
 - **Durum:** Tamamlandı
@@ -132,6 +133,23 @@
   - Arama sayfası `noindex`.
   - Kategori bazlı ayrılmış sonuç listesi (Blog / Projeler).
 
+### 31. ✅ Blog Okuma Deneyimi
+- **Durum:** Tamamlandı
+- **Detay:**
+  - Yazılar `react-markdown` + GFM ile çiziliyor (`src/components/blog/PostBody.tsx`, ortak bileşenler `markdown.tsx`): bağlantı, satır içi kod, tablo, görsel, numaralı liste.
+  - Kod blokları sunucuda `shiki` ile renkleniyor; dil etiketi ve kopyala butonu (`CodeBlock.tsx`).
+  - Geniş ekranda yapışkan içindekiler, mobilde açılır liste; okuma ilerleme çubuğu; paylaşım butonları.
+  - Etiket ve kategoriler tıklanabilir; `/blog?kategori=` ve `?etiket=` ile istemcide filtre (`BlogIndex.tsx`).
+  - Dashboard yazı önizlemesi aynı bileşenleri kullanıyor.
+
+### 32. ✅ ⌘K Komut Paleti
+- **Durum:** Tamamlandı
+- **Detay:** `src/components/home/CommandPalette.tsx`; ⌘K / Ctrl+K veya `/` ile açılır, menünün yanında "Ara" butonu. Sayfalar, projeler, yazılar ve hızlı eylemler; içerik `/api/search-index`'ten saatlik önbellekle gelir.
+
+### 33. ✅ "Şimdi" Sayfası (`/simdi`)
+- **Durum:** Tamamlandı
+- **Detay:** Ayarlar > "Şimdi" sayfası kartından markdown ile yazılır. İçerik boşsa sayfa 404 döner; footer, komut paleti ve sitemap linki de gizlenir.
+
 ### 14. ✅ Gelişmiş SEO Paneli
 - **Durum:** Kısmen Tamamlandı
 - **Detay:**
@@ -148,6 +166,22 @@
   - `src/lib/i18n.tsx` silindi ve layout'tan `I18nProvider` çıkarıldı.
   - Neden: Sistem fiilen kullanılmıyordu ve hedef kitle Türkçe; site şimdilik yalnızca Türkçe.
   - Plan: İleride `/en` route'larıyla (route tabanlı) yeniden yapılacak.
+
+### 34. ✅ Güven ve Dönüşüm
+- **Durum:** Tamamlandı
+- **Detay:**
+  - **Referanslar:** `testimonials` tablosu, Dashboard "Referanslar" sekmesi. Yorumlar ana sayfada; projeye bağlananlar o vaka çalışmasında da görünür. Yayında yorum yoksa bölüm çizilmez.
+  - **Proje sonuçları:** `projects.results` (her satır `değer | açıklama`); vaka çalışmasında büyük rakamlarla, ana sayfa kartında ilk sonuç.
+  - **Müsaitlik:** Ayarlar > Müsaitlik (açık/sınırlı/kapalı + not + görüşme linki). Hero, iletişim bölümü ve footer'da görünür (`src/lib/availability.ts`).
+  - **İletişim formu:** proje türü ve bütçe seçimi (`src/lib/contact-options.ts`), görüşme planlama linki.
+  - Migration: `drizzle/0009_testimonials_and_results.sql`.
+
+### 35. ✅ Görsel Geçişler ve Paylaşım
+- **Durum:** Tamamlandı
+- **Detay:**
+  - Proje kartı görseli React `ViewTransition` ile vaka çalışmasının kapağına dönüşür.
+  - OG görseli yeni açık temada: marka işareti, serif vurgu, kategori etiketi (`src/app/api/og/route.tsx`).
+  - Footer'da Spotify "şu an dinliyorum" rozeti (`NowPlaying.tsx`).
 
 ### 29. ✅ KVKK / Gizlilik Politikası
 - **Durum:** Tamamlandı
@@ -289,11 +323,11 @@
 |----------|--------|------------|-----------|
 | UI/UX & Deneyim | 6 | 6 | 0 |
 | Yeni Modüller | 7 | 7 | 0 |
-| SEO & İçerik | 4 | 3 | 1 |
-| Veri & Yönetim | 5 | 5 | 0 |
+| SEO & İçerik | 7 | 6 | 1 |
+| Veri & Yönetim | 7 | 7 | 0 |
 | Entegrasyonlar | 4 | 4 | 0 |
 | Teknik & Altyapı | 4 | 4 | 0 |
-| **Genel Toplam** | **30** | **29** | **1** |
+| **Genel Toplam** | **35** | **34** | **1** |
 
 ---
 
@@ -324,14 +358,11 @@
 
 ## 🚀 Sonraki Öncelik Sırası Önerisi
 
-21. **Çoklu Dil (i18n)** (#15) — Kaldırıldı; ileride `/en` route'larıyla yeniden yapılacak.
-22. **GitHub Aktivite Widget'ı** (#21) — Son commit'ler.
-23. **Hava Durumu Widget'ı** (#22) — Dashboard hava durumu.
-24. **Harici API Yönetimi** (#23) — API anahtarları veritabanından.
-25. **Spotify "Now Playing"** (#24) — Anlık müzik widget'ı.
-26. **Service Worker / PWA** (#28) — Offline desteği.
+1. **İçerik:** İlk blog yazıları, gerçek referanslar ve proje sonuç rakamları (altyapı hazır, içerik bekliyor).
+2. **Bülten güvenliği:** Çift opt-in ve token'lı ayrılma linki.
+3. **Çoklu Dil (i18n)** (#15) — İleride `/en` route'larıyla.
 
 ---
 
-> Son Güncelleme: 2025-05-16
+> Son Güncelleme: 2026-10-18
 > Not: Bu liste canlı bir dokümandır; tamamlanan maddeler güncellenecek ve yeni fikirler eklenecektir.
