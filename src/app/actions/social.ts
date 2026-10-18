@@ -113,22 +113,23 @@ export async function subscribeAction(
   }
 
   try {
-    await db.insert(subscribers).values({
-      email: result.data.email,
-      ipAddress: ip,
-    });
-    revalidatePath('/');
-    return { success: 'Bültenimize başarıyla abone oldunuz!' };
+    // Daha önce ayrılmış bir adres tekrar abone olursa kaydı yeniden aktifleştirilir
+    await db
+      .insert(subscribers)
+      .values({ email: result.data.email, ipAddress: ip })
+      .onConflictDoUpdate({ target: subscribers.email, set: { status: 'active', ipAddress: ip } });
+    revalidatePath('/dashboard');
+    return { success: 'Bültene abone oldunuz, teşekkürler!' };
   } catch (error) {
-    if (error instanceof Error && error.message.includes('UNIQUE')) {
-      return { success: 'Bu e-posta adresi zaten abone.' };
-    }
     console.error('Subscribe Error:', error);
     return { error: 'Abone olurken bir hata oluştu.' };
   }
 }
 
-export async function unsubscribeAction(formData: FormData): Promise<SubscriberActionState> {
+export async function unsubscribeAction(
+  _prevState: SubscriberActionState | null,
+  formData: FormData
+): Promise<SubscriberActionState> {
   const email = String(formData.get('email') || '').trim().toLowerCase();
   if (!email) return { error: 'E-posta adresi gereklidir.' };
 
@@ -141,7 +142,8 @@ export async function unsubscribeAction(formData: FormData): Promise<SubscriberA
   try {
     await db.update(subscribers).set({ status: 'unsubscribed' }).where(eq(subscribers.email, email));
     revalidatePath('/dashboard');
-    return { success: 'Abonelikten çıkıldı.' };
+    // Adresin kayıtlı olup olmadığı bilgisi sızdırılmaz
+    return { success: 'Bu adres bülten listesinde varsa çıkarıldı.' };
   } catch (error) {
     console.error('Unsubscribe Error:', error);
     return { error: 'İşlem sırasında hata oluştu.' };

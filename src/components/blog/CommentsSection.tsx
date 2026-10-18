@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import Link from 'next/link';
 import { submitCommentAction } from '@/app/actions/comments';
 import { toast } from 'sonner';
 import { useEffect } from 'react';
@@ -98,8 +99,12 @@ export default function CommentsSection({ blogId, comments }: Props) {
         >
           {isPending ? 'Gönderiliyor...' : 'Yorum Gönder'}
         </button>
-        <p className="text-[12px] text-ink-muted">
-          Yorumunuz onaylandıktan sonra yayınlanacaktır.
+        <p className="text-[12px] leading-relaxed text-ink-muted">
+          Yorumunuz onaylandıktan sonra adınızla birlikte yayınlanır; e-posta adresiniz gösterilmez. Ayrıntılar için{' '}
+          <Link href="/gizlilik" className="underline underline-offset-2 transition-colors hover:text-ink">
+            Gizlilik Politikası
+          </Link>
+          .
         </p>
       </form>
 

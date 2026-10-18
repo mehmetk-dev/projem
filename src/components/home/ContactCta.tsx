@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useState } from 'react';
+import Link from 'next/link';
 import { ArrowRight, Check, Copy } from 'lucide-react';
 import { submitContactAction } from '@/app/actions/messages';
 import ContactCat from './ContactCat';
@@ -112,7 +113,13 @@ export default function ContactCta() {
                 </label>
 
                 {state?.error && <p className="mt-2 text-sm text-rose-400">{state.error}</p>}
-                <span className="h-6 shrink-0" aria-hidden="true" />
+                <p className="mt-3 text-[12px] leading-relaxed text-white/40">
+                  Bilgileriniz yalnızca size dönüş yapmak için kullanılır.{' '}
+                  <Link href="/gizlilik" className="underline underline-offset-2 transition-colors hover:text-white/80">
+                    Gizlilik Politikası
+                  </Link>
+                </p>
+                <span className="h-4 shrink-0" aria-hidden="true" />
 
                 <div className="mt-auto flex flex-wrap items-center justify-between gap-4">
                   <button

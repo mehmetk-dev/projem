@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowUp, ArrowUpRight } from 'lucide-react';
 import BrandMark from './BrandMark';
+import NewsletterForm from './NewsletterForm';
 import type { HomeSocialLink } from './types';
 
 const EMAIL = 'mehmetkerem2109@gmail.com';
@@ -14,6 +15,13 @@ const FOOTER_NAV = [
   { href: '/#contact', label: 'İletişim' },
 ];
 
+const FOOTER_EXTRA = [
+  { href: '/guestbook', label: 'Ziyaretçi defteri' },
+  { href: '/search', label: 'Sitede ara' },
+  { href: '/webp-converter', label: 'WebP dönüştürücü' },
+  { href: '/feed.xml', label: 'RSS' },
+];
+
 const columnTitle = 'font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted';
 const columnLink = 'text-[15px] text-ink-soft transition-colors hover:text-ink';
 
@@ -21,8 +29,12 @@ export default function HomeFooter({ socialLinks }: { socialLinks: HomeSocialLin
   return (
     <footer className="relative overflow-hidden">
       <div className="mx-auto max-w-6xl px-5 md:px-8">
-        <div className="grid gap-12 pt-20 pb-14 md:grid-cols-12 md:gap-8 md:pt-24">
-          <div className="md:col-span-5">
+        <div className="pt-20 md:pt-24">
+          <NewsletterForm />
+        </div>
+
+        <div className="grid grid-cols-2 gap-x-6 gap-y-12 pt-14 pb-14 lg:flex lg:justify-between lg:gap-10">
+          <div className="col-span-2 lg:max-w-xs">
             <BrandMark />
             <p className="mt-6 max-w-xs text-[15px] leading-relaxed text-ink-soft">
               Markalar ve girişimler için hızlı, erişilebilir ve özenle tasarlanmış web deneyimleri.
@@ -36,7 +48,7 @@ export default function HomeFooter({ socialLinks }: { socialLinks: HomeSocialLin
             </Link>
           </div>
 
-          <nav className="md:col-span-2" aria-label="Alt menü">
+          <nav aria-label="Alt menü">
             <h2 className={columnTitle}>Menü</h2>
             <ul className="mt-5 space-y-3">
               {FOOTER_NAV.map((item) => (
@@ -49,8 +61,28 @@ export default function HomeFooter({ socialLinks }: { socialLinks: HomeSocialLin
             </ul>
           </nav>
 
+          <nav aria-label="Diğer sayfalar">
+            <h2 className={columnTitle}>Keşfet</h2>
+            <ul className="mt-5 space-y-3">
+              {FOOTER_EXTRA.map((item) => (
+                <li key={item.href}>
+                  {/* RSS bir route handler; istemci tarafı gezinme yerine doğrudan açılır */}
+                  {item.href.endsWith('.xml') ? (
+                    <a href={item.href} className={columnLink}>
+                      {item.label}
+                    </a>
+                  ) : (
+                    <Link href={item.href} className={columnLink}>
+                      {item.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </nav>
+
           {socialLinks.length > 0 && (
-            <div className="md:col-span-2">
+            <div>
               <h2 className={columnTitle}>Sosyal</h2>
               <ul className="mt-5 space-y-3">
                 {socialLinks.map((link) => (
@@ -74,7 +106,7 @@ export default function HomeFooter({ socialLinks }: { socialLinks: HomeSocialLin
             </div>
           )}
 
-          <div className="md:col-span-3">
+          <div className="col-span-2 sm:col-span-1">
             <h2 className={columnTitle}>İletişim</h2>
             <ul className="mt-5 space-y-3 text-[15px] text-ink-soft">
               <li>
@@ -100,7 +132,13 @@ export default function HomeFooter({ socialLinks }: { socialLinks: HomeSocialLin
 
       <div className="mx-auto max-w-6xl px-5 md:px-8">
         <div className="mt-10 flex flex-col gap-4 border-t border-line py-6 text-[13px] text-ink-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Mehmet Kerem. Tüm hakları saklıdır.</p>
+          <p>
+            © {new Date().getFullYear()} Mehmet Kerem. Tüm hakları saklıdır.
+            <span className="mx-2" aria-hidden="true">·</span>
+            <Link href="/gizlilik" className="transition-colors hover:text-ink">
+              Gizlilik Politikası
+            </Link>
+          </p>
           <a
             href="#top"
             className="group inline-flex w-fit items-center gap-2.5 transition-colors hover:text-ink"
