@@ -8,7 +8,8 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         // OG görselleri ve yüklenen medya, sosyal ağ önizlemeleri için taranabilir kalmalı
         allow: ['/', '/api/og', '/api/media/'],
-        disallow: ['/dashboard/', '/api/', '/login', '/register', '/forgot-password', '/reset-password', '/search'],
+        // /search, /login vb. sayfalar noindex meta taşır; Google'ın meta'yı görebilmesi için taranabilir bırakıldı
+        disallow: ['/dashboard/', '/api/'],
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,

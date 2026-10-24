@@ -15,7 +15,8 @@ import ReadingProgress from '@/components/blog/ReadingProgress';
 import ShareLinks from '@/components/blog/ShareLinks';
 import { TableOfContents, TableOfContentsMobile } from '@/components/blog/TableOfContents';
 import JsonLd from '@/components/JsonLd';
-import { siteUrl, sitePerson, ogImageUrl as buildOgImageUrl } from '@/lib/site';
+import { normalizeMediaUrl } from '@/lib/media-url';
+import { siteUrl, sitePerson, ogImages, ogCommon } from '@/lib/site';
 
 export const revalidate = 3600;
 
@@ -46,24 +47,37 @@ export async function generateMetadata({ params }: BlogDetailPageProps): Promise
 
   const ogTitle = post.metaTitle || post.title;
   const ogDesc = post.metaDescription || post.excerpt || post.content.slice(0, 160);
-  const ogImageUrl = buildOgImageUrl(ogTitle, ogDesc, `Blog · ${post.category}`);
+  // Kapak varsa o kullanılır (boyutu bilinmez); SVG sosyal ağlarda görünmez, o zaman dinamik kart üretilir
+  const cover = normalizeMediaUrl(post.coverImage);
+  const images =
+    cover && !cover.toLowerCase().split('?')[0].endsWith('.svg')
+      ? [{ url: cover, alt: ogTitle }]
+      : ogImages(ogTitle, ogDesc, `Blog · ${post.category}`);
+  const tags = post.tags
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean);
 
   return {
-    title: ogTitle,
+    title: `${ogTitle} | Mehmet Kerem`,
     description: ogDesc,
     openGraph: {
       title: ogTitle,
       description: ogDesc,
       type: 'article',
+      url: `/blog/${post.slug}`,
+      ...ogCommon,
       publishedTime: post.publishedAt || undefined,
-      locale: 'tr_TR',
-      images: [ogImageUrl],
+      modifiedTime: post.updatedAt || post.publishedAt || undefined,
+      authors: ['Mehmet Kerem'],
+      tags: tags.length > 0 ? tags : undefined,
+      images,
     },
     twitter: {
       card: 'summary_large_image',
       title: ogTitle,
       description: ogDesc,
-      images: [ogImageUrl],
+      images,
     },
     alternates: {
       canonical: `/blog/${post.slug}`,
@@ -109,6 +123,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
     keywords: tags.join(', ') || undefined,
     inLanguage: 'tr-TR',
     author: sitePerson,
+    publisher: sitePerson,
   };
 
   return (

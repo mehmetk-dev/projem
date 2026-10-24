@@ -5,9 +5,15 @@ import { getPublishedTestimonials } from '@/app/actions/testimonials';
 import { getAvailability } from '@/app/actions/settings';
 import PortfolioClient from '@/components/PortfolioClient';
 import JsonLd from '@/components/JsonLd';
+import type { Metadata } from 'next';
 import { siteUrl, sitePerson } from '@/lib/site';
 
 export const revalidate = 3600;
+
+// Başlık, açıklama ve OG kökten miras alınır; yalnızca canonical eklenir
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+};
 
 export default async function HomePage() {
   const [projects, blogs, socialLinks, testimonials, availability] = await Promise.all([
@@ -21,7 +27,7 @@ export default async function HomePage() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
-      { ...sitePerson, '@id': `${siteUrl}/#person`, sameAs: socialLinks.map((link) => link.url) },
+      { ...sitePerson, '@id': `${siteUrl}/#person`, ...(socialLinks.length > 0 && { sameAs: socialLinks.map((link) => link.url) }) },
       {
         '@type': 'WebSite',
         '@id': `${siteUrl}/#website`,

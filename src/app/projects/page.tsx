@@ -4,7 +4,7 @@ import { getSocialLinks } from '@/app/actions/social';
 import SiteShell from '@/components/home/SiteShell';
 import ProjectsArchive from '@/components/home/ProjectsArchive';
 import CtaBand from '@/components/home/CtaBand';
-import { ogImageUrl } from '@/lib/site';
+import { ogCommon, ogImages } from '@/lib/site';
 
 export const revalidate = 3600;
 
@@ -19,14 +19,15 @@ export const metadata: Metadata = {
     title: 'Projeler | Mehmet Kerem',
     description,
     type: 'website',
-    locale: 'tr_TR',
-    images: [ogImageUrl('Projeler', description)],
+    url: '/projects',
+    ...ogCommon,
+    images: ogImages('Projeler', description),
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Projeler | Mehmet Kerem',
     description,
-    images: [ogImageUrl('Projeler', description)],
+    images: ogImages('Projeler', description),
   },
 };
 

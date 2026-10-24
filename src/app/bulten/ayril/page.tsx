@@ -2,11 +2,26 @@ import type { Metadata } from 'next';
 import { getSocialLinks } from '@/app/actions/social';
 import SiteShell from '@/components/home/SiteShell';
 import UnsubscribeForm from './UnsubscribeForm';
+import { ogCommon, ogImages } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Bültenden Ayrıl | Mehmet Kerem',
   description: 'E-posta bülteni aboneliğinizi sonlandırın.',
   robots: { index: false, follow: false },
+  openGraph: {
+    title: 'Bültenden Ayrıl | Mehmet Kerem',
+    description: 'E-posta bülteni aboneliğinizi sonlandırın.',
+    type: 'website',
+    url: '/bulten/ayril',
+    ...ogCommon,
+    images: ogImages('Bültenden Ayrıl', 'E-posta bülteni aboneliğinizi sonlandırın.', 'Bülten'),
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Bültenden Ayrıl | Mehmet Kerem',
+    description: 'E-posta bülteni aboneliğinizi sonlandırın.',
+    images: ogImages('Bültenden Ayrıl', 'E-posta bülteni aboneliğinizi sonlandırın.', 'Bülten'),
+  },
 };
 
 interface UnsubscribePageProps {

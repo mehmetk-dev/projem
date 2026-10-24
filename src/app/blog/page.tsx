@@ -7,7 +7,7 @@ import SiteShell from '@/components/home/SiteShell';
 import CtaBand from '@/components/home/CtaBand';
 import BlogIndex from '@/components/blog/BlogIndex';
 import { postExcerpt, readingMinutes } from '@/components/blog/post-utils';
-import { ogImageUrl } from '@/lib/site';
+import { ogCommon, ogImages } from '@/lib/site';
 
 export const revalidate = 3600;
 
@@ -21,14 +21,15 @@ export const metadata: Metadata = {
     title: 'Blog | Mehmet Kerem',
     description,
     type: 'website',
-    locale: 'tr_TR',
-    images: [ogImageUrl('Blog', description)],
+    url: '/blog',
+    ...ogCommon,
+    images: ogImages('Blog', description),
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Blog | Mehmet Kerem',
     description,
-    images: [ogImageUrl('Blog', description)],
+    images: ogImages('Blog', description),
   },
 };
 

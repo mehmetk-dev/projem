@@ -3,7 +3,7 @@ import { getApprovedGuestbookEntries } from '@/app/actions/guestbook';
 import { getSocialLinks } from '@/app/actions/social';
 import GuestbookForm from '@/components/guestbook/GuestbookForm';
 import SiteShell from '@/components/home/SiteShell';
-import { ogImageUrl } from '@/lib/site';
+import { ogCommon, ogImages } from '@/lib/site';
 
 export const revalidate = 3600;
 
@@ -17,14 +17,15 @@ export const metadata: Metadata = {
     title: 'Ziyaretçi Defteri | Mehmet Kerem',
     description,
     type: 'website',
-    locale: 'tr_TR',
-    images: [ogImageUrl('Ziyaretçi Defteri', description)],
+    url: '/guestbook',
+    ...ogCommon,
+    images: ogImages('Ziyaretçi Defteri', description),
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Ziyaretçi Defteri | Mehmet Kerem',
     description,
-    images: [ogImageUrl('Ziyaretçi Defteri', description)],
+    images: ogImages('Ziyaretçi Defteri', description),
   },
 };
 

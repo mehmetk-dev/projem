@@ -9,21 +9,29 @@ export const dynamic = 'force-dynamic';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = siteUrl;
 
-  const staticPages: MetadataRoute.Sitemap = [
-    { url: `${baseUrl}/`, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
-    { url: `${baseUrl}/hakkimda`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${baseUrl}/projects`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
-    { url: `${baseUrl}/guestbook`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.5 },
-    { url: `${baseUrl}/webp-converter`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.5 },
-    { url: `${baseUrl}/gizlilik`, lastModified: new Date('2026-10-18'), changeFrequency: 'yearly', priority: 0.2 },
-  ];
-
   const [blogs, projects, nowPage] = await Promise.all([
     getPublishedBlogs().catch(() => []),
     getPublishedProjects().catch(() => []),
     getNowPage(),
   ]);
+
+  // Liste sayfaları için en yeni içeriğin tarihi; içerik yoksa lastModified verilmez
+  const latestDate = (dates: Array<string | Date | null | undefined>) => {
+    const times = dates.filter(Boolean).map((d) => new Date(d as string | Date).getTime()).filter((t) => !Number.isNaN(t));
+    return times.length ? new Date(Math.max(...times)) : undefined;
+  };
+  const blogLastModified = latestDate(blogs.map((post) => post.updatedAt || post.publishedAt || post.createdAt));
+  const projectsLastModified = latestDate(projects.map((project) => project.updatedAt || project.createdAt));
+
+  const staticPages: MetadataRoute.Sitemap = [
+    { url: `${baseUrl}/`, changeFrequency: 'weekly', priority: 1 },
+    { url: `${baseUrl}/hakkimda`, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${baseUrl}/projects`, lastModified: projectsLastModified, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${baseUrl}/blog`, lastModified: blogLastModified, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${baseUrl}/guestbook`, changeFrequency: 'weekly', priority: 0.5 },
+    { url: `${baseUrl}/webp-converter`, changeFrequency: 'yearly', priority: 0.5 },
+    { url: `${baseUrl}/gizlilik`, lastModified: new Date('2026-10-18'), changeFrequency: 'yearly', priority: 0.2 },
+  ];
 
   if (nowPage.content) {
     staticPages.push({

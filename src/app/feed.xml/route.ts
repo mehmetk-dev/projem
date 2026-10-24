@@ -31,8 +31,7 @@ export async function GET() {
       <link>${siteUrl}/blog/${post.slug}</link>
       <guid isPermaLink="true">${siteUrl}/blog/${post.slug}</guid>
       <pubDate>${post.publishedAt ? new Date(post.publishedAt).toUTCString() : new Date(post.createdAt).toUTCString()}</pubDate>
-      <category><![CDATA[${escapeXml(post.category)}]]></category>
-      ${post.tags ? post.tags.split(',').map((tag) => `<category><![CDATA[${escapeXml(tag.trim())}]]></category>`).join('') : ''}
+      ${uniqueCategories(post.category, post.tags).map((name) => `<category><![CDATA[${escapeXml(name)}]]></category>`).join('')}
       <description><![CDATA[${escapeXml(post.excerpt || post.content.slice(0, 300))}]]></description>
       <content:encoded><![CDATA[${post.content}]]></content:encoded>
       ${post.coverImage ? `<enclosure url="${post.coverImage}" type="image/jpeg" />` : ''}
@@ -72,4 +71,18 @@ function escapeXml(unsafe: string): string {
         return c;
     }
   });
+}
+
+// Kategori + etiketleri birleştirir; boşları atar, büyük/küçük harf duyarsız tekilleştirir
+function uniqueCategories(category: string | null | undefined, tags: string | null | undefined): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const raw of [category ?? '', ...(tags ? tags.split(',') : [])]) {
+    const name = raw.trim();
+    const key = name.toLocaleLowerCase('tr-TR');
+    if (!name || seen.has(key)) continue;
+    seen.add(key);
+    result.push(name);
+  }
+  return result;
 }

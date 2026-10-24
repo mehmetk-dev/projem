@@ -1,19 +1,27 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { ServiceWorker } from "@/components/ServiceWorker";
-import { siteUrl, ogImageUrl as buildOgImageUrl } from "@/lib/site";
+import { siteUrl, ogImages, ogCommon } from "@/lib/site";
 
-const ogImageUrl = buildOgImageUrl('Mehmet Kerem', 'Full-Stack Web Geliştirici');
+const ogImage = ogImages('Mehmet Kerem', 'Full-Stack Web Geliştirici');
+
+export const viewport: Viewport = {
+  themeColor: '#fafaf9',
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "Mehmet Kerem | Full-Stack Web Geliştirici",
-  description: "Ajanslar ve markalar için kurumsal web siteleri ve özel web uygulamaları geliştiriyorum. Next.js, React ve TypeScript ile hızlı, erişilebilir ve bakımı kolay ürünler.",
+  description: "Ajanslar ve markalar için kurumsal web siteleri ve özel web uygulamaları geliştiriyorum. Next.js, React ve TypeScript ile hızlı, erişilebilir ürünler.",
   keywords: ["Mehmet Kerem", "Full-Stack Geliştirici", "Freelance Web Geliştirici", "Kurumsal Web Sitesi", "React", "Next.js", "TypeScript"],
   authors: [{ name: "Mehmet Kerem" }],
   manifest: '/manifest.json',
+  icons: {
+    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+    apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
   alternates: {
     types: {
       'application/rss+xml': `${siteUrl}/feed.xml`,
@@ -23,14 +31,15 @@ export const metadata: Metadata = {
     title: "Mehmet Kerem | Full-Stack Web Geliştirici",
     description: "Ajanslar ve markalar için hızlı, erişilebilir ve bakımı kolay web siteleri ve uygulamalar geliştiriyorum.",
     type: "website",
-    locale: "tr_TR",
-    images: [ogImageUrl],
+    url: "/",
+    ...ogCommon,
+    images: ogImage,
   },
   twitter: {
     card: 'summary_large_image',
     title: "Mehmet Kerem | Full-Stack Web Geliştirici",
     description: "Ajanslar ve markalar için hızlı, erişilebilir ve bakımı kolay web siteleri ve uygulamalar geliştiriyorum.",
-    images: [ogImageUrl],
+    images: ogImage,
   },
 };
 

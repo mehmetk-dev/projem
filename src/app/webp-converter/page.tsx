@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getSocialLinks } from '@/app/actions/social';
 import SiteShell from '@/components/home/SiteShell';
 import WebpConverterSection from '@/components/WebpConverterSection';
-import { ogImageUrl } from '@/lib/site';
+import { ogCommon, ogImages } from '@/lib/site';
 
 const title = 'WebP Dönüştürücü | Mehmet Kerem';
 const description =
@@ -16,14 +16,15 @@ export const metadata: Metadata = {
     title,
     description,
     type: 'website',
-    locale: 'tr_TR',
-    images: [ogImageUrl('WebP Dönüştürücü', description)],
+    url: '/webp-converter',
+    ...ogCommon,
+    images: ogImages('WebP Dönüştürücü', description),
   },
   twitter: {
     card: 'summary_large_image',
     title,
     description,
-    images: [ogImageUrl('WebP Dönüştürücü', description)],
+    images: ogImages('WebP Dönüştürücü', description),
   },
 };
 

@@ -236,7 +236,8 @@ export default function CommandPalette() {
           onKeyDown={onInputKey}
           placeholder="Sayfa, proje veya yazı ara…"
           role="combobox"
-          aria-expanded="true"
+          aria-label="Ara"
+          aria-expanded={items.length > 0}
           aria-controls="command-palette-list"
           aria-activedescendant={activeItem ? `cmd-${activeItem.id}` : undefined}
           aria-autocomplete="list"

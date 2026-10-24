@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getSocialLinks } from '@/app/actions/social';
 import SiteShell from '@/components/home/SiteShell';
-import { ogImageUrl } from '@/lib/site';
+import { ogCommon, ogImages } from '@/lib/site';
 
 export const revalidate = 3600;
 
@@ -16,14 +16,15 @@ export const metadata: Metadata = {
     title: 'Gizlilik Politikası | Mehmet Kerem',
     description,
     type: 'website',
-    locale: 'tr_TR',
-    images: [ogImageUrl('Gizlilik Politikası', description)],
+    url: '/gizlilik',
+    ...ogCommon,
+    images: ogImages('Gizlilik Politikası', description),
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Gizlilik Politikası | Mehmet Kerem',
     description,
-    images: [ogImageUrl('Gizlilik Politikası', description)],
+    images: ogImages('Gizlilik Politikası', description),
   },
   alternates: {
     canonical: '/gizlilik',

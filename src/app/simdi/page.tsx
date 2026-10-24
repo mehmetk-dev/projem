@@ -6,7 +6,7 @@ import { getSocialLinks } from '@/app/actions/social';
 import SiteShell from '@/components/home/SiteShell';
 import PostBody from '@/components/blog/PostBody';
 import { formatPostDate } from '@/components/blog/post-utils';
-import { ogImageUrl } from '@/lib/site';
+import { ogCommon, ogImages } from '@/lib/site';
 
 export const revalidate = 3600;
 
@@ -20,14 +20,15 @@ export const metadata: Metadata = {
     title: 'Şimdi | Mehmet Kerem',
     description,
     type: 'website',
-    locale: 'tr_TR',
-    images: [ogImageUrl('Bu aralar neler yapıyorum?', description, 'Şimdi')],
+    url: '/simdi',
+    ...ogCommon,
+    images: ogImages('Bu aralar neler yapıyorum?', description, 'Şimdi'),
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Şimdi | Mehmet Kerem',
     description,
-    images: [ogImageUrl('Bu aralar neler yapıyorum?', description, 'Şimdi')],
+    images: ogImages('Bu aralar neler yapıyorum?', description, 'Şimdi'),
   },
 };
 

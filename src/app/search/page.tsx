@@ -6,12 +6,27 @@ import { getSocialLinks } from '@/app/actions/social';
 import SiteShell from '@/components/home/SiteShell';
 import { postExcerpt } from '@/components/blog/post-utils';
 import { projectTeaser } from '@/components/home/project-utils';
+import { ogCommon, ogImages } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Ara | Mehmet Kerem',
   description: 'Blog yazıları ve projelerde ara.',
   // Sonuç sayfaları arama motorlarında listelenmez
   robots: { index: false, follow: true },
+  openGraph: {
+    title: 'Ara | Mehmet Kerem',
+    description: 'Blog yazıları ve projelerde ara.',
+    type: 'website',
+    url: '/search',
+    ...ogCommon,
+    images: ogImages('Ara', 'Blog yazıları ve projelerde ara.'),
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Ara | Mehmet Kerem',
+    description: 'Blog yazıları ve projelerde ara.',
+    images: ogImages('Ara', 'Blog yazıları ve projelerde ara.'),
+  },
 };
 
 export const dynamic = 'force-dynamic';

@@ -1,4 +1,10 @@
+import type { Metadata } from 'next';
 import ResetPasswordForm, { InvalidTokenState } from '@/components/ResetPasswordForm';
+
+export const metadata: Metadata = {
+  title: 'Şifre sıfırla | Mehmet Kerem',
+  robots: { index: false, follow: false },
+};
 
 export default async function ResetPasswordPage({
   searchParams,

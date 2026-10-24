@@ -15,6 +15,14 @@ export function ogImageUrl(title: string, description?: string, label?: string) 
   return `/api/og?${params}`;
 }
 
+// OG/Twitter görselleri; boyut ve alt metin sosyal ağlarda önizlemenin doğru çıkmasını sağlar
+export function ogImages(title: string, description?: string, label?: string) {
+  return [{ url: ogImageUrl(title, description, label), width: 1200, height: 630, alt: title }];
+}
+
+// Her openGraph bloğuna yayılır; Next openGraph'ı sığ birleştirdiği için kökten miras kalmaz
+export const ogCommon = { siteName: 'Mehmet Kerem', locale: 'tr_TR' } as const;
+
 // JSON-LD'de site sahibini temsil eden kişi kaydı
 export const sitePerson = {
   '@type': 'Person',

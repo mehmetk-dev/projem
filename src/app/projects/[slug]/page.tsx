@@ -14,7 +14,7 @@ import ImageWithFallback from '@/components/ImageWithFallback';
 import { projectCover, projectCoverTransition, projectHost, projectResults, projectStack, projectTeaser } from '@/components/home/project-utils';
 import { QuoteMark, TestimonialPerson } from '@/components/home/Testimonials';
 import JsonLd from '@/components/JsonLd';
-import { siteUrl, sitePerson, ogImageUrl } from '@/lib/site';
+import { siteUrl, sitePerson, ogImages, ogCommon } from '@/lib/site';
 
 export const revalidate = 3600;
 
@@ -46,8 +46,8 @@ export async function generateMetadata({ params }: ProjectDetailPageProps): Prom
   const cover = projectCover(project);
   // SVG yer tutucu sosyal ağlarda görünmez; o durumda dinamik OG görseli üretilir
   const ogImage = cover.endsWith('.svg')
-    ? ogImageUrl(project.title, description, ['Proje', project.category].filter(Boolean).join(' · '))
-    : cover;
+    ? ogImages(project.title, description, ['Proje', project.category].filter(Boolean).join(' · '))
+    : [{ url: cover, alt: project.title }];
 
   return {
     title: `${project.title} | Projeler | Mehmet Kerem`,
@@ -56,15 +56,16 @@ export async function generateMetadata({ params }: ProjectDetailPageProps): Prom
     openGraph: {
       title: `${project.title} | Mehmet Kerem`,
       description,
-      type: 'article',
-      locale: 'tr_TR',
-      images: [ogImage],
+      type: 'website',
+      url: `/projects/${project.slug}`,
+      ...ogCommon,
+      images: ogImage,
     },
     twitter: {
       card: 'summary_large_image',
       title: `${project.title} | Mehmet Kerem`,
       description,
-      images: [ogImage],
+      images: ogImage,
     },
   };
 }
