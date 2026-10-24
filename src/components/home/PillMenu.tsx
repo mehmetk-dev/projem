@@ -7,7 +7,7 @@ import BrandMark from './BrandMark';
 import { OPEN_PALETTE_EVENT, useModKey } from './CommandPalette';
 
 const ITEMS = [
-  // tilt: açılırken başladığı ve üzerine gelince eğildiği açı (masaüstünde durağan hâlde düz durur)
+  // tilt: balonun durağan eğimi (mobilde iki katı); açılırken bunun dört katından başlar, üzerine gelince biraz daha eğilir
   // shift: mobilde balonun yatay kayması (px); eğimle birlikte asimetrik, dağınık bir dizilim verir
   { label: 'projeler', href: '/projects', tilt: 3, shift: -34, hoverBg: 'linear-gradient(to right, #059669, #0d9488)' },
   { label: 'hizmetler', href: '/#services', tilt: -3, shift: 30, hoverBg: 'linear-gradient(to right, #2563eb, #1e40af)' },
@@ -70,8 +70,8 @@ export default function PillMenu() {
       if (!bubbles.length) return;
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
-      // Mobilde balonlar açıldıktan sonra da eğik kalır; son öğe (CTA) hafifçe ters eğilir
-      const restRotation = (i: number) => (isDesktop ? 0 : (ITEMS[i]?.tilt ?? -1.5) * 2);
+      // Balonlar açıldıktan sonra sırayla sağa sola eğik kalır (mobilde daha belirgin); son öğe (CTA) hafifçe ters eğilir
+      const restRotation = (i: number) => (ITEMS[i]?.tilt ?? -1.5) * (isDesktop ? 1 : 2);
 
       gsap.killTweensOf([...bubbles, ...labels, backdrop]);
 
@@ -119,7 +119,7 @@ export default function PillMenu() {
     <nav
       ref={navRef}
       aria-label="Ana menü"
-      className="pointer-events-none fixed inset-x-0 top-3 z-50 mx-auto flex h-14 max-w-6xl items-center justify-between px-4 md:px-8 lg:top-5 lg:grid lg:grid-cols-[1fr_auto_1fr]"
+      className="pointer-events-none fixed inset-x-0 top-3 z-50 mx-auto flex h-14 max-w-6xl items-center justify-between px-4 md:px-8 lg:top-5"
     >
       {rendered && (
         <div
@@ -134,9 +134,10 @@ export default function PillMenu() {
         <BrandMark />
       </div>
 
+      {/* Masaüstünde logo ile kapatma butonu arasındaki boşluğu doldurup ortalanır; iki yanda eşit boşluk kalır */}
       <ul
         id="pill-menu-items"
-        className="fixed inset-x-4 top-28 flex flex-col items-center gap-5 md:inset-x-8 lg:static lg:flex-row lg:flex-nowrap lg:gap-2"
+        className="fixed inset-x-4 top-28 flex flex-col items-center gap-5 md:inset-x-8 lg:static lg:flex-1 lg:flex-row lg:flex-nowrap lg:justify-center lg:gap-2.5"
       >
         {rendered &&
           ITEMS.map((item, idx) => (
@@ -152,7 +153,7 @@ export default function PillMenu() {
                 href={item.href}
                 onClick={close}
                 tabIndex={open ? 0 : -1}
-                className="group inline-flex h-16 items-center gap-3 whitespace-nowrap rounded-full border border-line bg-surface px-8 text-2xl font-semibold text-ink shadow-[0_4px_14px_rgba(12,10,9,0.08)] transition-[scale,rotate,background,color,border-color,box-shadow] duration-300 hover:scale-[1.04] hover:rotate-[var(--tilt)] hover:border-transparent hover:text-white hover:shadow-[0_12px_28px_rgba(12,10,9,0.22)] hover:[background:var(--hover-bg)] active:scale-95 lg:h-12 lg:gap-0 lg:px-6 lg:text-[16px] lg:hover:scale-[1.08]"
+                className="group inline-flex h-16 items-center gap-3 whitespace-nowrap rounded-full border border-line bg-surface px-8 text-2xl font-semibold text-ink shadow-[0_4px_14px_rgba(12,10,9,0.08)] transition-[scale,rotate,background,color,border-color,box-shadow] duration-300 hover:scale-[1.04] hover:rotate-[var(--tilt)] hover:border-transparent hover:text-white hover:shadow-[0_12px_28px_rgba(12,10,9,0.22)] hover:[background:var(--hover-bg)] active:scale-95 lg:h-12 lg:gap-0 lg:px-5 lg:text-[16px] xl:px-6 lg:hover:scale-[1.08]"
                 style={{ '--hover-bg': item.hoverBg, '--tilt': `${item.tilt}deg` } as CSSProperties}
               >
                 <span
