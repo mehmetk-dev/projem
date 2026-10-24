@@ -39,7 +39,7 @@ export const metadata: Metadata = {
 
 export default async function AboutPage() {
   const [projects, socialLinks] = await Promise.all([
-    getPublishedProjects().catch(() => []),
+    getPublishedProjects(),
     getSocialLinks().catch(() => []),
   ]);
 

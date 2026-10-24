@@ -46,8 +46,9 @@ export const getPublishedTestimonials = cache(async () => {
       .orderBy(asc(testimonials.displayOrder), asc(testimonials.id))
       .all();
   } catch (error) {
+    // getPublishedProjects ile aynı: boş liste önbelleğe girmesin diye hata fırlatılır
     console.error('getPublishedTestimonials error:', error);
-    return [];
+    throw error;
   }
 });
 

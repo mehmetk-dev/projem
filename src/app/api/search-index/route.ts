@@ -8,7 +8,7 @@ export const revalidate = 3600;
 
 export async function GET() {
   const [projects, posts, nowPage] = await Promise.all([
-    getPublishedProjects().catch(() => []),
+    getPublishedProjects(),
     getPublishedBlogs({ limit: 100 }).catch(() => []),
     getNowPage(),
   ]);

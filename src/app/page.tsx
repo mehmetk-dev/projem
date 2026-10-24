@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const [projects, blogs, socialLinks, testimonials, availability] = await Promise.all([
-    getPublishedProjects().catch(() => []),
+    getPublishedProjects(),
     getPublishedBlogs({ limit: 3 }).catch(() => []),
     getSocialLinks().catch(() => []),
     getPublishedTestimonials(),

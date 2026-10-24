@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 
 export default async function ProjectsListPage() {
   const [projectList, socialLinks] = await Promise.all([
-    getPublishedProjects().catch(() => []),
+    getPublishedProjects(),
     getSocialLinks().catch(() => []),
   ]);
 

@@ -36,7 +36,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: ProjectDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
   // getPublishedProjects React cache ile istek başına tek sorguya iner; sayfa da aynı sonucu kullanır
-  const project = (await getPublishedProjects().catch(() => [])).find((item) => item.slug === slug);
+  const project = (await getPublishedProjects()).find((item) => item.slug === slug);
 
   if (!project) {
     return { title: 'Bulunamadı | Mehmet Kerem' };
@@ -121,7 +121,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const { slug } = await params;
 
   const [allProjects, socialLinks, testimonials] = await Promise.all([
-    getPublishedProjects().catch(() => []),
+    getPublishedProjects(),
     getSocialLinks().catch(() => []),
     getPublishedTestimonials(),
   ]);

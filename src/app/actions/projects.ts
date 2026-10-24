@@ -88,9 +88,11 @@ function readProjectFields(formData: FormData, image: string) {
   };
 }
 
+// Hata yutulmaz: ISR yenilemesinde hata fırlarsa Next.js son sağlam sayfayı sunmaya devam eder.
+// Boş liste dönülseydi o boş sayfa önbelleğe girerdi.
 export const getPublishedProjects = cache(async () => {
   try {
-    return db
+    return await db
       .select()
       .from(projects)
       .where(eq(projects.published, true))
@@ -98,7 +100,7 @@ export const getPublishedProjects = cache(async () => {
       .all();
   } catch (error) {
     console.error('getPublishedProjects error:', error);
-    return [];
+    throw error;
   }
 });
 
