@@ -213,6 +213,8 @@ export default function CommandPalette() {
 
   const activeItem = items[active];
 
+  // Arka plan (::backdrop) bilerek bulanıklaştırılmaz: tüm sayfaya uygulanan backdrop-filter bazı GPU'larda
+  // (Linux'ta Chromium/Brave) açılışta bir süre siyah ekran gösteriyordu
   return (
     <dialog
       ref={dialogRef}
@@ -222,7 +224,7 @@ export default function CommandPalette() {
         if (event.target === dialogRef.current) close();
       }}
       aria-label="Komut paleti"
-      className="mx-auto mt-[10vh] w-[min(640px,calc(100%-32px))] max-w-none overflow-hidden rounded-3xl border border-line bg-surface p-0 text-ink shadow-[0_40px_100px_-30px_rgba(12,10,9,0.45)] backdrop:bg-ink/25 backdrop:backdrop-blur-[3px] open:animate-[home-pop_0.22s_cubic-bezier(0.16,1,0.3,1)]"
+      className="mx-auto mt-[10vh] w-[min(640px,calc(100%-32px))] max-w-none overflow-hidden rounded-3xl border border-line bg-surface p-0 text-ink shadow-[0_40px_100px_-30px_rgba(12,10,9,0.45)] backdrop:bg-[rgba(12,10,9,0.32)] open:animate-[home-pop_0.22s_cubic-bezier(0.16,1,0.3,1)]"
     >
       <div className="flex items-center gap-3 border-b border-line px-5">
         <Search size={18} className="shrink-0 text-ink-muted" aria-hidden="true" />
