@@ -95,15 +95,21 @@ function storyBlocks(description: string): StoryBlock[] {
   return blocks;
 }
 
-/** Kapak dışındaki görselleri bölümlere dağıtır; görsel azsa ilk bölümü (genelde "İhtiyaç") atlar */
+/**
+ * Kapak dışındaki görselleri bölümlere dağıtır. Görsel her bölüme yetmiyorsa "Sonuç" koyu bant olarak
+ * görselsiz kalır; diğer bölümlere de yetmiyorsa ilk bölüm (genelde "İhtiyaç") atlanır.
+ */
 function assignImages(blocks: StoryBlock[], images: string[]) {
   const byBlock = new Map<number, string>();
-  const offset = images.length < blocks.length ? 1 : 0;
-  images.forEach((image, i) => {
-    const index = i + offset;
-    if (index < blocks.length) byBlock.set(index, image);
+  const targets =
+    images.length >= blocks.length
+      ? blocks.map((_, i) => i)
+      : blocks.flatMap((block, i) => (isResult(block.heading) ? [] : [i]));
+  const slots = images.length < targets.length ? targets.slice(1) : targets;
+  slots.forEach((index, i) => {
+    if (i < images.length) byBlock.set(index, images[i]);
   });
-  const leftover = images.slice(Math.max(0, blocks.length - offset));
+  const leftover = images.slice(slots.length);
   return { byBlock, leftover };
 }
 
