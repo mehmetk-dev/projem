@@ -95,7 +95,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   }
 
   const [approvedComments, allPosts, socialLinks] = await Promise.all([
-    getApprovedComments(post.id),
+    getApprovedComments(post.id).catch(() => []),
     getPublishedBlogs().catch(() => []),
     getSocialLinks().catch(() => []),
   ]);
